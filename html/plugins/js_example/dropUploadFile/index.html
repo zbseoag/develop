@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>无标题文档</title>
+<script type="text/javascript" src="../jquery-1.8.3.min.js"></script>
+<style>
+
+.bor{ border:1px solid red;}
+
+.mainBox{width:200px;height:150px;border:3px dashed #E5E5E5;text-align:center;cursor:pointer; 
+ background:WhiteSmoke;}
+.mainBox.over{ border-color:red;}
+
+.mainBox .messageBox{ height:60px; margin-top:40px; overflow:hidden;}
+ 
+.mainBox .messageBox p{position:relative;  margin:0; padding:0; line-height:30px; top:-60px;}
+
+ 
+</style>
+<script>
+$(document).ready(function(){
+
+$('#messageBox').hover(function(){
+	$(this).children('p').stop().animate({top:'0px'},300);
+},function(){
+	$(this).children('p').stop().animate({top:'-60px'},300);
+});
+
+		
+//阻止浏览器默认行为，一个四个事件。
+$(document).on({
+	dragleave:function(e){//拖离
+		e.preventDefault();//什么都不执行
+		$('#mainBox').removeClass('over');
+	},
+	drop:function(e){//拖后放			
+		e.preventDefault();
+	},
+	dragenter:function(e){//拖进
+		e.preventDefault();
+		$('#mainBox').addClass('over');
+	},
+	dragover:function(e){//拖来拖去
+		e.preventDefault();
+		$('#mainBox').addClass('over');
+	}
+});
+		
+//上传的实现		
+var box = document.getElementById('mainBox'); //获得到框体	
+
+//添加监听鼠标drop的函数
+box.addEventListener("drop",function(e){
+
+	e.preventDefault(); //取消默认浏览器拖拽效果
+	var fileList = e.dataTransfer.files; //获取文件对象
+	if(fileList.length == 0){//检测是否是拖拽文件到页面,获得文件数量
+		$('#mainBox').removeClass('over');
+		return;
+	}
+	if(fileList[0].type.indexOf('image') === -1){//检测文件是不是图片
+		$('#mainBox').removeClass('over');
+		return;
+	}
+	//var img = window.webkitURL.createObjectURL(fileList[0]);
+	
+	var formObj = new FormData();
+	formObj.append('imgFile', fileList[0]);
+	
+
+	xml = new myXmlHttp();
+	xml.openSend(formObj,'post','handle.php', true);
+	xml.xmlhttp.onreadystatechange = function(){
+		if(xml.xmlhttp.readyState==1 )//请求对象已建立，尚未调用send方法
+	{
+		document.getElementById('show').innerHTML='loading...';
+	}else if(xml.xmlhttp.readyState==4 && xml.xmlhttp.status==200){//服务器状态
+		document.getElementById('show').innerHTML=xml.xmlhttp.responseText;	
+		var img = new Image()
+	}
+		
+	};
+},false);
+	
+
+	
+function myXmlHttp(){
+	try{
+		this.xmlhttp = new XMLHttpRequest();
+	}catch(exception){
+		alert('Error initializing XMLHttpRequest!');
+		return false;
+	}
+	this.openSend = function(data,method, url, async){ 
+		this.xmlhttp.open(method,url,async);
+		this.xmlhttp.send(data);
+	}
+	this.setHeader = function(label,value){
+		this.xmlhttp.setRequestHeader(label,value);
+	}
+
+}
+	
+});
+
+
+
+//错误处理函数
+onerror = handleErr;
+function handleErr(msg,url,line){
+	var txt=""
+	txt = "出错消息！\n"
+	txt += "消息： "+msg+"\n"
+	txt += "地址： "+url+"\n"
+	txt += "行号： "+line+"\n"
+	alert(txt);
+	return true;
+}
+
+</script>
+</head>
+<body>
+
+
+<div id="mainBox" class="mainBox">
+<div id="messageBox" class="messageBox">
+    <p id="">选择你的图片<br>开始上传</p>
+    <p id="">拖动图片到<br>这里</p>
+</div>
+</div>
+<div id="show"></div>
+
+</body>
+</html>

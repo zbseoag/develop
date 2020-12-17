@@ -1,0 +1,218 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+  
+  <div class="full-panel">
+    
+    <div class="full-panel-head">
+      
+      <b>记录列表</b>
+      <div class="full-panel-tools">
+        <a href="{$Think.HOST}/download/template/批量导入收款记录模版.xlsx"><i class="fa fa-file-excel-o"></i>模板</a>
+        <a data-button="import"><i class="fa fa-upload"></i>导入</a>
+        <a data-button="export"><i class="fa fa-download"></i>导出</a>
+        <a data-button="create"><i class="fa fa-plus"></i>新建</a>
+      </div>
+    
+    </div>
+    
+    <div class="full-panel-head">
+  
+  
+      <form id="search"  class="form-inline" action="" autocomplete="off" >
+    
+        <div class="input-group">
+          <div class="input-group-btn">
+  
+            <select name="customer_id" class="selectpicker pull-left" data-live-search="true">
+              <option value="">选择(客户简称 )</option>
+              {volist name="customer_list" id="value"}
+              <option value="{$key}">{$value}</option>
+              {/volist}
+            </select>
+  
+            <input type="text" class="form-control" list="user_id" name="user_id" />
+            <datalist id="user_id">
+              <option value="">选择(客户帐号 )</option>
+            </datalist>
+            
+          </div>
+          
+          
+          <div class="input-group-btn">
+  
+            <input class="form-control" name="_datetime[field]" value="receivables_date" type="hidden">
+            <input class="form-control" name="_datetime[range]" data-plugin="datetime" placeholder="收款时间" type="text">
+            
+            <select class="form-control" name="canceled">
+              <option value="">选择(状态 )</option>
+              <option value="1">已取消</option>
+              <option value="0">未取消</option>
+            </select>
+  
+            <button class="btn btn-white" type="reset"><i class="fa fa-undo"></i></button>
+            <button class="btn btn-primary" type="submit">搜&nbsp;索</button>
+      
+          </div>
+        </div>
+  
+      </form>
+
+
+    </div>
+    
+    <div class="full-panel-body">
+  
+  
+      <form id="form-table">
+        <table class="table table-condensed table-bordered table-striped table-hover" >
+          <thead>
+          <tr>
+            <th class="check-all"><input data-button="checkall" type="checkbox"></th>
+   
+            <th>ID</th>
+            <th>{$thead.short_name}</th>
+            <th>{$thead.company_full_name}</th>
+            <th>{$thead.user_name}</th>
+            <th>{$thead.receivables_date}</th>
+            <th>{$thead.coin}</th>
+            <th class="text-right">{$thead.amount}</th>
+            <th>{$thead.bank}</th>
+            <th>{$thead.account}</th>
+            <th class="text-right">{$thead.exchange}</th>
+            <th class="text-right">{$thead.rmb_amount}</th>
+            <th>{$thead.canceled}</th>
+            <th>{$thead.update_by}</th>
+            <th>{$thead.update_time}</th>
+            <th>{$thead.create_by}</th>
+            <th>{$thead.create_time}</th>
+
+          </tr>
+          </thead>
+          
+          <tbody>
+      
+          {empty name="record"}
+            <tr>
+              <td><input type="checkbox"></td>
+              <td colspan="50">无记录</td>
+            </tr>
+            {else/}
+            {volist name="record" id="row"}
+              <tr class="datarow" data-row='{:htmlentities(json_encode($row->getData(), JSON_UNESCAPED_UNICODE), ENT_QUOTES)}'>
+                <td><input name="id[]" type="checkbox" value="{$row.id}"></td>
+
+                <td>{$row.id}</td>
+                <td>{$row.short_name}</td>
+                <td><input value="{$row.company_full_name}" /></td>
+                <td>{$row.user_name}</td>
+                <td>{$row.receivables_date}</td>
+                <td>{$row.coin}</td>
+                <td class="text-right text-danger">{$row.amount}</td>
+                <td><input value="{$row.bank}" /></td>
+                <td><input value="{$row.account}" /></td>
+                <td class="text-right text-warning">{$row.exchange}</td>
+                <td class="text-right text-success">{$row.rmb_amount}</td>
+                <td>{$row.canceled}</td>
+                <td>{$row.update_by}</td>
+                <td>{$row.update_time}</td>
+                <td>{$row.create_by}</td>
+                <td>{$row.create_time}</td>
+              </tr>
+            {/volist}
+          {/empty}
+          
+              <tr>
+                <td class="check-all"><input data-button="checkall" type="checkbox"></td>
+                <td class="toolbar" colspan="50">
+                  <a data-button="cancel"><i class="fa fa-repeat"></i>取消</a>
+                </td>
+              </tr>
+          </tbody>
+    
+        </table>
+      </form>
+      
+      
+      {notempty name="paginator"}
+        <div class="row">
+          <div class="col-md-4">&nbsp;&nbsp;{$paginator.info}</div>
+          <div class="col-md-8"><nav>{$paginator.page}</nav></div>
+        </div>
+      {/notempty}
+    </div>
+  
+  </div>
+
+  
+</div>
+
+
+
+<script>
+$('[data-button="checkall"]').icheck();
+
+//选择客户时,级联下拉列表
+$('select[name="customer_id"]').select({ field:'get_user_by_customer_id', async:false }).send(function(data){
+    
+    if(data.code && data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    
+    //客户关联的帐号列表
+    $("#user_id").list({data: data.data, autoSelect:false, template:'<option value="{name}">'});
+    $('input[name="user_id"]').val('');
+    
+}).trigger('change');
+
+
+var form = $('#search').form().insert().on('reset', function(){
+    $('.selectpicker').selectpicker('render');
+});
+
+var form_table = $('#form-table').form();
+
+$.plug('datetime').laydate({ range: true, type: 'date', format: 'yyyy-MM-dd'});
+
+$('[data-button]').handle({
+    
+    create: function(row){
+        system.open("{:url('edit')}", '新建记录');
+    },
+    
+    
+    export: function(){
+        form.action("{:url('export')}").submit().action('');
+    },
+    
+    //批量取消
+    cancel: function(){
+        
+        if(!window.confirm('确定取消选中记录?')) return false;
+        form_table.post("{:url('cancel')}", function(data){
+    
+            if(data.code != 1){
+                $.toastr().error(data.msg); return;
+            }
+            $.toastr().success('取消成功', function(){ system.reload();  });
+        });
+    },
+    
+    import: function(row, element){
+        
+        //数据导入
+        element.file({event:null, url:"{:url('save')}", file: 'import'}, function(data){
+            
+            if(data.code != 1){
+                $.toastr().error(data.msg); return;
+            }
+            $.toastr().success('数据导入成功!', function(){ system.reload();  });
+            
+        });
+    }
+    
+});
+
+
+</script>
+</body>

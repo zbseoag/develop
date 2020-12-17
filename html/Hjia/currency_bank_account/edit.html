@@ -1,0 +1,91 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+    
+    <div class="full-panel">
+        
+        <div class="full-panel-head">
+            
+            <b>{$title}</b>
+            <div class="full-panel-tools">
+            
+            </div>
+        
+        </div>
+        
+        
+        <div class="full-panel-body">
+    
+            <form autocomplete="off" id="form" action="" method="post" class="form-horizontal" style="padding-top: 30px;" enctype="application/x-www-form-urlencoded">
+                <input type="hidden" name="id" value="">
+                
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款币种<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="currency_id" class="selectpicker" data-live-search="true" data-width="100%">
+                            <option value="">选择(币种 )</option>
+                            {volist name="currency_list" id="value"}
+                            <option value="{$key}">{$value}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+    
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款账号<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="account" type="text"  class="form-control"></div>
+                </div>
+   
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款银行<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="bank" type="text"  class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">状态<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select class="form-control" name="status">
+                            <option value="">选择(状态 )</option>
+                            {volist name="status_list" id="value"}
+                            <option value="{$key}">{$value}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+
+                
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <button class="btn btn-primary" type="submit"><i class="fa fa-save"></i> 保存</button>
+                    </div>
+                </div>
+    
+            </form>
+        
+        </div>
+    
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+
+$('#form').form("{:url('save')}", function(data){
+    
+    if(data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    ajax.init(data).message(function(it){ system.reload("{:url('currency_bank_account/index')}").close(); });
+    
+}).insert({$record});
+
+
+</script>
+</body>

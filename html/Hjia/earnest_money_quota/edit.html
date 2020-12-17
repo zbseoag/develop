@@ -1,0 +1,92 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+    
+    <div class="full-panel">
+        
+        <div class="full-panel-head">
+            
+            <b>{$title}</b>
+            <div class="full-panel-tools">
+            
+            </div>
+        
+        </div>
+        
+        
+        <div class="full-panel-body">
+    
+            <form id="form" action="" method="post" class="form-horizontal" style="padding-top: 30px;" enctype="multipart/form-data">
+                <input type="hidden" name="id" value="">
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">客户简称<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="customer_id" class="selectpicker" data-live-search="true" data-width="100%">
+                            <option value="">选择(客户简称 )</option>
+                            {volist name="customer_list" id="value"}
+                            <option value="{$key}">{$value}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">保证金<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="bond" type="text"  class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">申请额度<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="additional_amount" type="text" class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">调整额度<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="additional_adjust_amount" type="text" class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">附件</label>
+                    <div class="col-sm-4">
+                      <input name="attachment" type="file">
+                    </div>
+                </div>
+                
+    
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <button class="btn btn-primary" type="submit"><i class="fa fa-save"></i> 保存</button>
+                    </div>
+                </div>
+    
+            </form>
+        
+        </div>
+    
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+var record = {$record};
+$('#form').form("{:url('save')}", function(data){
+    
+    if(data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    ajax.init(data).message(function(it){ system.reload("{:url('earnest_money_quota/index')}").close(); });
+    
+}).insert(record);
+
+{notempty name="id"}
+$('.selectpicker').prop('disabled', true);
+{/notempty}
+
+
+</script>
+</body>

@@ -1,0 +1,939 @@
+#!/usr/bin/env python3
+# -*- coding: utf8 -*-
+# if __name__ == '__main__':
+
+注释符号：#  '''  """
+
+模块导入语法：
+将整个模块导入： import somemodule
+从模块中导入函数： from <module> import <function>
+从模块中导入多个函数： from <module> import <function1>, <function2>
+从模块中导入所有函数格： from <module> import *
+
+查看关键字
+import keyword
+keyword.kwlist
+
+多个变量赋值
+a, b, c = 1, 2, "string"
+
+数据类型
+Number（数字）
+String（字符串）
+List（列表）：list=[]
+Tuple（元组）：tup=(), tup=(20,)
+Set（集合）：set=set()
+Dictionary（字典）：dict={}
+
+不可变数据类型：Number、String、Tuple
+可变数据类型：List、Set、Dictionary
+
+
+数据类型转换
+int(x [,base])：将x转换为整数
+float(x)：将x转换到一个浮点数
+complex(real [,imag])：创建一个复数
+str(x)：转换为字符串
+repr(x)：转换为表达式字符串
+eval(str)：执行有效Python表达式，如 eval( '3 * x' )
+tuple(s)：转换为元组，如 tuple([1,2,3]), tuple({'a':1, 'b':2})
+list(s)：转换为列表,如 list((1,2,3))
+set(s)：转换集合,如 set([1,2,3])
+dict(d)：创建一个字典,如 dict(a=1, b=2) dict(['a','b'], [1, 2]) dict([('a', 1), ('b', 2)])
+frozenset(s)：转换为不可变集合
+chr(x)：整数转换 ASCII 字符
+ord(x)：转换为ASCII 数值
+hex(x)：转十六进制
+oct(x)：转八进制
+
+
+运算符:
+算术运算符：四则运算 % **幂  //整除（舍去法)
+比较运算符：== !=  > <  >=  <=
+赋值运算符：= += -=  *=  /= %=  **= //=  :=
+逻辑运算符：and，or， not
+位运算符：& | ^ ~ << >>
+成员运算符：in，not in
+身份运算符：is，is not
+
+转义字符
+\ (在行尾时)续行符
+\a	响铃
+\b	退格
+\000 空
+\v	纵向制表符
+\f	换页
+\o	八进制数
+\x	十六进制数
+
+
+ascii(object)   返回一个对象可打印的字符串
+bin(x)   转二进制, 若 x 不是 int 对象，那它需要定义 __index__() 方法来返回一个整数
+class bool(x)   返回一个布尔值, 默认返回 False
+breakpoint(*args, **kws)  此函数会在调用时将你陷入调试器中。
+class bytearray([source[, encoding[, errors]]])  返回一个新的 bytes 数组。 bytearray 类是一个可变序列，包含范围为 0 <= x < 256 的整数。
+class bytes([source[, encoding[, errors]]])  返回一个新的“bytes”对象， 是一个不可变序列，包含范围为 0 <= x < 256 的整数。
+callable(object)   对象是否可调用的,如果实例的类有 __call__() 方法，则它是可调用。
+chr(i) 返回 Unicode 字符
+ord(c) 返回代表 Unicode 字符的码点整数
+@classmethod 把一个方法封装成类方法。
+compile(source, filename, mode, flags=0, dont_inherit=False, optimize=-1
+class complex([real[, imag]])  返回值为 real + imag*1j 的复数，或将字符串或数字转换为复数。
+delattr(object, name)  删除对象属性
+class dict(**kwarg)
+class dict(mapping, **kwarg)
+class dict(iterable, **kwarg) 创建一个新的字典。
+dir([object])  如果没有实参，则返回当前本地作用域中的名称列表。如果有实参，它会尝试返回该对象的有效属性列表。
+divmod(a, b)  整除,并返回一对商和余数。
+eval(expression[, globals[, locals]])实参是一个字符串，以及可选的 globals 和 locals。
+filter(function(item),  iterable) 用回调函数 过滤 iterable 中元素
+class frozenset([iterable])返回一个新的 frozenset 对象，它包含可选参数 iterable 中的元素。
+getattr(object, name[, default])返回对象的属性值, 若属性不存在，则返回 default 值
+globals()返回表示当前全局符号表的字典。
+hasattr(object, name) 对象是否具有某个属性。
+enumerate(iterable, start=0)返回一个枚举对象。iterable 必须是一个序列，或 iterator，或其他支持迭代的对象。
+exec(object[, globals[, locals]])这个函数支持动态执行 Python 代码。
+help([object])启动内置的帮助系统（此函数主要在交互式中使用）
+hex(x)将整数转换为以“0x”为前缀的小写十六进制字符串
+id(object) 返回对象的“标识值”。该值是一个整数，在此对象的生命周期中保证是唯一且恒定的。
+input([prompt]) 如果存在 prompt 实参，则将其写入标准输出，末尾不带换行符。接下来，该函数从输入中读取一行，将其转换为字符串（除了末尾的换行符）并返回。
+class int(x, base=10)
+isinstance(object, classinfo) object 对象就否是 classinfo 的实例
+issubclass(class, classinfo)  class 是否是 classinfo 的子类
+iter(object[, sentinel])  返回一个 iterator 对象。
+len(s) 返回对象的长度或元素个数。
+class list([iterable])  虽然被称为函数，list 实际上是一种可变序列类型，
+locals() 更新并返回表示当前本地符号表的字典。
+map(function(item1, item2), iterable1, iterable2...)   返回一个将 function 应用于 iterable 中每一项并输出其结果的迭代器
+max(iterable, *[, key, default]) max(arg1, arg2, *args[, key]) 返回可迭代对象中最大的元素，或者返回两个及以上实参中最大的。
+min(iterable, *[, key, default]) min(arg1, arg2, *args[, key]) 返回可迭代对象中最小的元素，或者返回两个及以上实参中最小的。
+memoryview(obj) 返回由给定实参创建的“内存视图”对象。
+next(iterator[, default]) 通过调用 iterator 的 __next__() 方法获取下一个元素。如果迭代器耗尽，则返回给定的 default
+class object 返回一个没有特征的新对象。
+oct(x)将一个整数转变为一个前缀为“0o”的八进制字符串。
+open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)   打开 file 并返回对应的 file object。
+pow(x, n[, z]) 返回 x 的 n 次幂；如果 z 存在，则对 z 取余
+print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)  将 objects 打印到 file 指定的文本流
+range(stop) range(start, stop[, step]) 虽然被称为函数，但 range 实际上是一个不可变的序列类型
+repr(object) 返回包含一个对象的可打印表示形式的字符串。
+reversed(seq) 返回一个反向的 iterator。 seq 必须是一个具有 __reversed__() 方法的对象或者是支持该序列协议（具有从 0 开始的整数类型参数的 __len__() 方法和 __getitem__() 方法）
+round(number[, ndigits]) 返回 number 舍入到小数点后 ndigits 位精度的值
+class set([iterable]) 返回一个新的 set 对象，可以选择带有从 iterable 获取的元素。 set 是一个内置类型
+setattr(object, name, value)
+class slice(stop) class slice(start, stop[, step]) 返回一个表示由 range(start, stop, step) 所指定索引集的 slice 对象
+sorted(iterable, *, key=None, reverse=False) 根据 iterable 中的项返回一个新的已排序列表。
+@staticmethod 将方法转换为静态方法
+class str(object='') class str(object=b'', encoding='utf-8', errors='strict') 返回一个 str 版本的 object
+sum(iterable[, start])
+super([type[, object-or-type]])
+class type(object) class type(name, bases, dict) 传入一个参数时，返回 object 的类型
+vars([object]) 对象 __dict__ 属性
+zip(*iterables) 创建一个聚合了来自每个可迭代对象中的元素的迭代器
+__import__(name, globals=None, locals=None, fromlist=(), level=0)
+
+删除变量：del var1, var2
+
+条件语句
+if(): elif(): else:
+while(): else:
+for in : else:
+
+def func(var1, var2=Null, *varN, **kwargs):
+
+def f(a,b,*,c, d):
+    pass
+f(a, b, c=3, d=4)
+
+
+lambda 函数
+sum = lambda arg1, arg2: arg1 + arg2
+
+强制位置参数
+def f(a, b, /, c, d, *, e, f): 形参 a 和 b 必须使用位置参数，c 或 d 可以是位置或关键字参数，而 e 或 f 必须为关键字参数:
+
+sys.argv 是一个包含命令行参数的列表。
+sys.path 包含了一个 Python 解释器自动查找所需模块的路径的列表。
+
+
+打开文件的模式：读从文件开头起，重写会创建或清空，追加才在文件尾，附加属性更全能。如果不想清空原文件只有"r+"和"追加"能选，切记。
+r	只读，指针定位文件头
+r+	读附加写，指针定位文件头，写入内容会覆盖
+w	重写，创建或清空文件，一切从新开始
+w+	重写附加读，写完接着读
+a	追加写入，可以创建文件
+a+	追加写入，写完接着读
+
+file = open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)
+file.close() 关闭文件。
+file.flush()刷新文件内部缓冲，直接把内部缓冲区的数据立刻写入文件, 而不是被动的等待输出缓冲区写入。
+file.fileno()返回一个整型的文件描述符(file descriptor FD 整型), 可以用在如os模块的read方法等一些底层操作上。
+file.isatty()如果文件连接到一个终端设备返回 True，否则返回 False。
+file.read([size])从文件读取指定的字节数，如果未给定或为负则读取所有。
+file.readline([size])读取整行，包括 "\n" 字符。
+file.readlines([sizeint])读取所有行并返回列表，若给定sizeint>0，返回总和大约为sizeint字节的行, 实际读取值可能比 sizeint 较大, 因为需要填充缓冲区。
+file.seek(offset[, whence])移动文件读取指针到指定位置
+file.tell() 返回文件当前位置。
+file.truncate([size])从文件的首行首字符开始截断，截断文件为 size 个字符，无 size 表示从当前位置截断；截断之后后面的所有字符被删除，其中 Widnows 系统下的换行代表2个字符大小。
+file.write(str) 将字符串写入文件，返回的是写入的字符长度。
+file.writelines(sequence) 向文件写入一个序列字符串列表，如果需要换行则要自己加入每行的换行符。
+
+远程访问
+from urllib.request import urlopen
+for line in urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl'):
+    line = line.decode('utf-8')
+    if 'EST' in line or 'EDT' in line:
+        print(line)
+
+
+import smtplib
+server = smtplib.SMTP('localhost')
+server.sendmail('soothsayer@example.org', 'jcaesar@example.org',
+"""To: jcaesar@example.org
+From: soothsayer@example.org
+Beware the Ides of March.
+""")
+server.quit()
+
+
+性能度量
+from timeit import Timer
+Timer('t=a; a=b; b=t', 'a=1; b=2').timeit()
+Timer('a,b = b,a', 'a=1; b=2').timeit()
+
+
+单元测试
+import unittest
+
+class TestStatisticalFunctions(unittest.TestCase):
+
+    def test_average(self):
+        self.assertEqual(average([20, 30, 70]), 40.0)
+        self.assertEqual(round(average([1, 5, 7]), 1), 4.3)
+        self.assertRaises(ZeroDivisionError, average, [])
+        self.assertRaises(TypeError, average, 20, 30, 70)
+
+unittest.main()
+
+
+import re
+
+match = re.match(r'(.)是(.)', "你是猪", re.M|re.I)
+match2 = re.search(r'(.)是(.)', "你是猪", re.M|re.I)
+match.group()
+
+#替换
+num = re.sub(r'#.*', '', "2004-959-559 # 这是一个电话号码")
+
+pattern = re.compile(r'\d+') # 用于匹配至少一个数字
+m = pattern.match('one12twothree34four') # 查找头部，没有匹配
+
+pattern = re.compile(r'\d+')   # 查找数字
+result1 = pattern.findall('runoob 123 google 456')
+result2 = pattern.findall('run88oob123google456', 0, 10)
+
+返回可迭代对象
+it = re.finditer(r"\d+","12a32bc43jf3")
+for match in it:
+    print (match.group() )
+
+re.split('\W+', 'runoob, runoob, runoob.')
+
+
+
+
+def test2():
+    import time
+    url = 'http://cdn.heweather.com/china-city-list.txt'
+    html = requests.get(url)
+    # 前6行就无用数据
+    data = html.text.split('\n')[6:]
+
+    document = tools.connect('weather', 'sheet_weather')
+    for item in data[0:30]:
+        # item = '| CN101010100' 前2位无用,再往后取11位,所以就就[2:13]
+        url = 'https://free-api.heweather.com/v5/forecast?key=7d0daf2a85f64736a42261161cd3060b&city=' + item[2:13]
+        html = requests.get(url)
+        html.encoding = 'utf8'
+        document.insert_one(html.json())
+
+        tools.log(html.text)
+        time.sleep(1)
+
+def test3():
+    import urllib
+    import time
+    url = 'https://touch.dujia.qunar.com/depCities.qunar'
+    html = requests.get(url)
+    text = html.json()
+    for item in text['data']:
+        for dep in text['data'][item]:
+            a = []
+            url = 'https://m.dujia.qunar.com/golfz/sight/arriveRecommend?dep={}&exclude=&extensionImg=255,175'.format(urllib.request.quote(dep))
+
+            response = requests.get(url)
+            arrive = response.json()
+            for item in arrive['data']:
+                for subitem in item['subModules']:
+                    for query in subitem['items']:
+                        if query['query'] not in a:
+                            a.append(query['query'])
+            print(a)
+            exit()
+
+def test4():
+    import keyboard
+    from PIL import ImageGrab
+    import time
+
+    if not keyboard.wait(hotkey='f1'):
+        if not keyboard.wait(hotkey='ctrl+c'):
+            time.sleep(0.01)
+            image = ImageGrab.grabclipboard()
+            image.save('test.png')
+
+def find_record(city='北京'):
+    document = tools.connect('weather', 'sheet_weather')
+    for item in document.find({'HeWeather5.basic.city': city}):
+        print(item)
+
+
+def test5():
+    import os
+    os.environ['qikang'] = 'leslie'
+    for k, v in os.environ.items():
+        print(k, v)
+
+
+import requests
+import json
+from bs4 import BeautifulSoup
+import re
+import math
+import tools
+
+
+def test6():
+
+    l = [1, 2, 3];      p(l * 5)
+    s = 'abc-';     p(5 * s)
+    board = [['-'] * 3 for i in range(3)];    p(board)
+    board[1][2] = 'X';      p(board)
+
+    #等同如下代码
+    board = []
+    for i in range(3):
+        row = ['-'] * 3
+        board.append(row)
+    p(board)
+    board[1][2] = 'X';  p(board)
+
+
+    weird = [['-'] * 3] * 3; p(weird) # 最外层列表，其实包含三个指向同一个列表的引用
+    weird[1][2] = '0';  p(weird)    # 当只改变其中一个列表中的元素时，才发现都发生了改变
+
+    # 等同如下代码
+    row = ['-'] * 3
+    board = []
+    for i in range(3):
+        board.append(row)
+    board[1][2] = 'Y';  p(board)
+
+def test7():
+    l = [1, 2, 3]; p(id(l))
+    l *= 2; p(id(l)) # 运用增量乘法后，列表的 ID 没变，新元素追加到列表上
+
+    t = (1, 2, 3);  p(id(t))
+    t *= 2;     p(id(t)) # 运用增量乘法，新的无组被创建
+
+def test9():
+
+    import pprint
+    t = [[[['black', 'cyan'], 'white', ['green', 'red']], [['magenta', 'yellow'], 'blue']]]
+    pprint.pprint(t, width=30)
+
+    # textwrap 模块能够格式化文本段落，以适应给定的屏幕宽度:
+    import textwrap
+    doc = """The wrap() method is just like fill() except that it returns
+    a list of strings instead of one big string with newlines to separate the wrapped lines."""
+
+    print(textwrap.fill(doc, width=40))
+
+    from string import Template
+    t = Template('${village} folk send $$10 to $cause.')
+    a = t.substitute(village='Nottingham', cause='the ditch fund'); print(a)
+
+    t = Template('Return the $item to $owner.')
+    t.substitute(dict(item='unladen swallow'))
+    # 如果数据缺失，safe_substitute 会直接将占位符原样保留。
+    t.safe_substitute({})
+
+def test8():
+
+    # 列表推导式
+    s = list(map(lambda x: x ** 2, range(10)))
+    s = [x ** 2 for x in range(10)]
+    b = [(x, y, z) for x in [1, 2, 3] for y in [3, 1, 4] for z in [8, 9, 10] if x != y]
+
+    matrix = [
+        [1, 2, 3, 4],
+        [5, 6, 7, 8],
+        [9, 10, 11, 12],
+    ]
+    abc = list(zip(*matrix)); p(abc)
+
+    a = set('1235'); b = set('124'); print(a, b, a - b);
+
+def test9():
+    import functools
+    int2 = functools.partial(int, base=2)
+    int2(10, 2)
+
+    max2 = functools.partial(max, 10)
+    max2(1, 2, 3)
+
+
+def test10():
+
+    def lazy_sum(*args):
+
+        def sum():
+            ax = 0
+            for n in args:
+                ax = ax + n
+                return ax
+
+        return sum
+
+    f = lazy_sum(1, 2, 3, 4)
+    a = f()
+    print(a)
+
+
+def test11():
+    import functools
+
+    # 生成器
+    generator = (x * x for x in range(10))
+
+    # map 用回调函数处理每一个元素
+    a = map(str, [1, 2, 3]); p(a)
+    a = functools.reduce(lambda x, y: x+y, [1,2,3]); p(a)
+
+    def is_odd(n):
+        return n % 2 == 1
+    # 过滤列表元素
+    a = filter(is_odd, [1, 2, 3, 4, 5, 6]); print(a)
+
+    # 排序时，先求绝对值
+    a = sorted([1, 2, -3, -4, -5, 6], key=abs); p(a)
+    a = sorted(['bob', 'about', 'Zone', 'Credit'], key=str.lower, reverse=True); p(a)
+
+
+
+def test12():
+
+    def f(ham: str, eggs: str = 'eggs') -> str:
+        """这是一个测试
+            :param ham:
+            :param eggs:
+            :return:
+        """
+        return ham + ' ' + eggs
+
+    f('spam')
+    print( f.__doc__, f.__annotations__)
+
+
+def test13():
+
+    def fib2(n):
+        """Return a list containing the Fibonacci series up to n."""
+        result = []
+        a, b = 0, 1
+        while a < n:
+            result.append(a)
+            a, b = b, a + b
+        return result
+
+    f100 = fib2(100); p(f100)
+
+    import logging
+    logging.debug('Debugging information')
+
+def test14():
+
+    #数值精度
+    import decimal
+
+    a = decimal.getcontext();   p(a)
+    a = decimal.Decimal(1) / decimal.Decimal(9);    p(a)
+    decimal.getcontext().prec = 4 #精度改为保留4位小数
+    a = decimal.Decimal(1) / decimal.Decimal(9);    p(a)
+
+def test15():
+    # 读取文件
+    with open("data.txt") as f:
+        for line in f:
+            print(line, end="")
+
+def test16():
+    # 队列
+    import collections
+    queue = collections.deque(["a", "b", "c"])
+    queue.append("d")
+    queue.popleft();    p(queue)
+
+def test17():
+    # 操作文件
+    import shutil
+    shutil.copyfile('aaa.txt', 'bbb.txt')
+
+    for line in open("myfile.txt"):
+        print(line, end='')
+
+    with open('aaa.txt') as f:
+        # 读取所有内容
+        content = f.read()
+        content = f.readlines()
+
+
+def test18():
+    # 系统管理
+    import os
+    os.getcwd()  # 当前工作目录
+    os.chdir('/server/accesslogs')  # Change current working directory
+    os.system('mkdir today')
+    os.listdir('.')
+
+    import sys
+    print(sys.path, sys.argv)
+    sys.stderr.write('Warning, log file not found starting a new one\n')
+    sys.path.append('/ufs/guido/lib/python')
+    sys.exit()
+
+
+
+def test19():
+    # 文件名匹配库
+    import glob
+    glob.glob('*.py')
+
+
+def test20():
+    # 计算数值数据的基本统计属性（均值，中位数，方差等）
+    import statistics
+    data = [2.75, 1.75, 1.25, 0.25, 0.5, 1.25, 3.5]
+    a = statistics.mean(data); p(a)
+    a = statistics.median(data);p(a)
+    a = statistics.variance(data);p(a)
+
+def test21():
+
+    #遍历二维列表
+    list = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    a = [n for row in list for n in row];
+    print(a)
+
+
+def test22():
+    import smtplib
+    server = smtplib.SMTP('localhost')
+    content = """To: jcaesar@example.org From: soothsayer@example.org Beware the Ides of March. """
+    server.sendmail('soothsayer@example.org', 'jcaesar@example.org', content)
+    server.quit()
+
+def test23():
+    a = [1, 4, 7]
+    b = [2, 5, 8]
+    c = [3, 6, 9, 10]
+    a = list(zip(a, b, c)); p(a)
+
+    list = [
+        [1, 4, 7],
+        [2, 5, 8],
+        [3, 6, 9, 10]
+    ]
+
+    a = [[row[i] for row in list] for i in range(3)]; p(a)
+
+def test24():
+
+    # 随机数
+    import random
+    a = random.choice(['apple', 'pear', 'banana']); p(a)
+    a = random.sample(range(100), 10); p(a)
+    a = random.random(); p(a)
+    a = random.randrange(6); p(a)
+
+def test25():
+    # 互联网访问
+    from urllib.request import urlopen
+    with urlopen('http://tycho.usno.navy.mil/cgi-bin/timer.pl') as response:
+        for line in response:
+            line = line.decode('utf-8')
+            if 'EST' in line or 'EDT' in line:
+                print(line)
+
+def test26():
+    # 正则匹配
+    import re
+    re.findall(r'\bf[a-z]*', 'which foot or hand fell fastest')
+    re.sub(r'(\b[a-z]+) \1', r'\1', 'cat in the the hat')
+
+
+def test27():
+    class Reverse:
+
+        """迭代一个并反转一个字符串"""
+
+        def __init__(self, string):
+            self.string = string
+            self.index = len(string)
+
+        # 可以直接返回一个带有 __next__() 方法的对象
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            # 当index 为0时，遍历完成
+            if self.index == 0: raise StopIteration
+
+            # 返回最后的索引
+            self.index = self.index - 1
+            return self.string[self.index]
+
+    for char in iter(Reverse('abc')): print(char)
+
+    def reverse(data):
+        for index in range(len(data) - 1, -1, -1):
+            yield data[index]
+
+    for char in reverse('abc'): print(char)
+
+
+def test28():
+
+    # 推导到达式
+    a = list(map(lambda x: x ** 2, range(10)))
+    a = [(x, y) for x in [1, 2, 3] for y in [3, 1, 4] if x != y]; print(a)
+    a = [(x, x ** 2) for x in range(6)]; print(a)
+    a = [x * x for x in range(1, 11) if x % 2 == 0]; print(a)
+    a = [m + n for m in 'ABC' for n in 'XYZ']; print(a)
+    a = [str(k) + v for k, v in d.items()]; print(a)
+
+
+
+def test29():
+
+    a = ['a', 'c', 'b', 'e', 'd']
+    a = sorted(a, reverse=True); p(a)
+    a = sorted(a, key=len, reverse=True); p(a) # 按照长度排序，当长度一样时，不会进行位置调换
+
+    import bisect
+    import sys
+    haystack    = [1, 4, 5, 6, 8, 12, 15, 20, 21, 23, 23, 26, 29, 30]
+    needles     = [0, 1, 2, 5, 8, 10, 22, 23, 29, 30, 31]
+
+    rowfmt = '{0:2d} @ {1:2d}    {2}{0:<2d}'
+    def demo(bisect_fn):
+        for needle in reversed(needles):
+            position = bisect_fn(haystack, needle)
+            offset = position * '  |'
+            print(rowfmt.format(needle, position, offset))
+
+    bisect_fn = bisect.bisect
+    #bisect_fn = bisect.bisect_left;
+
+    print('haystack ->', ' '.join('%2d' % n for n in haystack))
+    demo(bisect_fn)
+    
+    
+    
+
+import collections
+isinstance('abc', collections.Iterable) #是否可迭代
+
+# enumerate 把列表变成 索引与元素的键值对儿
+for i, val in enumerate(['a', 'b', 'c']):
+	print(i, val)
+
+exit()
+class B(Exception):
+    pass
+
+class C(B):
+    pass
+
+class D(C):
+    pass
+
+import sys
+
+try:
+
+    f = open('myfile.txt')
+    s = f.readline()
+    i = int(s.strip())
+
+except OSError as err:
+    print("OS error: {0}".format(err))
+
+except ValueError:
+    print("Could not convert data to an integer.")
+
+except:
+    print("Unexpected error:", sys.exc_info()[0])
+    raise
+
+
+
+for arg in sys.argv[1:]:
+    try:
+        f = open(arg, 'r')
+    except OSError:
+        print('cannot open', arg)
+    else:
+        #success
+        print(arg, 'has', len(f.readlines()), 'lines')
+        f.close()
+
+
+try:
+    raise Exception('spam', 'eggs')
+except Exception as e:
+    print(e)
+
+def divide(x, y):
+    try:
+        result = x / y
+    except ZeroDivisionError:
+        print("division by zero!")
+    else:
+        print("result is", result)
+    finally:
+        print("executing finally clause")
+
+
+
+table = {'Sjoerd': 4127, 'Jack': 4098, 'Dcab': 8637678}
+print('Jack: {0[Jack]:d}; Sjoerd: {0[Sjoerd]:d}; Dcab: {0[Dcab]:d}'.format(table))
+
+
+import argparse
+from getpass import getuser
+parser = argparse.ArgumentParser(description='An argparse example.')
+parser.add_argument('name', nargs='?', default=getuser(), help='The name of someone to greet.')
+parser.add_argument('--verbose', '-v', action='count')
+args = parser.parse_args()
+greeting = ["Hi", "Hello", "Greetings! its very nice to meet you"][args.verbose % 3]
+print(f'{greeting}, {args.name}')
+if not args.verbose:
+    print('Try running this again with multiple "-v" flags!')
+
+
+
+关键字参数:函数调用时,通过指定参数名称的方式传递参数.函数定义时,可以定义一个 **keywords 字典来接收说没有名称的关键字参数
+解包参数列表: 将任意长度参数列表参数传入函数,会自动解包,填补到相应参数位置.
+args = [3, 6]
+list(range(*args))
+
+
+也可以使用形如 kwarg=value 的 关键字参数 来调用函数。
+
+函数标注: 存放在函数的 __annotations__ 属性中.  形参标注格式: args : type [=value]  返回值标注 -> type  完整:   (args : type [=value] ) -> type:
+
+函数默认值只会执行一次。 在默认值为可变对象时很重要, 会和预期表现不同。
+
+创建空集合只能用 set() 因为 {} 是创建一个空字典
+
+__all__ = ["echo", "surround", "reverse"]  表示 from sound.effects import * 将导入 sound 包的三个命名子模块
+
+异常先从基类抛出.
+
+抛出异常
+raise NameError('HiThere')
+
+如果传递的是一个异常类，它将通过调用没有参数的构造函数来隐式实例化:
+raise ValueError
+
+import mymodule * 只会导入公共成员
+
+
+mymodule.py
+def sayhi():
+	print('hello')
+__version__ = '1.0'
+
+imoport mymodule
+mymodule.sayhi()
+mymodule.__version__
+
+
+# 弱引用
+import weakref, gc
+
+class A:
+
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return str(self.value)
+
+a = A(10)
+
+d = weakref.WeakValueDictionary()
+d['primary'] = a
+
+del a
+gc.collect() # 垃圾回收
+print(d) # 这个也不存在了
+
+
+
+import collections
+from random import choice
+
+Card = collections.namedtuple('Card', ['rank', 'suit'])
+
+
+class FrenchDeck:
+
+    ranks = [str(n) for n in range(2, 11)] + list('JQKA')
+    suits = 'spades diamonds clubs hearts'.split()
+
+    def __init__(self):
+        self._card = [Card(rank, suit) for suit in self.suits for rank in self.ranks]
+
+    def __len__(self):
+        return len(self._card)
+
+    def __getitem__(self, position):
+        return self._card[position]
+
+
+suit_values = dict(spades=3, diamonds=1, clubs=0, hearts=2)
+
+
+def spades_high(card):
+    rank_value = FrenchDeck.ranks.index(card.rank)
+    return rank_value * len(suit_values) + suit_values[card.suit]
+
+
+
+deck = FrenchDeck()
+
+#print(deck[-1])
+#print(choice(deck))
+#print(deck[12::13])
+
+for card in sorted(deck, key=spades_high):
+    print(card)
+
+
+########
+from math import hypot
+
+class Vector:
+
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'Vector(%r, %r)' % (self.x, self.y)
+
+    def __abs__(self):
+        return hypot(self.x, self.y)
+
+    def __bool__(self):
+        return bool(abs(self))
+
+    def __add__(self, other):
+        x = self.x + other.x
+        y = self.y + other.y
+        return Vector(x, y)
+
+    def __mul__(self, scalar):
+        return Vector(self.x * scalar, self.y * scalar)
+
+v1 = Vector(2, 4)
+v2 = Vector(2, 1)
+#print(v1 + v2)
+
+v = Vector(3, 4)
+#print(abs(v))
+#print(v * 3)
+#print( abs(v * 3) )
+
+
+symbols = '$%^&*'
+beyond_ascii = [ord(s) for s in symbols if ord(s) > 3]
+#print(beyond_ascii)
+
+beyond_ascii = list(filter(lambda c : c > 3, map(ord, symbols)))
+
+colors = ['black', 'white']
+sizes = ['s', 'm', 'l']
+
+tshirts = [(color, size) for color in colors for size in sizes]
+print(tshirts)
+
+symbols = '$%^&*'
+
+a = tuple(ord(symbol) for symbol in symbols)
+p(a)
+
+import array
+b = array.array("i", (ord(symble) for symble in symbols))
+#p(b)
+
+for tshirt in ('%s %s' % (c, s) for c in colors for s in sizes):
+    print(tshirt)
+
+city, year = ('tokey', 2003)
+
+travelers = [('USA', '3301'), ('BRA', '3522')]
+for passport in sorted(travelers):
+    print('%s/%s' % passport)
+
+for country, _ in travelers:
+    print(country)
+
+t = (40, 3)
+p(divmod(*t))
+
+a, *more, b = range(5)
+p(more)
+
+metro_areas = [
+    ('Tokyo', 'JP', 36, (35, 139)),
+    ('Delhi NCR', 'IN', 21, (28, 77)),
+    ('Mexico City', 'MX', 20, (19, -99)),
+    ('New York-Newark', 'US', 28, (40, -74))
+]
+
+print( '{:15} | {:^9} | {:^9}'.format('city', 'lat.', 'long.') )
+fmt = '{:15} | {:9.4f} | {:9.4f}'
+for name, cc, pop, (lat, long) in metro_areas:
+    if long <= 0:
+        print(fmt.format(name, lat, long))
+
+
+# namedtuple 创建一个和tuple类似的对象，而且对象拥有可访问的属性
+import collections
+#创建 City 类，包属性有国家/城市名/坐标rint
+City = collections.namedtuple('City', 'country name coordinate')
+city = City('中国', '武汉',  (35, 139))
+
+p(City._fields)
+p(city.country, city[1], city.coordinate)
+
+
+Latlong = collections.namedtuple('LatLong', 'lat long')
+delhi = City._make(('中国', '深圳', Latlong(28, 77)))
+p(delhi._asdict())
+
+for key, value in delhi._asdict().items():
+    print(key, ':', value)
+

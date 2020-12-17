@@ -1,0 +1,167 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+  
+  <div class="full-panel">
+    
+    <div class="full-panel-head">
+      
+      <b>记录列表</b>
+      <div class="full-panel-tools">
+        <a href="{$Think.HOST}/download/template/修改期初金额模版.xlsx"><i class="fa fa-file-excel-o"></i>模板</a>
+        <a data-button="import"><i class="fa fa-upload"></i>导入</a>
+        <a data-button="export"><i class="fa fa-download"></i>导出</a>
+      </div>
+    
+    </div>
+    
+    <div class="full-panel-head">
+      
+      <form id="search"  class="form-inline" action="" autocomplete="off">
+    
+        <div class="input-group">
+          <div class="input-group-btn">
+  
+            <select name="id" class="selectpicker" data-live-search="true">
+              <option value="">选择(客户简称 )</option>
+              {volist name="customer_list" id="value"}
+              <option value="{$key}">{$value}</option>
+              {/volist}
+            </select>
+            
+            <select class="selectpicker" name="user_type">
+              <option value="">选择(客户类型 )</option>
+              {volist name="user_type" id="value"}
+              <option value="{$key}">{$value}</option>
+              {/volist}
+            </select>
+            
+            <button class="btn btn-white" type="reset"><i class="fa fa-undo"></i></button>
+      
+          </div>
+      
+          <div class="input-group-btn">
+            <button class="btn btn-primary" type="submit">搜&nbsp;索</button>
+      
+          </div>
+        </div>
+  
+      </form>
+
+
+    </div>
+    
+    <div class="full-panel-body">
+  
+  
+      <form id="form-table">
+        <table class="table table-condensed table-bordered table-striped table-hover" >
+          <thead>
+          <tr>
+            <th class="check-all"><input data-button="checkall" type="checkbox"></th>
+            <th>ID</th>
+            <th>{$thead.short_name}</th>
+            <th>{$thead.user_type}</th>
+            <th class="text-right">{$thead._wc_warehouse_amount}</th>
+            <th class="text-right">{$thead.sent_order_taken_beginning_balance}</th>
+            <th class="text-right">{$thead.bond}</th>
+            <th class="text-right">{$thead._month_amount}</th>
+            <th class="text-right">{$thead.additional_adjust_amount}</th>
+            <th class="text-right">{$thead.sent_order_taken_balance}</th>
+            <th class="text-right">{$thead.sales_order_taken_balance}</th>
+            <th class="text-right">{$thead.mw_taken_balance}</th>
+            <th class="text-right">{$thead.additional_amount}</th>
+            <th class="text-right">{$thead._last_lockable}</th>
+          </tr>
+          </thead>
+      
+          <tbody>
+      
+          {empty name="record"}
+            <tr>
+              <td><input type="checkbox"></td>
+              <td colspan="50">无记录</td>
+            </tr>
+            {else/}
+            {volist name="record" id="row"}
+              <tr class="datarow" data-row='{:json_encode($row->getData())}'>
+                <td><input name="id[]" type="checkbox" value="{$row.id}"></td>
+                <td>{$row.id}</td>
+                <td>{$row.short_name}</td>
+                <td>{$row.user_type}</td>
+                <td class="text-right">{$row._wc_warehouse_amount}</td>
+                <td class="text-right">{$row.sent_order_taken_beginning_balance}</td>
+                <td class="text-right">{$row.bond}</td>
+                <td class="text-right">{$row._month_amount}</td>
+                <td class="text-right">{$row.additional_adjust_amount}</td>
+                <td class="text-right">{$row.sent_order_taken_balance}</td>
+                <td class="text-right">{$row.sales_order_taken_balance}</td>
+                <td class="text-right">{$row.mw_taken_balance}</td>
+                <td class="text-right">{$row.additional_amount}</td>
+                <td class="text-right">{$row._last_lockable}</td>
+              </tr>
+            {/volist}
+          {/empty}
+          
+          </tbody>
+    
+        </table>
+      </form>
+      
+      
+      {notempty name="paginator"}
+        <div class="row">
+          <div class="col-md-4">&nbsp;&nbsp;{$paginator.info}</div>
+          <div class="col-md-8"><nav>{$paginator.page}</nav></div>
+        </div>
+      {/notempty}
+    </div>
+  
+  </div>
+
+
+
+</div>
+
+
+
+<script>
+$('[data-button="checkall"]').icheck();
+
+var form = $('#search').form().insert().on('reset', function(){
+    $('.selectpicker').selectpicker('render');
+});
+
+
+
+$.plug('datetime').laydate();
+
+$('[data-button]').handle({
+    
+    create: function(row){
+        system.open("{:url('edit')}", '新建记录');
+    },
+    
+    export: function(){
+        form.action("{:url('export')}").submit().action('');
+    },
+    
+    import: function(row, element){
+    
+        //数据导入
+        element.file({event:null, url:"{:url('save')}", file: 'import'}, function(data){
+        
+            if(data.code != 1){
+                $.toastr().error(data.msg); return;
+            }
+            $.toastr().success('数据导入成功!', function(){ system.reload();  });
+        
+        });
+    }
+    
+});
+
+
+
+</script>
+</body>

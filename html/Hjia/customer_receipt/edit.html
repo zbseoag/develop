@@ -1,0 +1,195 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+    
+    <div class="full-panel">
+        
+        <div class="full-panel-head">
+            
+            <b>{$title}</b>
+            <div class="full-panel-tools">
+            
+            </div>
+        
+        </div>
+        
+        
+        <div class="full-panel-body">
+    
+            <form id="form" action="" method="post" class="form-horizontal" style="padding-top: 30px;" enctype="application/x-www-form-urlencoded">
+                <input type="hidden" name="id" value="">
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">客户简称<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select id="customer" name="customer_id" class="selectpicker" data-live-search="true" data-width="100%">
+                            <option value="" data-full-name="">选择(客户简称 )</option>
+                            {volist name="customer_list" id="value"}
+                            <option value="{$key}">{$value}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">客户账号<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="user_id" class="form-control">
+                            <option value="">选择(客户帐号 )</option>
+                        </select>
+                    </div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">客户全称</label>
+                    <div class="col-sm-5"><input readonly id="customer_full_name" type="text"  class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款时间<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input class="form-control" name="receivables_date" data-plugin="datetime" placeholder="收款时间" type="text"></div>
+                </div>
+    
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款金额<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="amount" type="text" class="form-control"></div>
+                </div>
+    
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款币种<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="coin" class="selectpicker" data-live-search="true" data-width="100%">
+                            <option value="">选择(币种 )</option>
+                            {volist name="currency_list" id="value"}
+                            <option value="{$key}">{$value}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">汇率<span class="text-red">*</span></label>
+                    <div class="col-sm-5"><input name="exchange" type="text" class="form-control"></div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">折算人民币</label>
+                    <div class="col-sm-5"><input readonly name="rmb_amount" type="text" class="form-control"></div>
+                </div>
+                
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款银行<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="bank" class="form-control">
+                            <option value="">选择(收款银行 )</option>
+                        </select>
+                    </div>
+                </div>
+    
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">收款账号<span class="text-red">*</span></label>
+                    <div class="col-sm-5">
+                        <select name="account" class="form-control">
+                            <option value="">选择(收款帐号 )</option>
+                        </select>
+                    </div>
+                </div>
+    
+                
+                <div class="form-group">
+                    <div class="col-sm-4 col-sm-offset-2">
+                        <button class="btn btn-primary" type="submit"><i class="fa fa-save"></i> 保存</button>
+                    </div>
+                </div>
+    
+            </form>
+        
+        </div>
+    
+    </div>
+
+
+
+</div>
+
+
+<script>
+
+$.plug('datetime').laydate('date');
+
+var record = {$record};
+$('#form').form("{:url('save')}", function(data){
+    
+    if(data.code && data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    ajax.init(data).message(function(it){ system.reload("{:url('customer_receipt/index')}").close(); });
+    
+}).insert(record);
+
+
+//公司全称显示
+$('select[name="user_id"]').change(function(){
+
+    if(!$(this).val()) var name = '';
+    else var name = $(this).select().option().data('full-name');
+    if(!name) name = '';
+    $('#customer_full_name').val(name);
+    
+});
+
+//选择客户时,级联下拉列表
+$('#customer').select({ field:'get_user_by_customer_id' }).send(function(data){
+    
+    if(data.code && data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    //客户关联的帐号列表
+    $('select[name="user_id"]').list({data: data.data, field:['user_id', 'user_name', 'company_full_name'], template:'<option data-full-name="{company_full_name}" value="{user_id}">{user_name}</option>'});
+    
+});
+
+
+
+//换算成人民币金额
+$('input[name="amount"],input[name="exchange"]').keyup(function(){
+    
+    var amount = $('input[name="amount"]').val();
+    var exchange = $('input[name="exchange"]').val();
+    if(amount > 0 && exchange > 0){
+        $('input[name="rmb_amount"]').val(amount * exchange);
+    }
+
+});
+
+//选择币种时,级联下拉银行列表
+$('select[name="coin"]').select({ field:'get_bank_by_currency_id' }).send(function(data){
+    
+    if(data.code && data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    //关联银行列表
+    $('select[name="bank"]').json({data: data.data});
+    
+});
+
+
+//选择银行,级联下拉银行帐号列表
+$('select[name="bank"]').select({ field:'get_account_by_bank_name' }).send(function(data){
+    
+    if(data.code && data.code != 1){
+        $.toastr().error(data.msg); return;
+    }
+    //关联银行帐号列表
+    $('select[name="account"]').json({data: data.data});
+    
+    
+}).on('reset', function(){ $('select[name="account"]').select().clear(); });
+
+
+</script>
+</body>

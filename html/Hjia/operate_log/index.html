@@ -1,0 +1,132 @@
+<body class="gray-bg" >
+
+<div class="container-fluid page-full">
+  
+  <div class="full-panel">
+    
+    <div class="full-panel-head">
+      
+      <b>记录列表</b>
+      <div class="full-panel-tools">
+      </div>
+    
+    </div>
+    
+    <div class="full-panel-head">
+      
+      
+      <form id="search"  class="form-inline" action="" autocomplete="off" >
+        
+        <div class="input-group">
+          <div class="input-group-btn">
+  
+            <select name="category_id" class="form-control">
+              <option value="">选择(分类 )</option>
+              {volist name="log_category_list" id="value"}
+              <option value="{$key}">{$value}</option>
+              {/volist}
+            </select>
+            
+            <input name="_datetime[field]" type="hidden" value="create_time">
+            <input class="form-control" name="_datetime[start]" data-plugin="datetime" placeholder="开始时间" type="text">
+            <input class="form-control" name="_datetime[end]" data-plugin="datetime" placeholder="结束时间" type="text">
+            
+            <button class="btn btn-white" type="reset"><i class="fa fa-undo"></i></button>
+          
+          </div>
+          
+          <div class="input-group-btn">
+            <button class="btn btn-primary" type="submit">搜&nbsp;索</button>
+          
+          </div>
+        </div>
+      
+      </form>
+    
+    
+    </div>
+    
+    <div class="full-panel-body">
+      
+      <form id="form-table">
+        <table class="table table-condensed table-bordered table-striped table-hover" >
+          <thead>
+          <tr>
+            <th class="check-all"><input data-button="checkall" type="checkbox"></th>
+            <th>ID</th>
+            <th>{$thead.category_id}</th>
+            <th>{$thead.origin_id}</th>
+            <th>{$thead.info}</th>
+            <th>{$thead.creator_name}</th>
+            <th>{$thead.create_time}</th>
+          </tr>
+          </thead>
+          <tbody>
+          
+          {empty name="record"}
+          <tr>
+            <td><input type="checkbox"></td>
+            <td colspan="50">无记录</td>
+          </tr>
+          {else/}
+          {volist name="record" id="row"}
+          <tr class="datarow" data-row='{:json_encode($row)}'>
+            <td><input name="id[]" type="checkbox" value="{$row.id}"></td>
+            <td>{$row.id}</td>
+            <td>{$row.category_id}</td>
+            <td>{$row.origin_id}</td>
+            <td>{$row.info}</td>
+            <td>{$row.creator_name}</td>
+            <td>{$row.create_time}</td>
+          </tr>
+          {/volist}
+          {/empty}
+          
+          </tbody>
+        
+        </table>
+      </form>
+      
+      
+      {notempty name="paginator"}
+        <div class="row">
+          <div class="col-md-4">&nbsp;&nbsp;{$paginator.info}</div>
+          <div class="col-md-8"><nav>{$paginator.page}</nav></div>
+        </div>
+      {/notempty}
+    </div>
+  
+  </div>
+
+
+
+</div>
+
+
+
+<script>
+
+$('[data-button="checkall"]').icheck();
+$.plug('datetime').laydate();
+
+$('#search').form().insert();
+
+$('[data-button]').handle({
+
+    delete: function(row){
+    
+        system.confirm('编号: ' + row.id + '<br/>消息: 确定删除记录?', function(choose){
+        
+            if(choose == false) return false;
+            $.get("{:url('delete', 'model=log')}?id=" + row.id, function(data){
+                ajax.init(data).message(function(it){ system.reload(); });
+            });
+        
+        });
+      
+    },
+    
+});
+
+</script>
+</body>

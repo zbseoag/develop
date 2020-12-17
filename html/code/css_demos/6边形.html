@@ -1,0 +1,81 @@
+<style>
+ul {
+    list-style: none;
+    display: flex;
+}
+
+li {
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    width: 90px;
+    height: 150px;
+    border-top: 2px solid red;
+    border-bottom: 2px solid red;
+    cursor: pointer;
+    margin: 50px;
+
+}
+
+li::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: calc(100% + 4px);
+    border-bottom: inherit;
+    border-top: inherit;
+    bottom: -2px;
+    box-sizing: border-box;
+    transform: rotate(60deg);
+}
+
+li::after{
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: calc(100%);
+    border-bottom: inherit;
+    border-top: inherit;
+    bottom: -2px;
+    transform: rotate(-60deg);
+}
+
+
+div {
+    position: absolute;
+    box-sizing: border-box;
+    text-align: center;
+    top: 40%;
+    left: 20%;
+    font-size: 1rem;
+}
+
+
+li:hover {
+    border-top: 2px solid green;
+    border-bottom: 2px solid green;
+}
+
+</style>
+
+
+<ul>
+    <li>
+        <div>aaaa</div>
+    </li>
+
+    <li>
+        <div>bbb</div>
+    </li>
+
+    <li>
+        <div>ccc</div>
+    </li>
+    
+</ul> 
+
+
+
+
+
+
