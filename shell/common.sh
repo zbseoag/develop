@@ -12,32 +12,32 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令
 export HISTIGNORE="pwd:history" #不记录的命令
 
-alias cddownload="cd /mnt/d/warehouse/Download"
-alias cdsrc="cd /src"
-alias cdsrv="cd /srv"
-alias cdd="cd /mnt/d"
-alias cdbin="cd /usr/local/bin"
-alias cdsbin="cd /usr/local/sbin"
-
 alias home="cd ~"
-alias update="sudo apt update && apt list --upgradable"
-alias uninstall="execute sudo apt purge"
-alias back="cd -"
+alias bk="cd -"
 alias up="cd .."
-alias tarsrc="tar -C /src -xf"
+
+alias src="cd /src"
+alias srv="cd /srv"
+alias dpan="cd /mnt/d"
+alias bin="cd /usr/local/bin"
+alias sbin="cd /usr/local/sbin"
+alias download="cd /mnt/d/warehouse/Download"
+alias develop="cd /mnt/d/develop"
+alias tarc="tar -C /src -xf"
+
+alias update="sudo apt update && apt list --upgradable"
+alias purge="sudo apt purge"
 
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 
-alias vim="sudo vim"
- 
 
-alias gitadd="git add -f"
-alias gitremove="git rm -r --cached"
-alias gitpush="git add . &&  git commit  -m '日常更新'  &&  git push"
-alias gitpushroot="cd / &&  git add . &&  git commit  -m '日常更新'  &&  git push"
+alias git.add="git add -f"
+alias git.rm="git rm -r --cached"
+alias git.push="git add . &&  git commit  -m '日常更新'  &&  git push"
+alias git.push.root="cd / &&  git add . &&  git commit  -m '日常更新'  &&  git push"
 
-function gitinit(){
+function git.init(){
 
     git init &&\
     git add .  &&\
@@ -46,6 +46,14 @@ function gitinit(){
     git remote add origin $1 &&\
     git push -u origin main
 }
+
+function git.remote(){
+    git remote add origin $1 &&\
+    git branch -M main &&\
+    git push -u origin main
+
+}
+
 
 # sudo dpkg --get-selections | awk '/i386/{print $1}'
 # sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
@@ -361,19 +369,6 @@ function array(){
 
 }
 
-
-function download(){
-
-    local url=$1
-    local file=$2
-
-    if [ -z "$file" ];then
-        execute wget -c $url
-    else
-        execute wget -c -O $file $url
-    fi 
-
-}
 
 
 
