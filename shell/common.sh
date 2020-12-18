@@ -34,8 +34,18 @@ alias vim="sudo vim"
 
 alias gitadd="git add -f"
 alias gitremove="git rm -r --cached"
-alias gitpush="cd / &&  git add . &&  git commit  -m '日常更新'  &&  git push"
-    
+alias gitpush="git add . &&  git commit  -m '日常更新'  &&  git push"
+alias gitpushroot="cd / &&  git add . &&  git commit  -m '日常更新'  &&  git push"
+
+function gitinit(){
+
+    git init &&\
+    git add .  &&\
+    git commit -m "first commit" &&\
+    git branch -M main &&\
+    git remote add origin $1 &&\
+    git push -u origin main
+}
 
 # sudo dpkg --get-selections | awk '/i386/{print $1}'
 # sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
@@ -137,10 +147,7 @@ function docker.open(){
 function load(){
 
     case "$1" in
-        'docker')
-                tty.title Dockder 工具包
-                source "$ROOTPH/docker.sh"
-        ;;
+        'docker') source "$ROOTPH/docker.sh" ;;
         'install')
 
                 [ -z `which sudo` ] && apt install -y sudo

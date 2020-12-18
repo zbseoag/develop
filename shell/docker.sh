@@ -1,70 +1,123 @@
 #!/usr/bin/env bash
 
-function ip(){
 
-    if [ "$@" == 'all' ];then
-        docker inspect --format '{{.Name}}: {{.NetworkSettings.IPAddress}}' $(docker ps -q)
-    else
-        docker inspect --format '{{.NetworkSettings.IPAddress}}' "$@"
-    fi
-}
+function docker(){
 
-function start(){
+    alias docker=`which $FUNCNAME`
+    local manage="$1"
+    local args="$@"
+    shift 1
 
-    if [ "$@" == 'all' ];then
-        docker start  $(docker ps -qa)
-    else
-        docker start "$@"
-    fi
+    case "$manage" in
+
+        'start'|'stop')
+            [ "$@" == 'all' ] && args='$(docker ps -qa)'
+        ;; 
+        'rm') 
+            [ "$@" == 'all' ] && args='-f $(docker ps -qa)'
+        ;;
+        'image') 
+            [ "$@" == 'all' ] && args='$(docker image ls -qa)'
+            [ "$@" == 'clear' ] && args='$(docker image ls -f "dangling=true" -q)'
+        ;;
+        'exec')
+            [ $# == 1 ] && args=${args//$@/"-it $@ bash"} 
+            [ $# == 2 ] && args=${args//$@/"-it $@"}
+        ;;
+        'ip')
+            [ "$@" == 'all' ] && args='$(docker ps -q)'
+            args="--format '{{.Name}}: {{.NetworkSettings.IPAddress}}' $args"
+            manage='inspect' 
+        ;;
+        'pid')
+            [ "$@" == 'all' ] && args='$(docker ps -q)'
+            args="--format '{{.Name}}: {{.State.Pid}}' $args"
+            manage='inspect'
+        ;;
+        'begin')
+            args="--name=$1 -p $2"
+            shift 2
+            args="$args --network=localhost --restart=on-failure:2 -it $@"
+            manage='run'
+        ;;
+        *) manage='';;
+
+    esac
     
-}
+    echo docker $manage $args
+    eval "docker $manage $args"
 
-function image(){
-    local c='.ContainerConfig'
-    docker image inspect --format "{{printf \"端口:\t\t%s \nDir:\t\t%s \n环境变量:\t%s \n运行命令:\t%s\" $c.ExposedPorts $c.WorkingDir $c.Env $c.Cmd}}" "$@"
-}
-
-function stop(){
-    if [ "$@" == 'all' ];then
-        docker stop $(docker ps -q)
-    else
-        docker stop "$@"
-    fi
-}
-
-
-function pid(){
-
-    if [ "$@" == 'all' ];then
-        docker instect --format "{{.Name}}: {{.State.Pid}}" $(docker ps -q)
-    else
-        docker instect --format '{{.Name}}: {{.State.Pid}}' "$@"
-    fi
-}
-
-function info(){
-    [ -z "$@" ] && docker info || docker info | grep "$@"
-}
-
-function exe(){
-    docker exec -it "$@"
+    unalias $FUNCNAME
 }
 
 
 
-function install(){
+function docker-helper(){
 
-    apt update
-    for command in "$@"; do
+    local cmd="$1"
+    shift 1
 
-        case "$command" in
-            'ps')       apt install -y procps;;
-            'ping')     apt install -y iputils-ping;;
-        esac
+    case "$cmd" in
+    'ip') 
+        if [ "$@" == 'all' ];then
+            docker inspect --format '{{.Name}}: {{.NetworkSettings.IPAddress}}' $(docker ps -q)
+        else
+            docker inspect --format '{{.NetworkSettings.IPAddress}}' "$@"
+        fi
+    ;;
 
-    done
+    'rm')
+        if [ "$@" == 'all' ];then
+            docker rm -f $(docker ps -q)
+        else
+            docker rm -f "$@"
+        fi
+    ;;
+
+    'start')
+        if [ "$@" == 'all' ];then
+            docker start  $(docker ps -qa)
+        else
+            docker start "$@"
+        fi
+    ;;
+
+    'stop')
+        if [ "$@" == 'all' ];then
+            docker stop $(docker ps -q)
+        else
+            docker stop "$@"
+        fi
+    ;;
+    'info')  [ -z "$@" ] && docker info || docker info | grep "$@";;
+    'about')        
+        local c='.ContainerConfig'
+        docker image inspect --format "{{printf \"端口:\t\t%s \nDir:\t\t%s \n环境变量:\t%s \n运行命令:\t%s\" $c.ExposedPorts $c.WorkingDir $c.Env $c.Cmd}}" "$@"
+                    
+    ;;
+
+    'pid')
+        if [ "$@" == 'all' ];then
+            docker instect --format "{{.Name}}: {{.State.Pid}}" $(docker ps -q)
+        else
+            docker instect --format '{{.Name}}: {{.State.Pid}}' "$@"
+        fi
+
+    ;;
+
+    *)  docker $cmd "$@";;
+    esac
 
 }
+
+# local cmd=""
+# until [ "$cmd" == 'exit' ]
+# do
+#     read -p ":" cmd
+#     [ "$cmd" == 'exit' ] && break
+#     docker-helper $cmd
+
+# done
 
 
 
