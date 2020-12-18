@@ -35,7 +35,63 @@ alias apt.fix="sudo apt-get install -f "
 alias git.add="git add -f"
 alias git.rm="git rm -r --cached"
 alias git.push="git add . &&  git commit  -m '日常更新'  &&  git push"
-alias git.push.root="cd / &&  git add . &&  git commit  -m '日常更新'  &&  git push"
+
+git.push.root(){
+
+    git add -f /srv/etc  &&\
+    git add -f /srv/bin &&\
+    git add -f /srv/nginx1.9/etc &&\
+    git add -f /srv/nginx1.9/nginx &&\
+    git add -f /srv/php8.0/etc &&\
+    git add -f /srv/php8.0/bin &&\
+    git add -f /srv/php8.0/lib/php/extensions/debug-zts-20200930 &&\
+    git commit -m "日常更新" &&\
+    git push
+}
+
+# str="this is a string"
+# [[ $str =~ "this" ]] && echo "$str contains this" 
+# [[ $str =~ "that" ]] || echo "$str does NOT contain that"
+
+
+helper(){
+
+    #取倒数第二个参数
+    local second=${@:(-2):1}
+    local cmd="$@"
+    #如果倒数第二个参数不是以 - 开头，则在它前面添加 --help
+    [ "${second:0:1}" != "-" ] && cmd=${@/$second/"$second --help"}
+
+    #最后的参数是要匹配的
+    local last=${@: -1}
+    #从命令最后将最后哪个的参数前面加上 |grep --
+    execute ${cmd/%$last/"|grep -- $last"}
+
+}
+
+function git.config.list(){
+
+    git config --list --show-origin
+}
+
+git.config.init(){
+
+    git config --global user.name "zbseoag"
+    git config --global user.email "zbseoag@163.com"
+    git config --global core.editor code
+    #git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
+    git config --list
+    git config user.name
+    
+}
+
+git.diff(){
+
+    git diff --staged
+    git diff --cached
+    git difftool --tool-help
+}
+
 
 function git.init(){
 
