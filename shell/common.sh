@@ -31,10 +31,10 @@ alias purge="sudo apt purge"
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 
-
 alias git.add="git add -f"
 alias git.rm="git rm -r --cached"
 alias git.push="git add . &&  git commit  -m '日常更新'  &&  git push"
+
 
 git.push.root(){
 
@@ -49,10 +49,28 @@ git.push.root(){
     git push
 }
 
-# str="this is a string"
-# [[ $str =~ "this" ]] && echo "$str contains this" 
-# [[ $str =~ "that" ]] || echo "$str does NOT contain that"
 
+
+
+string(){
+
+    local str="11223344"
+    echo 'str="11223344"'
+    echo "\${#str}      ${#str}         长度"
+    echo "\${str:3:5}   ${str:3:5}      按位置截取"
+    echo "\${str#*3}    ${str#*3}       前截取后"
+    echo "\${str##*3}   ${str##*3}      前截取后最长"
+    echo "\${str%*3}     ${str%*3}        后截取前"
+    echo "\${str%%*3}    ${str%%*3}       后截取前最长"
+    echo "\${str/3/a}   ${str/3/a}      替换一次"
+    echo "\${str//3/a}  ${str//3/a}     替换全部"
+    echo "\${str/#11/a} ${str/#11/a}    前缀替换"
+    echo "\${str/%44/a} ${str/%44/a}    后缀替换"
+
+    # str="this is a string"
+    # [[ $str =~ "this" ]] && echo "$str contains this" 
+    # [[ $str =~ "that" ]] || echo "$str does NOT contain that"
+}
 
 helper(){
 
@@ -69,10 +87,7 @@ helper(){
 
 }
 
-function git.config.list(){
 
-    git config --list --show-origin
-}
 
 git.config.init(){
 
@@ -83,13 +98,6 @@ git.config.init(){
     git config --list
     git config user.name
     
-}
-
-git.diff(){
-
-    git diff --staged
-    git diff --cached
-    git difftool --tool-help
 }
 
 
@@ -169,9 +177,6 @@ alias http.stop="php.stop && nginx.stop"
 alias system.boot.terminal="sudo systemctl set-default multi-user.target"
 alias system.boot.desktop="sudo systemctl set-default graphical.target"
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
-
-
-
 
 function docker.source.into(){ docker cp /etc/apt/sources.list $1:/etc/apt/sources.list; docker cp $ROOTPH/linux/common.sh $1:/; }
 
