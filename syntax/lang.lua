@@ -8,6 +8,9 @@
  --lua -i file.lua
  --dofile('lib1.lua')
 
+ --[[
+    打印输出函数,方便调试
+ --]]
  p = function(...)
 
     local cache={}
@@ -59,6 +62,8 @@
     end
 
 end
+
+
 
 
 function chapter1()
@@ -176,7 +181,6 @@ function chapter2()
     p(table.pack('a', 'b', 'c'))
     
 end
-
 
 
 --chapter1()

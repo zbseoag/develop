@@ -33,12 +33,20 @@ function auto.install(){
 
 
         'docker')
-            sudo apt install docker  docker.io
-            sudo usermod -aG docker $USER
-            docker --version
-            sudo touch /etc/docker/daemon.json
-            sudo sed -i '$a { "registry-mirrors": ["http://hub-mirror.c.163.com"] }' /etc/docker/daemon.json
-            sudo systemctl restart docker
+
+sudo apt upgrade
+sudo apt-get install  apt-transport-https  ca-certificates  curl  gnupg-agent software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+sudo service docker start
+sudo usermod -aG docker $USER
+docker ps
+sudo touch /etc/docker/daemon.json
+sudo sed -i '$a { "registry-mirrors": ["http://hub-mirror.c.163.com"] }' /etc/docker/daemon.json
+sudo service docker restart
 
         ;;
 

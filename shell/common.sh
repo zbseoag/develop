@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 
-#环境变量
-export JAVA_HOME="/usr/lib/jvm/jdk-15.0.1"
-PATH=$PATH:$JAVA_HOME/bin
+demo(){
+
+    local kw=`echo "$*" | sed 's/[ ][ ]*/.*/g'`
+    echo $kw
+    kw=`echo "$kw" | sed 's/-/\\\-/g'`
+
+    echo $kw
+}
+
 
 #history 配置
 #export HISTFILE=~/.bash_history #命令历史文件名
@@ -12,18 +18,28 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令
 export HISTIGNORE="pwd:history" #不记录的命令
 
-alias home="cd ~"
-alias bk="cd -"
-alias up="cd .."
+#环境变量
+export JAVA_HOME="/usr/lib/jvm/jdk-15.0.1"
+PATH=$PATH:$JAVA_HOME/bin:/d/elasticsearch7.10/bin:/d/kibana7.10/bin
 
-alias src="cd /src"
-alias srv="cd /srv"
-alias dpan="cd /mnt/d"
-alias bin="cd /usr/local/bin"
-alias sbin="cd /usr/local/sbin"
-alias download="cd /mnt/d/warehouse/Download"
-alias develop="cd /mnt/d/develop"
-alias tarc="tar -C /src -xf"
+alias python="python3.8"
+alias ba="cd -"
+alias up="cd .."
+alias cd.bin="cd /usr/local/bin"
+alias cd.sbin="cd /usr/local/sbin"
+
+alias cdd="cd /d"
+alias cde="cd /e"
+alias cd.src="cd /d/src"
+alias cd.download="cd /e/Download"
+alias cd.develop="cd /e/develop"
+alias cd.syntax="cd /e/develop/syntax"
+alias cd.desktop="cd /desktop"
+alias tar.src="tar -C /d/src -xvf"
+alias tar.dpan="tar -C /d -xvf"
+
+alias ll.bin="ll /usr/local/bin"
+alias ll.sbin="ll /usr/local/sbin"
 
 alias update="sudo apt update && apt list --upgradable"
 alias purge="sudo apt purge"
@@ -35,9 +51,16 @@ alias git.add="git add -f"
 alias git.rm="git rm -r --cached"
 alias git.push="git add . &&  git commit  -m '日常更新'  &&  git push"
 
+apt.list(){
+    local software="$1"
+    apt list "$software*";
+    software="lib$software"
+    apt list "$software*";
+}
+
 
 git.push.root(){
-
+    #$FUNCNAME
     git add -f /srv/etc  &&\
     git add -f /srv/bin &&\
     git add -f /srv/nginx1.9/etc &&\
@@ -49,7 +72,29 @@ git.push.root(){
     git push
 }
 
+linux.name(){
 
+    declare -A name
+    name["unknow"]="我不知道"
+    name["bullseye"]="Debian 11"
+    name["buster"]="Debian 10"
+    name["stretch"]="Debian 9"
+    name["jessie"]="Debian 8"
+    name["wheezy"]="Debian 7"
+    name["alpine"]="Alpine Linux是一个由社区开发的基于musl和BusyBox的Linux操作系统"
+    name["null"]="null"
+    name["null"]="null"
+    name["null"]="null"
+    name["null"]="null"
+    name["null"]="null"
+
+    typeset -l index; local index="$1"
+
+    [ -z "${name[$index]}" ] && index='unknow'
+
+    echo $index: ${name[$index]}
+
+}
 
 
 string(){
@@ -72,20 +117,28 @@ string(){
     # [[ $str =~ "that" ]] || echo "$str does NOT contain that"
 }
 
-helper(){
+look(){
 
     #取倒数第二个参数
     local second=${@:(-2):1}
     local cmd="$@"
-    #如果倒数第二个参数不是以 - 开头，则在它前面添加 --help
+    #如果倒数第二个参数不是以 - 开头，则在它后面添加 --help
     [ "${second:0:1}" != "-" ] && cmd=${@/$second/"$second --help"}
 
     #最后的参数是要匹配的
     local last=${@: -1}
-    #从命令最后将最后哪个的参数前面加上 |grep --
-    execute ${cmd/%$last/"|grep -- $last"}
+    arr=("'"${last//" "/"' '"}"'")
+
+   #从命令最后将最后哪个的参数前面加上 |grep --
+    cmd=${cmd/%$last/"| grep --"}
+    echo "---------------------------------------------"
+    for i in ${arr[@]}; do
+        eval $cmd $i
+        echo "---------------------------------------------"
+    done
 
 }
+
 
 
 
@@ -129,15 +182,10 @@ function git.remote(){
 #xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
 #xrandr --addmode HDMI-1 "1920x1080_60.00"
 
-if [ -z "`which xdg-open`" ];then
-function xdg-open(){ explorer.exe .; }
-fi
-
-
 function tobin(){
     for one in "$@"; do
         local file=`realpath $one`;
-        sudo ln -s $file /usr/local/bin
+        sudo ln -fs $file /usr/local/bin
     done
 }
 
@@ -145,7 +193,7 @@ function tosbin(){
 
     for one in "$@"; do
         local file=`realpath $one`;
-        sudo ln -s $file /usr/local/sbin
+        sudo ln -fs $file /usr/local/sbin
     done
 
 }
@@ -154,9 +202,11 @@ function tosbin(){
 function config(){
 
     local kw=`echo "$*" | sed 's/[ ][ ]*/.*/g'`
+    kw=`echo "$kw" | sed 's/-/\\\-/g'`
     if [ -z "$kw" ];then
         ./configure --help
     else
+        echo "./configure --help | grep -P '$kw'"
         eval "./configure --help | grep -P '$kw'"
     fi
 
@@ -168,9 +218,9 @@ alias net.port="netstat -ap | grep"
 
 alias php.start="sudo php-fpm"
 alias php.stop="sudo pkill -9 php-fpm"
-
 alias nginx.start="sudo nginx"
 alias nginx.stop="sudo nginx -s stop"
+
 alias http.start="php.start && nginx.start"
 alias http.stop="php.stop && nginx.stop"
 
@@ -228,15 +278,16 @@ function load(){
                     echo -en "\033[31m查找: \033[0m"
                     read software
 
-                    [ "$software" == 'exit' ] && break
+                    [ "$software" == 'exit' -o -z "$software" ] && break
                     
                     apt list "$software*";
-                    apt list "lib$software*";
+                    software="lib$software"
+                    apt list "$software*";
 
                     echo -en "\033[31m安装: \033[0m"
                     read software
 
-                    if [ "$software" == 'next' ];then
+                    if [ "$software" == 'next' -o -z "$software" ];then
                         continue
                     elif [ "$software" == 'exit' ];then
                         break
@@ -369,9 +420,7 @@ function show(){
         'code')         execute iconv -l;;#显示可用编码
         'ip')           ifconfig ens32 | grep 'inet ' | sed 's/.*inet\s//g' | sed 's/\snet.*//g';;#显示ip
         'df')           execute df -h;;#显示
-        'bin')          ll /usr/local/bin;;
-        'sbin')         ll /usr/local/sbin;;
-
+        'name')         cat /etc/issue;;
         *)              execute 'lsb_release -a && uname -a';;
     esac
 
@@ -398,9 +447,9 @@ function install(){
         'rpm')  sudo rpm -i $software;;
         *) 
             if [ -n "`which apt`" ];then
-                sudo apt install -y $software
+                sudo apt install -y $software && echo $software >> ~/install.log
             elif [ -n "`which yum`" ];then
-                sudo yum install -y $software
+                sudo yum install -y $software && echo $software >> ~/install.log
             fi
         ;;
     esac

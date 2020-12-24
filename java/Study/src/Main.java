@@ -127,18 +127,36 @@ public class Main {
         p(b.getYear());
 
         p(Objects.requireNonNullElse(null, "unknow"));
-        Objects.requireNonNull(null, "不允许为 null");
+        //Objects.requireNonNull(null, "不允许为 null");
 
 
     }
+
 
 
     public static void main(String[] args) throws IOException {
 
         cls();
+        aaa a = new aaa();
     }
 
 
+
+
+}
+
+class aaa{
+
+
+    {
+        Main.p("codes");
+    }
+
+
+
+    static {
+        Main.p("static");
+    }
 
 
 }

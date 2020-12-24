@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
 
-function docker(){
+function dockers(){
 
-    alias docker=`which $FUNCNAME`
     local manage="$1"
     local args="$@"
     shift 1
@@ -40,6 +39,8 @@ function docker(){
             args="$args --network=localhost --restart=on-failure:2 -it $@"
             manage='run'
         ;;
+        'info')  [ -z "$@" ] && docker info || docker info | grep "$@"
+        ;;
         *) manage='';;
 
     esac
@@ -47,7 +48,6 @@ function docker(){
     echo docker $manage $args
     eval "docker $manage $args"
 
-    unalias $FUNCNAME
 }
 
 
@@ -57,39 +57,10 @@ function docker-helper(){
     local cmd="$1"
     shift 1
 
-    case "$cmd" in
-    'ip') 
-        if [ "$@" == 'all' ];then
-            docker inspect --format '{{.Name}}: {{.NetworkSettings.IPAddress}}' $(docker ps -q)
-        else
-            docker inspect --format '{{.NetworkSettings.IPAddress}}' "$@"
-        fi
-    ;;
 
-    'rm')
-        if [ "$@" == 'all' ];then
-            docker rm -f $(docker ps -q)
-        else
-            docker rm -f "$@"
-        fi
-    ;;
 
-    'start')
-        if [ "$@" == 'all' ];then
-            docker start  $(docker ps -qa)
-        else
-            docker start "$@"
-        fi
-    ;;
 
-    'stop')
-        if [ "$@" == 'all' ];then
-            docker stop $(docker ps -q)
-        else
-            docker stop "$@"
-        fi
-    ;;
-    'info')  [ -z "$@" ] && docker info || docker info | grep "$@";;
+
     'about')        
         local c='.ContainerConfig'
         docker image inspect --format "{{printf \"端口:\t\t%s \nDir:\t\t%s \n环境变量:\t%s \n运行命令:\t%s\" $c.ExposedPorts $c.WorkingDir $c.Env $c.Cmd}}" "$@"
