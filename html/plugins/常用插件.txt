@@ -1,18 +1,18 @@
 
 jquery: 
-cdnµØÖ·: https://code.jquery.com/jquery-git.js
+cdnåœ°å€: https://code.jquery.com/jquery-git.js
 
-jScrollPane: ¹ö¶¯Ìõ
+jScrollPane: æ»šåŠ¨æ¡
 
-jquery-validation: ÑéÖ¤²å¼ş
+jquery-validation: éªŒè¯æ’ä»¶
 https://jqueryvalidation.org
 
-ionicons: ×ÖÌåÍ¼±ê²å¼ş
+ionicons: å­—ä½“å›¾æ ‡æ’ä»¶
 http://ionicons.com
 
-font-awesome: ×ÖÌåÍ¼±ê²å¼ş
+font-awesome: å­—ä½“å›¾æ ‡æ’ä»¶
 
 
 react
 
-plupload: ÎÄ¼şÉÏ´«
+plupload: æ–‡ä»¶ä¸Šä¼ 

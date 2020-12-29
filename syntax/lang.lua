@@ -8,6 +8,7 @@
  --lua -i file.lua
  --dofile('lib1.lua')
 
+ 
  --[[
     打印输出函数,方便调试
  --]]
@@ -185,5 +186,4 @@ end
 
 --chapter1()
 chapter2()
-
 

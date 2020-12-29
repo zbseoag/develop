@@ -2,11 +2,40 @@
 
 demo(){
 
-    local kw=`echo "$*" | sed 's/[ ][ ]*/.*/g'`
-    echo $kw
-    kw=`echo "$kw" | sed 's/-/\\\-/g'`
+    #  if [ $# -gt 0 ];then
+    #      exec 0<$1;#判断是否传入参数：文件名，如果传入，将该文件绑定到标准输入
+    #  fi
+    
+    #  while read line
+    #  do
+    #      echo $line;
+    #  done <&0;
 
-    echo $kw
+    local cmd=""
+    local end=0
+    echo "------------------------------------------------------------------------------------------"
+    for arg in "$@"; do
+        
+        if [ "$end" == 0 ];then
+            cmd="$cmd $arg"
+            [ "${arg:0:1}" == "-" ] && { cmd="$cmd | grep --"; end=1; }
+        else
+
+            if [ "${arg:0:1}" == "-" -a "${arg:0:2}" != "--" ];then
+                arg="${arg:1}"
+                for (( i = 0; i < ${#arg}; i = i + 1 )) do
+                    eval $cmd "-${arg:$i:1}"
+                    echo "------------------------------------------------------------------------------------------"
+                done
+            else
+                eval $cmd $arg
+                echo "------------------------------------------------------------------------------------------"
+            fi
+
+        fi
+
+    done
+
 }
 
 
@@ -21,6 +50,7 @@ export HISTIGNORE="pwd:history" #不记录的命令
 #环境变量
 export JAVA_HOME="/usr/lib/jvm/jdk-15.0.1"
 PATH=$PATH:$JAVA_HOME/bin:/d/elasticsearch7.10/bin:/d/kibana7.10/bin
+ROOTPH="/e/develop/shell"
 
 alias python="python3.8"
 alias ba="cd -"
@@ -58,6 +88,28 @@ apt.list(){
     apt list "$software*";
 }
 
+
+docker.run(){
+    #${@: -1}
+    local image="$1"
+    shift 1
+    for name in "$@"; do
+       docker run --network network -d --name "${image%:*}-$name" $opt $image
+    done
+}
+
+docker.rm(){
+
+    local image="$1"
+    shift 1
+    for name in "$@"; do
+       docker rm -f "${image%:*}-$name"
+    done
+}
+
+docker.in(){
+    docker exec -it $1 bash
+}
 
 git.push.root(){
     #$FUNCNAME
@@ -117,24 +169,32 @@ string(){
     # [[ $str =~ "that" ]] || echo "$str does NOT contain that"
 }
 
-look(){
 
-    #取倒数第二个参数
-    local second=${@:(-2):1}
-    local cmd="$@"
-    #如果倒数第二个参数不是以 - 开头，则在它后面添加 --help
-    [ "${second:0:1}" != "-" ] && cmd=${@/$second/"$second --help"}
+function see(){
 
-    #最后的参数是要匹配的
-    local last=${@: -1}
-    arr=("'"${last//" "/"' '"}"'")
+    local cmd=""
+    local end=0
+    echo "------------------------------------------------------------------------------------------"
+    for arg in "$@"; do
+    
+        if [ "$end" == 0 ];then
+            cmd="$cmd $arg"
+            shift 1
+            [ "${arg:0:1}" == "-" ] && { [ -z "$1" ] && eval $cmd  || { end=1; cmd="$cmd | grep --"; } }
+        else
+            if [ "${arg:0:1}" == "-" -a "${arg:0:2}" != "--" ];then
+                arg="${arg:1}"
+                for (( i = 0; i < ${#arg}; i = i + 1 )) do
+                    eval $cmd "-${arg:$i:1}"
+                    echo "------------------------------------------------------------------------------------------"
+                done
+            else
+                eval $cmd $arg
+                echo "------------------------------------------------------------------------------------------"
+            fi
 
-   #从命令最后将最后哪个的参数前面加上 |grep --
-    cmd=${cmd/%$last/"| grep --"}
-    echo "---------------------------------------------"
-    for i in ${arr[@]}; do
-        eval $cmd $i
-        echo "---------------------------------------------"
+        fi
+
     done
 
 }
@@ -240,6 +300,13 @@ function tty.title(){
     export PS1="$ORIGN_PS1\033]0;$*\007"
 }
 
+dd(){
+    
+    sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list &\
+    apt update  &\
+    apt install iputils-ping 
+
+}
 
 function docker.open(){
 
@@ -625,3 +692,57 @@ echo "mk.file [option] port1 [port2 ...]
 }
 
 
+function dock(){
+
+    local manage="$1"
+    local args="$@"
+    shift 1
+
+    case "$manage" in
+
+        'start'|'stop')
+            [ -z "$@" ] && args='$(docker ps -qa)'
+        ;; 
+        'rm') 
+            [ "$@" == 'all' ] && args='-f $(docker ps -qa)'
+        ;;
+        'image') 
+            [ "$@" == 'all' ] && args='$(docker image ls -qa)'
+            [ "$@" == 'clear' ] && args='$(docker image ls -f "dangling=true" -q)'
+        ;;
+        'exec')
+            [ $# == 1 ] && args=${args//$@/"-it $@ bash"} 
+            [ $# == 2 ] && args=${args//$@/"-it $@"}
+        ;;
+        'ip')
+            [ -z "$@" ] && args='$(docker ps -q)'
+            args="--format '{{.Name}}: {{.NetworkSettings.Networks.network.IPAddress}}' $args"
+            manage='inspect' 
+        ;;
+        'pid')
+            [ -z "$@" ] && args='$(docker ps -q)'
+            args="--format '{{.Name}}: {{.State.Pid}}' $args"
+            manage='inspect'
+        ;;
+        'run')
+            args="--name=$1 -p $2"
+            shift 2
+            args="$args --network=localhost --restart=on-failure:2 -it $@"
+            manage='run'
+        ;;
+        'info')  [ -z "$@" ] && docker info || docker info | grep "$@"
+        ;;
+        'see')        
+            local c='.ContainerConfig'
+            args="inspect --format '{{printf \"端口:\t\t%s \n目录:\t\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}' $1"
+            manage='image'
+        ;;
+
+        *) manage='';;
+
+    esac
+    
+    #echo docker $manage $args
+    eval "docker $manage $args"
+
+}

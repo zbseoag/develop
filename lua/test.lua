@@ -39,11 +39,6 @@ local function slice(name, argv)
 end
 
 
-
-
-
-
-
 function slice(array, argv)
 
     local start = 1

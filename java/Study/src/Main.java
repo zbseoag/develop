@@ -137,7 +137,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         cls();
-        aaa a = new aaa();
+
     }
 
 
@@ -145,18 +145,3 @@ public class Main {
 
 }
 
-class aaa{
-
-
-    {
-        Main.p("codes");
-    }
-
-
-
-    static {
-        Main.p("static");
-    }
-
-
-}

@@ -4,28 +4,42 @@
 //Swoole\Coroutine::defer可以直接用defer
 
 
-$config = [
 
-     ['启动 PHP 服务器', 'php', [ '-S'=>'地址', '-t'=>'根目录' ] ]
+function aaa($s){
 
-];
+    $len = strlen($s);
+    if($len % 2 == 1) return false;
 
+    $pairs = [
+        ')' => '(',
+        ']' => '[',
+        '}' => '{',
+        '>' => '<',
+    ];
+    $stack = new SplStack();
 
-if(!empty($_POST)){
+    for($i = 0; $i < $len; $i++){
 
-    $cmd = $_POST['cmd'];
-    unset($_POST['cmd']);
-    foreach($_POST as $key => $value){
-        $cmd .= " $key $value";
+        $char = $s[$i];
+        if(empty($char)) continue;
+
+        //如果遇到右括号
+        if(key_exists($char, $pairs)){
+
+            //如果当前队列是空的,以右括号开始不合法。如果栈顶的左括号与当前正规的右括号不匹配
+            if($stack->isEmpty() || $stack->top() != $pairs[$char]) {
+                return false;
+            }
+            //若能匹配，则弹出
+            $stack->pop();
+        }else{
+            //括号入栈
+            $stack->push($char);
+        }
     }
+    return $stack->isEmpty();
 
-    echo exec($cmd . " &" );
 }
 
-?>
-<form action="/" method="post">
-
-    PHP 服务器 <input placeholder="域名:" name="-S" /> <input placeholder="根目录:" name="-t" /> <button type="submit" name="cmd" value="php">启动</button>
-
-</form>
-
+p(aaa('({[((({})))]})'));
+p(aaa('({})'));

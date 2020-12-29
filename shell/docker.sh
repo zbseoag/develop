@@ -1,86 +1,6 @@
 #!/usr/bin/env bash
 
 
-function dockers(){
-
-    local manage="$1"
-    local args="$@"
-    shift 1
-
-    case "$manage" in
-
-        'start'|'stop')
-            [ "$@" == 'all' ] && args='$(docker ps -qa)'
-        ;; 
-        'rm') 
-            [ "$@" == 'all' ] && args='-f $(docker ps -qa)'
-        ;;
-        'image') 
-            [ "$@" == 'all' ] && args='$(docker image ls -qa)'
-            [ "$@" == 'clear' ] && args='$(docker image ls -f "dangling=true" -q)'
-        ;;
-        'exec')
-            [ $# == 1 ] && args=${args//$@/"-it $@ bash"} 
-            [ $# == 2 ] && args=${args//$@/"-it $@"}
-        ;;
-        'ip')
-            [ "$@" == 'all' ] && args='$(docker ps -q)'
-            args="--format '{{.Name}}: {{.NetworkSettings.IPAddress}}' $args"
-            manage='inspect' 
-        ;;
-        'pid')
-            [ "$@" == 'all' ] && args='$(docker ps -q)'
-            args="--format '{{.Name}}: {{.State.Pid}}' $args"
-            manage='inspect'
-        ;;
-        'begin')
-            args="--name=$1 -p $2"
-            shift 2
-            args="$args --network=localhost --restart=on-failure:2 -it $@"
-            manage='run'
-        ;;
-        'info')  [ -z "$@" ] && docker info || docker info | grep "$@"
-        ;;
-        *) manage='';;
-
-    esac
-    
-    echo docker $manage $args
-    eval "docker $manage $args"
-
-}
-
-
-
-function docker-helper(){
-
-    local cmd="$1"
-    shift 1
-
-
-
-
-
-    'about')        
-        local c='.ContainerConfig'
-        docker image inspect --format "{{printf \"端口:\t\t%s \nDir:\t\t%s \n环境变量:\t%s \n运行命令:\t%s\" $c.ExposedPorts $c.WorkingDir $c.Env $c.Cmd}}" "$@"
-                    
-    ;;
-
-    'pid')
-        if [ "$@" == 'all' ];then
-            docker instect --format "{{.Name}}: {{.State.Pid}}" $(docker ps -q)
-        else
-            docker instect --format '{{.Name}}: {{.State.Pid}}' "$@"
-        fi
-
-    ;;
-
-    *)  docker $cmd "$@";;
-    esac
-
-}
-
 # local cmd=""
 # until [ "$cmd" == 'exit' ]
 # do
@@ -89,8 +9,6 @@ function docker-helper(){
 #     docker-helper $cmd
 
 # done
-
-
 
 
 function __command_lists(){
