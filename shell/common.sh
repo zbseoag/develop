@@ -89,27 +89,7 @@ apt.list(){
 }
 
 
-docker.run(){
-    #${@: -1}
-    local image="$1"
-    shift 1
-    for name in "$@"; do
-       docker run --network network -d --name "${image%:*}-$name" $opt $image
-    done
-}
 
-docker.rm(){
-
-    local image="$1"
-    shift 1
-    for name in "$@"; do
-       docker rm -f "${image%:*}-$name"
-    done
-}
-
-docker.in(){
-    docker exec -it $1 bash
-}
 
 git.push.root(){
     #$FUNCNAME
@@ -288,11 +268,7 @@ alias system.boot.terminal="sudo systemctl set-default multi-user.target"
 alias system.boot.desktop="sudo systemctl set-default graphical.target"
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 
-function docker.source.into(){ docker cp /etc/apt/sources.list $1:/etc/apt/sources.list; docker cp $ROOTPH/linux/common.sh $1:/; }
 
-function docker.cp.into(){ docker cp $2 $1:/; }
-function docker.cp.out(){ docker cp $1:$2 /home/$USER; }
-function docker.append.bashrc(){ echo -e '\nsource /common.sh' >> /etc/bash.bashrc; bash; }
 
 
 function tty.title(){
@@ -300,40 +276,17 @@ function tty.title(){
     export PS1="$ORIGN_PS1\033]0;$*\007"
 }
 
-dd(){
-    
-    sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list &\
-    apt update  &\
-    apt install iputils-ping 
 
-}
 
-function docker.open(){
 
-    local container="$1"
-    local infile="$2"
-    local outfile=/tmp/`basename $infile`
-    docker cp $container:$infile $outfile && open $outfile || return $?
 
-    local update=""
-    local times=1
-    echo -e "\033[31m回车更新, exit 退出\033[0m"
-    until [ "$update" == 'exit' ]
-    do
-        read -p "第 $times 次更新:" update
-        [ "$update" == 'exit' ] && break
-        docker cp $outfile $container:$infile || { echo "更新失败！"; return 1; }
-        times=`expr $times + 1`
-    done
-    
-}
+
 
 
 
 function load(){
 
     case "$1" in
-        'docker') source "$ROOTPH/docker.sh" ;;
         'install')
 
                 [ -z `which sudo` ] && apt install -y sudo
@@ -692,7 +645,83 @@ echo "mk.file [option] port1 [port2 ...]
 }
 
 
-function dock(){
+
+function .docker(){
+
+    local manage="$1"
+    shift 1
+    case "$manage" in
+        'init')
+            echo sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
+            echo apt update 
+            echo apt install iputils-ping
+        ;;
+
+        'run')
+            #${@: -1}
+            for one in "$@"; do
+                shift 1
+                [ "$one" == '-' ] && break
+                option="$option $one"
+            done
+
+            local image="$1"
+            shift 1
+            for name in "$@"; do
+                docker run --network network $option --name "${image%:*}-$name" $image
+            done
+        
+        ;;
+
+        'open')
+            local container="$1"
+            local infile="$2"
+            local outfile=/tmp/$1/`basename $infile`
+            [ -d "/tmp/$1" ] || mkdir /tmp/$1
+            docker cp $container:$infile $outfile && open $outfile || return $?
+        ;;
+
+        'push')
+            local container="$1"
+            local infile="$2"
+            local outfile=/tmp/$1/`basename $infile`
+            docker cp $outfile $container:$infile || { echo "更新失败！"; return 1; }
+        ;;
+
+        'rm')
+            local image="$1"
+            shift 1
+            for name in "$@"; do
+                docker rm -f "${image%:*}-$name"
+            done
+        ;;
+
+        'exec')
+            [ $# == 1 ] && docker exec -it $1 bash || docker exec -it $@
+        ;;
+
+        'ip')
+            local container="$1"
+            [ -z "$container" ] && container='docker ps -q'
+            docker inspect --format '{{.Name}}: {{.NetworkSettings.Networks.network.IPAddress}}' $($container)
+        ;;
+        'info')
+            [ -z "$@" ] && docker info || docker info | grep "$@"
+        ;;
+
+        'image')        
+            local c='.ContainerConfig'
+            docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $1
+        ;;
+        'all')
+            docker ps -a
+        ;;
+    esac
+
+}
+
+
+function dockdd(){
 
     local manage="$1"
     local args="$@"
@@ -710,15 +739,8 @@ function dock(){
             [ "$@" == 'all' ] && args='$(docker image ls -qa)'
             [ "$@" == 'clear' ] && args='$(docker image ls -f "dangling=true" -q)'
         ;;
-        'exec')
-            [ $# == 1 ] && args=${args//$@/"-it $@ bash"} 
-            [ $# == 2 ] && args=${args//$@/"-it $@"}
-        ;;
-        'ip')
-            [ -z "$@" ] && args='$(docker ps -q)'
-            args="--format '{{.Name}}: {{.NetworkSettings.Networks.network.IPAddress}}' $args"
-            manage='inspect' 
-        ;;
+
+
         'pid')
             [ -z "$@" ] && args='$(docker ps -q)'
             args="--format '{{.Name}}: {{.State.Pid}}' $args"
@@ -730,19 +752,12 @@ function dock(){
             args="$args --network=localhost --restart=on-failure:2 -it $@"
             manage='run'
         ;;
-        'info')  [ -z "$@" ] && docker info || docker info | grep "$@"
-        ;;
-        'see')        
-            local c='.ContainerConfig'
-            args="inspect --format '{{printf \"端口:\t\t%s \n目录:\t\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}' $1"
-            manage='image'
-        ;;
+
 
         *) manage='';;
 
     esac
     
-    #echo docker $manage $args
     eval "docker $manage $args"
 
 }

@@ -11,9 +11,9 @@ class Helper {
      * @param number $size
      * @return boolean|number[]
      */
-    public static function page($num, $count, $size = 50){
+    public static function page($page, $count, $size = 20){
         $total = ceil($count / $size);
-        return ($num > $total)? false : array(($num - 1) * $size, $size, $total);
+        return ($page > $total)? false : array(($page - 1) * $size, $size, $total);
 
     }
 

@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 enum Size { Small, Medium, Large};
 
@@ -132,6 +135,26 @@ public class Main {
 
     }
 
+    public static void liu() throws IOException {
+
+        var content = new String(Files.readAllBytes(Paths.get("alice.txt")), StandardCharsets.UTF_8 );
+        List<String> words = List.of(content.split("\\PL+"));
+
+        long count = 0;
+        for(String w : words){
+            if(w.length() > 12){
+                count++;
+            }
+        }
+
+        count = words.stream().filter(w -> w.length() > 12).count();
+        count = words.parallelStream().filter(w -> w.length() > 12).count();
+
+        Stream<String> words2 = Stream.of(content.split("\\PL+"));
+        Stream<String> song = Stream.of("aaa", "bbb");
+        Stream<String> enpty = Stream.empty();
+
+    }
 
 
     public static void main(String[] args) throws IOException {
