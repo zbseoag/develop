@@ -70,6 +70,7 @@ alias up="cd .."
 alias cd.bin="cd /usr/local/bin"
 alias cd.sbin="cd /usr/local/sbin"
 
+alias cdc="cd /c"
 alias cdd="cd /d"
 alias cde="cd /e"
 alias cd.src="cd /d/src"
