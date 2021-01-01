@@ -1,4 +1,371 @@
 #!/usr/bin/env bash
+
+
+# local cmd=""
+# until [ "$cmd" == 'exit' ]
+# do
+#     read -p ":" cmd
+#     [ "$cmd" == 'exit' ] && break
+#     docker-helper $cmd
+
+# done
+
+
+function cover(){
+
+    set -- $(getopt -u -o rh --long rm,help -- $@)
+    #echo $@   
+    local rm=false
+    for i in "$@"
+    do
+        case "$1" in
+        -r|--rm)    rm=true;;
+        -h|--help)
+echo "cover [option] <source> [target]
+功能：用一个 source 文件覆盖 target 文件，如果省略 target，则根据 source.bak 自动推导
+用法：
+    cover source.conf target.conf
+    cover config.conf.bak 
+选项:
+    -r, --rm    删除源文件
+    -h, --help  帮助"; return 0
+        ;;
+        --)         shift 1; break;;
+        *)          echo "无效选项：$1"; return 0 ;;
+        esac
+        shift 1
+
+    done
+
+    local source=$1
+    local target=$2
+    [ -z "$target" ] && target="${source%.bak}"
+    sudo bash -c "cat $source > $target"
+
+    [ $rm == 'true' ] && { [ "$?" -eq 0 ] && sudo rm $source; }
+
+}
+
+
+
+function mk.file(){
+
+    eval set -- `getopt -o t:e:r:dh -l help -- "$@"`
+
+    local _tpl=''
+    local _ext='conf'
+    local _run=''
+    local _dir=false
+
+    for i in "$@"
+    do
+        case "$1" in
+        -t)  _tpl="$2"; shift 1;; #处理了带值参数,所以多跳一下.
+        -e)  _ext="$2"; shift 1;;
+        -r)  _run="$2"; shift 1;;
+        -d)  _dir=true;;
+
+        -h|--help)
+echo "mk.file [option] port1 [port2 ...]
+功能：根据模板批量创建配置文件, 模板文件中的 {port} 会被替换
+用法：
+    mk.file -t cluster.tpl 32768 32769 32770
+    mk.file -t cluster.tpl -r "redis-serer :file --daemonize yes" 32768 32769 32770
+
+选项:
+    -t          模板文件
+    -e          文件扩展名如 ini conf
+    -r          运行的命令
+    -d          是否生成二级目录
+    -h, --help  帮助"; return 0
+;;
+
+        --)    shift 1; break;;#终止时,最后跳一下
+         *)    echo "无效选项：$1"; return 0 ;;
+        esac
+        shift 1 #每次处理完一个参数,跳一下
+    done
+
+    local file=''
+    local command=''
+    for port in "$@"
+    do
+
+        if [ $_dir == 'true' ];then
+            mkdir -p $port
+            file="$port/$port.$_ext"
+        else
+            file="$port.$_ext"
+        fi
+
+        cat "$_tpl" > $file
+        sed -i -e "s/{port}/$port/" $file
+      
+        if [ -n "$_run" ];then
+            command=${_run/':file'/$file};
+            echo "$command";
+            eval "$command"
+        else
+            echo $file
+        fi 
+   
+    done
+
+}
+
+function array(){
+
+    local data=(${1//''/}) #字符串转数组
+    local option=$2
+
+    shift 2
+    case "$option" in
+        'len')              echo ${#data[@]};;
+        'cut')              if [ -z "$2" ];then echo ${data[@]:$1}; else echo ${data[@]:$1:$2}; fi;;
+        'find')             echo ${data[@]#$1};;
+        'find-long')        echo ${data[@]##$1};;
+        'find-end')         echo ${data[@]%$1};;
+        'find-end-long')    echo ${data[@]%%$1};;
+        'replace-head')     echo ${data[@]/#$1/$2};;
+        'replace-end')      echo ${data[@]/%$1/$2};;
+        'replace')          echo ${data[@]/$1/$2};;
+        *)                  echo ${data[@]};;
+    esac
+
+}
+
+string(){
+
+    local str="11223344"
+    echo 'str="11223344"'
+    echo "\${#str}      ${#str}         长度"
+    echo "\${str:3:5}   ${str:3:5}      按位置截取"
+    echo "\${str#*3}    ${str#*3}       前截取后"
+    echo "\${str##*3}   ${str##*3}      前截取后最长"
+    echo "\${str%*3}     ${str%*3}        后截取前"
+    echo "\${str%%*3}    ${str%%*3}       后截取前最长"
+    echo "\${str/3/a}   ${str/3/a}      替换一次"
+    echo "\${str//3/a}  ${str//3/a}     替换全部"
+    echo "\${str/#11/a} ${str/#11/a}    前缀替换"
+    echo "\${str/%44/a} ${str/%44/a}    后缀替换"
+
+
+}
+
+str="this is a string"
+[[ $str =~ "this" ]] && echo "$str contains this" 
+[[ $str =~ "that" ]] || echo "$str does NOT contain that"
+
+git log -p -2
+git log --stat
+git log --pretty=oneline #short，full,fuller
+    
+git log --pretty=format 常用的选项
+# 选项	说明
+# %H
+# 提交的完整哈希值
+
+# %h
+# 提交的简写哈希值
+# %T
+# 树的完整哈希值
+# %t
+# 树的简写哈希值
+# %P
+# 父提交的完整哈希值
+# %p
+# 父提交的简写哈希值
+# %an
+# 作者名字
+# %ae
+
+# 作者的电子邮件地址
+
+# %ad
+
+# 作者修订日期（可以用 --date=选项 来定制格式）
+
+# %ar
+
+# 作者修订日期，按多久以前的方式显示
+
+# %cn
+
+# 提交者的名字
+
+# %ce
+
+# 提交者的电子邮件地址
+
+# %cd
+
+# 提交日期
+
+# %cr
+
+# 提交日期（距今多长时间）
+
+# %s
+
+# 提交说明
+
+    git log --pretty=format:"%h - %an, %ar : %s"
+    git log --pretty=format:"%h %s" --graph
+
+
+#修正前的次的提交
+git commit --amend
+#取消暂存 CONTRIBUTING.md 文件
+git reset HEAD CONTRIBUTING.md
+#撤消修改
+git checkout -- CONTRIBUTING.md
+
+git remote -v
+
+git remote add pb https://github.com/paulboone/ticgit
+git remote -v
+git fetch pb
+git push origin master
+git remote show origin
+git remote rename pb paul
+git remote remove paul
+git tag --list
+
+git config --list --show-origin
+
+
+git config --global alias.ci commit
+git config --global alias.unstage 'reset HEAD --'
+git config --global alias.last 'log -1 HEAD'
+
+git config --global alias.visual '!gitk'
+
+
+    git diff --staged
+    git diff --cached
+    git difftool --tool-help
+
+git branch
+git branch --merged | --no-merged #没有给定提交或分支名作为参数时， 分别列出已合并或未合并到 当前 分支的分支
+
+
+
+远程仓库名字 “origin” 在 Git 中并没有任何特别的含义一样。 
+当你运行 git init 时默认的起始分支名字，原因仅仅是它的广泛使用， “origin” 是当你运行 git clone 时默认的远程仓库名字。
+如果你运行 git clone -o booyah，那么你默认的远程分支名字将会是 booyah/master。
+
+
+
+git ls-remote origin
+git remote show origin
+git remote add
+git fetch teamone
+git push origin serverfix
+git push origin serverfix:awesomebranch #来将本地的 serverfix 分支推送到远程仓库上的 awesomebranch 分支
+git config --global credential.helper cache #避免每次输入密码
+
+git merge origin/serverfix #将远程分支合并入当前分支
+git checkout -b serverfix origin/serverfix #将远程分支合并到本地新建分支
+
+git checkout -b <branch> <remote>/<branch>
+git checkout --track origin/serverfix #相当于 git checkout -b serverfix origin/serverfix
+
+git checkout serverfix #如果本地没有该分支，就去拉取线上分支
+
+
+git branch --set-upstream-to|-u  origin/serverfix #设置当前本地分支跟踪远程分支
+
+当设置好跟踪分支后，可以通过简写 @{upstream} 或 @{u} 来引用它的上游分支。 
+所以在 master 分支时并且它正在跟踪 origin/master 时，
+如果愿意的话可以使用 git merge @{u} 来取代 git merge origin/master
+
+变基过程
+git checkout experiment
+git rebase master #变基
+git checkout master #切换到 master
+git merge experiment #合并
+git branch -d client
+
+git rebase master server #使用 server 分支变基
+
+
+取出 client 分支，找出它从 server 分支分歧之后的补丁， 然后把补丁在 master 分支上重放一遍，让 client 看起来像直接基于 master 修改一样
+git rebase --onto master server client 
+
+
+git branch -vv #查看设置的所有跟踪分支
+git fetch --all #抓取所有的远程仓库
+
+git push origin --delete serverfix
+
+
+1、创建分支开发新需求
+git checkout -b iss53 #创建并切换 iss53 分支
+
+2、接到线上紧急 bug 要处理。在切换工作之前，要留意你的工作目录和暂存区里那些还没有被提交的修改。 在你切换分支之前，保持好一个干净的状态。 
+git checkout master #切换加 master分支
+git checkout -b hotfix #创建并切换 hotfix 分支
+3、线上bug处理完成，并布署
+git checkout master #切换回主分支
+git merge hotfix #将hotfix 分支合并到主分支
+git branch -d hotfix #删除 hotfix 分支
+
+4、继续之前的需求开发
+git checkout iss53 #切换回 iss53 分支
+git merge master #将 msater 分支合并到当前分支，当然也可以等 iss53 分支功能开发完成合并入 msater 分支
+
+5、需求开发完成
+git checkout master #切换回 master 分支
+git merge iss53 #将 iss53 分支合并到当前分支
+git branch -d iss53 #删除 iss53 分支
+
+6、如果合并遇到冲突
+git status #找到冲突文件
+git mergetool #用外部合并工具
+
+
+
+function __command_lists(){
+
+docker image ls --filter="reference=:latest"
+docker search --filter="is-official=true" alpine
+docker search --filter="is-automated=true" alpine
+docker image inspect ubuntu:20.10
+
+docker image ls --digests ubuntu:20.10
+
+docker image history ubuntu:20.10
+docker run --restart=unless-stopped -d ubuntu:20.10
+
+docker network ls
+docker network inspect bridge
+ip link show docker0
+docker network inspect bridge | grep bridge.name
+docker network create -d bridge localnet
+
+brctl show
+docker run -d --name=c1 --network localnet ubuntu:20.10 sleep 1d
+docker port c1
+docker network inspect localnet --format '{{json .Containers}}'
+docker run -it --name=c2 --network localnet ubuntu:20.10 bash
+docker.container.init c2
+ping c1
+
+
+# sudo dpkg --get-selections | awk '/i386/{print $1}'
+# sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
+# sudo dpkg --remove-architecture i386	  //移除i386架构
+# sudo dpkg --print-foreign-architectures //显示已启用的异质体系结构
+
+#xrandr
+#cvt 1920x1080
+#xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
+#xrandr --addmode HDMI-1 "1920x1080_60.00"
+
+}
+
+
+
 :<<EOF
 Redis 测试脚本
 测试之前,先关闭所有 Redis 服务器:

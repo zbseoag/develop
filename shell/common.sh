@@ -39,6 +39,18 @@ demo(){
 }
 
 
+
+# 打印参数列表
+function p(){
+
+    local index=1
+    for arg in "$@"; do
+        echo "参数${index}: '$arg'"
+        let index+=1
+    done
+
+}
+
 #history 配置
 #export HISTFILE=~/.bash_history #命令历史文件名
 #export HISTTIMEFORMAT='%F ' #时间格式化
@@ -68,8 +80,8 @@ alias cd.desktop="cd /desktop"
 alias tar.src="tar -C /d/src -xvf"
 alias tar.dpan="tar -C /d -xvf"
 
-alias ll.bin="ll /usr/local/bin"
-alias ll.sbin="ll /usr/local/sbin"
+alias llbin="ll /usr/local/bin"
+alias llsbin="ll /usr/local/sbin"
 
 alias update="sudo apt update && apt list --upgradable"
 alias purge="sudo apt purge"
@@ -80,6 +92,20 @@ alias apt.fix="sudo apt-get install -f "
 alias git.add="git add -f"
 alias git.rm="git rm -r --cached"
 alias git.push="git add . &&  git commit  -m '日常更新'  &&  git push"
+alias xdg-open="explorer.exe ."
+alias ps.find="ps -aux | grep -v 'grep'| grep"
+alias ps.stop="sudo pkill -9"
+alias net.port="netstat -ap | grep"
+
+alias php.start="sudo php-fpm"
+alias php.stop="sudo pkill -9 php-fpm"
+alias nginx.start="sudo nginx"
+alias nginx.stop="sudo nginx -s stop"
+
+alias http.start="php.start && nginx.start"
+alias http.stop="php.stop && nginx.stop"
+alias all.users="cat /etc/passwd |cut -f 1 -d:"
+
 
 apt.list(){
     local software="$1"
@@ -88,21 +114,21 @@ apt.list(){
     apt list "$software*";
 }
 
+let(){ 
+	if [ -z "$2" ];then
+		set -- $@ start
+	fi
+	sudo service $@;
 
-
-
-git.push.root(){
-    #$FUNCNAME
-    git add -f /srv/etc  &&\
-    git add -f /srv/bin &&\
-    git add -f /srv/nginx1.9/etc &&\
-    git add -f /srv/nginx1.9/nginx &&\
-    git add -f /srv/php8.0/etc &&\
-    git add -f /srv/php8.0/bin &&\
-    git add -f /srv/php8.0/lib/php/extensions/debug-zts-20200930 &&\
-    git commit -m "日常更新" &&\
-    git push
 }
+
+start(){
+    let docker start
+}
+stop(){
+    let docker stop
+}
+
 
 linux.name(){
 
@@ -121,32 +147,9 @@ linux.name(){
     name["null"]="null"
 
     typeset -l index; local index="$1"
-
     [ -z "${name[$index]}" ] && index='unknow'
-
     echo $index: ${name[$index]}
 
-}
-
-
-string(){
-
-    local str="11223344"
-    echo 'str="11223344"'
-    echo "\${#str}      ${#str}         长度"
-    echo "\${str:3:5}   ${str:3:5}      按位置截取"
-    echo "\${str#*3}    ${str#*3}       前截取后"
-    echo "\${str##*3}   ${str##*3}      前截取后最长"
-    echo "\${str%*3}     ${str%*3}        后截取前"
-    echo "\${str%%*3}    ${str%%*3}       后截取前最长"
-    echo "\${str/3/a}   ${str/3/a}      替换一次"
-    echo "\${str//3/a}  ${str//3/a}     替换全部"
-    echo "\${str/#11/a} ${str/#11/a}    前缀替换"
-    echo "\${str/%44/a} ${str/%44/a}    后缀替换"
-
-    # str="this is a string"
-    # [[ $str =~ "this" ]] && echo "$str contains this" 
-    # [[ $str =~ "that" ]] || echo "$str does NOT contain that"
 }
 
 
@@ -211,17 +214,6 @@ function git.remote(){
 
 }
 
-
-# sudo dpkg --get-selections | awk '/i386/{print $1}'
-# sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
-# sudo dpkg --remove-architecture i386	  //移除i386架构
-# sudo dpkg --print-foreign-architectures //显示已启用的异质体系结构
-
-#xrandr
-#cvt 1920x1080
-#xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
-#xrandr --addmode HDMI-1 "1920x1080_60.00"
-
 function tobin(){
     for one in "$@"; do
         local file=`realpath $one`;
@@ -252,36 +244,12 @@ function config(){
 
 }
 
-alias ps.find="ps -aux | grep -v 'grep'| grep"
-alias ps.stop="sudo pkill -9"
-alias net.port="netstat -ap | grep"
-
-alias php.start="sudo php-fpm"
-alias php.stop="sudo pkill -9 php-fpm"
-alias nginx.start="sudo nginx"
-alias nginx.stop="sudo nginx -s stop"
-
-alias http.start="php.start && nginx.start"
-alias http.stop="php.stop && nginx.stop"
-
-alias system.boot.terminal="sudo systemctl set-default multi-user.target"
-alias system.boot.desktop="sudo systemctl set-default graphical.target"
-alias all.users="cat /etc/passwd |cut -f 1 -d:"
-
-
 
 
 function tty.title(){
     ORIGN_PS1=${ORIGN_PS1:-$PS1}
     export PS1="$ORIGN_PS1\033]0;$*\007"
 }
-
-
-
-
-
-
-
 
 
 function load(){
@@ -361,17 +329,6 @@ function execute(){
 
 }
 
-
-# 打印参数列表
-function p(){
-
-    local index=1
-    for arg in "$@"; do
-        echo "参数${index}: '$arg'"
-        let index+=1
-    done
-
-}
 
 
 ### 打开文件或目录 ###
@@ -477,31 +434,6 @@ function install(){
 }
 
 
-
-function array(){
-
-    local data=(${1//''/}) #字符串转数组
-    local option=$2
-
-    shift 2
-    case "$option" in
-        'len')              echo ${#data[@]};;
-        'cut')              if [ -z "$2" ];then echo ${data[@]:$1}; else echo ${data[@]:$1:$2}; fi;;
-        'find')             echo ${data[@]#$1};;
-        'find-long')        echo ${data[@]##$1};;
-        'find-end')         echo ${data[@]%$1};;
-        'find-end-long')    echo ${data[@]%%$1};;
-        'replace-head')     echo ${data[@]/#$1/$2};;
-        'replace-end')      echo ${data[@]/%$1/$2};;
-        'replace')          echo ${data[@]/$1/$2};;
-        *)                  echo ${data[@]};;
-    esac
-
-}
-
-
-
-
 #复制文件,如果目录不存在,则自动创建
 #copy file /dir/newfile
 #copy file /dir/path/
@@ -520,133 +452,38 @@ function copy(){
 }
 
 
-function cover(){
+function is(){
 
-    set -- $(getopt -u -o rh --long rm,help -- $@)
-    #echo $@   
-    local rm=false
-    for i in "$@"
-    do
-        case "$1" in
-        -r|--rm)    rm=true;;
-        -h|--help)
-echo "cover [option] <source> [target]
-功能：用一个 source 文件覆盖 target 文件，如果省略 target，则根据 source.bak 自动推导
-用法：
-    cover source.conf target.conf
-    cover config.conf.bak 
-选项:
-    -r, --rm    删除源文件
-    -h, --help  帮助"; return 0
+    local cmd="$1"
+    shift 1
+    case "$cmd" in
+        'run')
+
+            local name=$1
+            local ip=$2
+
+            if [ -z "$ip" ];then
+                name="`ps -aux | grep -P \"$name\" | grep -v 'grep'`"
+
+            else
+                #如果是纯数字,表示则表示端口
+                [ -n "`echo $ip | grep -P '^\d+$'`" ] && ip="\*:$ip"
+
+                name="$name\s+.*${ip}$"
+                name="`ps -aux | grep -P \"$name\"`"
+
+            fi
+
+            [ -n "$name" ] && echo $name
         ;;
-        --)         shift 1; break;;
-        *)          echo "无效选项：$1"; return 0 ;;
-        esac
-        shift 1
 
-    done
-
-    local source=$1
-    local target=$2
-    [ -z "$target" ] && target="${source%.bak}"
-    sudo bash -c "cat $source > $target"
-
-    [ $rm == 'true' ] && { [ "$?" -eq 0 ] && sudo rm $source; }
-
-}
-
-
-function isrun(){
-
-    local name=$1
-    local ip=$2
-
-    if [ -z "$ip" ];then
-        name="`ps -aux | grep -P \"$name\" | grep -v 'grep'`"
-
-    else
-        #如果是纯数字,表示则表示端口
-        [ -n "`echo $ip | grep -P '^\d+$'`" ] && ip="\*:$ip"
-
-        name="$name\s+.*${ip}$"
-        name="`ps -aux | grep -P \"$name\"`"
-
-    fi
-
-    [ -n "$name" ] && echo $name
-    
-}
-
-
-
-function mk.file(){
-
-    eval set -- `getopt -o t:e:r:dh -l help -- "$@"`
-
-    local _tpl=''
-    local _ext='conf'
-    local _run=''
-    local _dir=false
-
-    for i in "$@"
-    do
-        case "$1" in
-        -t)  _tpl="$2"; shift 1;; #处理了带值参数,所以多跳一下.
-        -e)  _ext="$2"; shift 1;;
-        -r)  _run="$2"; shift 1;;
-        -d)  _dir=true;;
-
-        -h|--help)
-echo "mk.file [option] port1 [port2 ...]
-功能：根据模板批量创建配置文件, 模板文件中的 {port} 会被替换
-用法：
-    mk.file -t cluster.tpl 32768 32769 32770
-    mk.file -t cluster.tpl -r "redis-serer :file --daemonize yes" 32768 32769 32770
-
-选项:
-    -t          模板文件
-    -e          文件扩展名如 ini conf
-    -r          运行的命令
-    -d          是否生成二级目录
-    -h, --help  帮助"; return 0
-;;
-
-        --)    shift 1; break;;#终止时,最后跳一下
-         *)    echo "无效选项：$1"; return 0 ;;
-        esac
-        shift 1 #每次处理完一个参数,跳一下
-    done
-
-    local file=''
-    local command=''
-    for port in "$@"
-    do
-
-        if [ $_dir == 'true' ];then
-            mkdir -p $port
-            file="$port/$port.$_ext"
-        else
-            file="$port.$_ext"
-        fi
-
-        cat "$_tpl" > $file
-        sed -i -e "s/{port}/$port/" $file
-      
-        if [ -n "$_run" ];then
-            command=${_run/':file'/$file};
-            echo "$command";
-            eval "$command"
-        else
-            echo $file
-        fi 
-   
-    done
+    esac
 
 }
 
 
 
-function .docker(){
+function dock(){
 
     local manage="$1"
     shift 1
@@ -668,7 +505,7 @@ function .docker(){
             local image="$1"
             shift 1
             for name in "$@"; do
-                docker run --network network $option --name "${image%:*}-$name" $image
+                docker run --network network --restart=on-failure:2 $option --name "${image%:*}-$name" $image
             done
         
         ;;
@@ -713,6 +550,21 @@ function .docker(){
             local c='.ContainerConfig'
             docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $1
         ;;
+        'start')
+            docker start $(docker ps -qa)
+        ;;
+        'stop')
+            docker stop $(docker ps -qa)
+        ;;
+        'pid')
+            local container="$1"
+            [ -z "$container" ] && container='docker ps -q'
+            docker inspect --format '{{.Name}}: {{.State.Pid}}' $($container)
+        ;;
+
+        'clear')
+            docker image rm $(docker image ls -f "dangling=true" -q)
+        ;;
         'all')
             docker ps -a
         ;;
@@ -720,44 +572,3 @@ function .docker(){
 
 }
 
-
-function dockdd(){
-
-    local manage="$1"
-    local args="$@"
-    shift 1
-
-    case "$manage" in
-
-        'start'|'stop')
-            [ -z "$@" ] && args='$(docker ps -qa)'
-        ;; 
-        'rm') 
-            [ "$@" == 'all' ] && args='-f $(docker ps -qa)'
-        ;;
-        'image') 
-            [ "$@" == 'all' ] && args='$(docker image ls -qa)'
-            [ "$@" == 'clear' ] && args='$(docker image ls -f "dangling=true" -q)'
-        ;;
-
-
-        'pid')
-            [ -z "$@" ] && args='$(docker ps -q)'
-            args="--format '{{.Name}}: {{.State.Pid}}' $args"
-            manage='inspect'
-        ;;
-        'run')
-            args="--name=$1 -p $2"
-            shift 2
-            args="$args --network=localhost --restart=on-failure:2 -it $@"
-            manage='run'
-        ;;
-
-
-        *) manage='';;
-
-    esac
-    
-    eval "docker $manage $args"
-
-}
