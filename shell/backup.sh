@@ -11,6 +11,374 @@
 # done
 
 
+
+
+
+
+comment(){
+
+for file in $(ls); do
+    echo $file
+done
+
+
+echo -n "Enter password :"
+read password
+while [ "$password" != "root" ]; do
+    echo -n "Sorry, please try again :"
+    read password
+done    
+    
+echo "Wellcome!"
+
+
+
+
+until who | grep "$1" > /dev/null; do
+    sleep 10
+done
+
+echo -e '\a'
+echo "*** $1 has just logged in ***"
+
+
+a=abd
+case "$a" in
+    [Yy]|[Yy][Ee][Ss] ) echo "good";;
+    [nN]* ) echo "bad";;
+    * ) echo "error"
+esac
+
+
+
+
+text="global variable"
+foo(){
+    local text="local value"
+    echo $text
+}
+
+echo $text
+foo
+echo $text
+
+
+
+yes_or_no(){
+
+    echo "你名字是 $* ?"
+    while true
+    do
+        echo -n "输入yes 或者 no :"
+        read x
+        case "$x" in
+            y|yes ) return 0;;
+            n|no ) return 1;;
+            *) echo "回答yes或no"
+        esac
+    done
+}
+
+
+echo "原始参数: $*"
+if yes_or_no "$1"
+then
+    echo "你好 $1"
+else
+    echo "从不在意"
+fi
+
+
+foo=10
+x=foo
+eval y='$'$x
+
+
+[ -f .profile ] && exit 0 || exit 1
+
+
+
+foo="第一个变量"
+bar="第二个变量"
+export bar
+
+./test1.sh
+
+#test1.sh内容如下:
+#!/bin/bash
+
+echo "$foo"
+echo "$bar"
+
+x=10
+x=`expr $x + 1`
+x=$(expr $x + 1)
+echo $x
+
+printf "\a项目:%s \n进度:%d%% \n" "my project" 30 
+
+
+echo 今天: `date`
+set $(date)
+echo 月份: $2
+
+
+
+echo "$@"
+while [ "$1" != "" ]
+do
+    shift
+done
+
+echo "整理之后: $@"
+
+}
+
+
+trap 'rm -f /tmp/my_tmp_file_$$' INT
+echo createing file /tmp/my_tmp_file_$$
+date > /tmp/my_tmp_file_$$
+
+echo 'press interrupt (ctrl -c) to interrupt'
+
+while [ -f /tmp/my_tmp_file_$$ ]
+do
+    echo file exists
+    sleep 1
+done
+
+echo file no longer exists
+
+
+
+trap INT
+echo createing file /tmp/my_tmp_file_$$
+date > /tmp/my_tmp_file_$$
+echo press interrup control-c to interupt
+while [ -f /tmp/tmp/my_tmp_file_$$ ]
+do
+    echo file exists
+    sleep 1
+done
+
+echo we never get here
+
+read -p "command:" command option
+
+OLD_IFS=$IFS
+IFS=" "
+args=($option)
+IFS=$OLD_IFS
+option=${args[0]}
+
+
+case $command in
+
+
+    out) 
+
+        if [ $option == '?' ];then
+            echo 'out -file -pwd'
+            read -p "out:" file pwd
+        else
+            file=${args[0]}; pwd=${args[1]};
+        fi
+        echo $pwd | sudo -S cp $file /media/sf_Downloads/
+    ;;
+
+    cp)
+        if [ $option == '?' ];then
+            echo 'cp -file -path -pwd'
+            read -p "cp:" file path pwd
+        else
+            file=${args[0]}; path=${args[1]}; pwd=${args[2]};
+        fi
+        echo $pwd | sudo -S cp /media/sf_Downloads/$file $path
+    ;;
+
+
+    # update python version
+    python) 
+
+        if [ $option == '?' ];then
+            echo 'upython -version -pwd'
+            read -p "upython:" version pwd
+        else
+            version=${args[0]}; pwd=${args[1]};
+        fi
+        pythonup $version $pwd
+    ;;
+
+    install)
+        if [ $option == '?' ];then
+            echo 'install -package -directory'
+            read -p "install:" package directory
+        else
+        
+            package=${args[0]}; directory=${args[1]};
+        fi
+        install  $package $directory
+    ;;
+
+    test)
+        #install '/home/zbseoag/Downloads/nginx-1.11.2.tar.gz' '/home/zbseoag/Documents/demo'
+    ;;
+    
+esac
+
+
+
+
+
+#!/bin/bash
+
+menu_choice=""
+current_cd=""
+title_file="title.cdb"
+tracks_file="tracks.cdb"
+temp_file=/tmp/cdb.$$
+
+trap 'rm -f $temp_file' EXIT
+
+
+get_return(){
+    echo -n "按一下,返回"
+    read x
+    return 0
+}
+
+get_confirm(){
+
+    echo -n "你确定?"
+    while true
+    do
+        read x
+        case "$x" in
+            y|yes   )
+                return 0;;
+            n|no    ) 
+                echo "已取消"
+                return 1
+            *       )
+                echo "请输入yes|no";;
+        esac
+    done
+    
+}
+
+
+set_menu_choice(){
+    clear
+    echo "选项 :-"
+    echo
+    echo "  a) 添加"
+    echo "  f) 查找"
+    echo "  c) 计数"
+    if [ "$cdcatnum" != "" ]
+    then
+        echo "  l) 列出 $cdtitle 的分类"
+        echo "  r) 删除 $cdtitle"
+        echo "  u) 更新 $cdtitle 的信息"
+    fi
+    echo "  q) 退出"
+    echo
+    echo -n "请选择"
+    read menu_choice
+    return
+    
+}
+
+
+insert_title(){
+    echo $* >> $title_file
+    return
+    
+}
+
+
+insert_track(){
+    echo $* >> $tracks_file
+    return
+
+}
+
+add_record_tracks(){
+    
+    echo "输入这张CD的 track 信息"
+    echo "输入完成后,按q退出"
+    cdtrack=1
+    cdtitle=""
+    
+    while [ "$cdtitle" != q ];do
+    
+        echo -n "Track $cdtrack, track title?"
+        read tmp
+        cdttitle=${tmp%%, *}
+        if [ "$tmp" != "$cdtitle" ];then
+            echo "sorry, no commas allowd"
+            continue
+        fi
+        if [ -n "$cdttitle" ];then
+            if [ "$cdttitle" != "q" ];then
+               insert_track $cdcatnum, $cdtrack, $cdttitle 
+            fi
+        else
+            cdtrack=$((cdtrack-1))
+        fi
+        cdtrack=$((cdtrack+1))
+    done     
+
+}
+
+add_records(){
+    
+    echo -n "enter catalog name"
+    read tmp
+    cdcatnum=${tmp%%,*}
+
+
+}
+
+
+
+
+
+if [ "$1" == "--help" ];then
+    echo "run-c \$file"
+    exit 0;
+fi
+
+if [ "$1" == "" ];then
+    file="test.c"
+else
+    file=$1".c"
+fi
+
+echo "当前运行: $file";
+
+gcc $file -o /tmp/a.out && /tmp/a.out
+
+
+
+#输出环境变量
+show(){
+
+    case "$arguemnt" in
+        'path' ) echo $PATH | awk -F ':' '{for(i=1;i<=NF;i++){print "  " $i;}}';;
+        * ) echo "do nothing!"
+    esac
+}
+
+
+
+#windows换行转linux换行
+trim-rn(){
+    sudo sed -i 's/\r$//' $arguemnt
+}
+
+
+
+
 function cover(){
 
     set -- $(getopt -u -o rh --long rm,help -- $@)
@@ -113,48 +481,8 @@ echo "mk.file [option] port1 [port2 ...]
 
 }
 
-function array(){
-
-    local data=(${1//''/}) #字符串转数组
-    local option=$2
-
-    shift 2
-    case "$option" in
-        'len')              echo ${#data[@]};;
-        'cut')              if [ -z "$2" ];then echo ${data[@]:$1}; else echo ${data[@]:$1:$2}; fi;;
-        'find')             echo ${data[@]#$1};;
-        'find-long')        echo ${data[@]##$1};;
-        'find-end')         echo ${data[@]%$1};;
-        'find-end-long')    echo ${data[@]%%$1};;
-        'replace-head')     echo ${data[@]/#$1/$2};;
-        'replace-end')      echo ${data[@]/%$1/$2};;
-        'replace')          echo ${data[@]/$1/$2};;
-        *)                  echo ${data[@]};;
-    esac
-
-}
-
-string(){
-
-    local str="11223344"
-    echo 'str="11223344"'
-    echo "\${#str}      ${#str}         长度"
-    echo "\${str:3:5}   ${str:3:5}      按位置截取"
-    echo "\${str#*3}    ${str#*3}       前截取后"
-    echo "\${str##*3}   ${str##*3}      前截取后最长"
-    echo "\${str%*3}     ${str%*3}        后截取前"
-    echo "\${str%%*3}    ${str%%*3}       后截取前最长"
-    echo "\${str/3/a}   ${str/3/a}      替换一次"
-    echo "\${str//3/a}  ${str//3/a}     替换全部"
-    echo "\${str/#11/a} ${str/#11/a}    前缀替换"
-    echo "\${str/%44/a} ${str/%44/a}    后缀替换"
 
 
-}
-
-str="this is a string"
-[[ $str =~ "this" ]] && echo "$str contains this" 
-[[ $str =~ "that" ]] || echo "$str does NOT contain that"
 
 git log -p -2
 git log --stat
