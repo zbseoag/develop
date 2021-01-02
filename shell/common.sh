@@ -404,7 +404,7 @@ function show(){
 }
 
 
-function ipp(){
+function ipx(){
 
     local one="$1"
     [ -z "$one" ] && one=$(docker ps -q); [ -n "$one" ] && eval "docker inspect --format '{{.Name}}: {{.NetworkSettings.Networks.network.IPAddress}}' $one"
@@ -442,7 +442,7 @@ function install(){
 
 
 #复制文件,如果目录不存在,则自动创建
-function pc(){
+function cpx(){
     if [ $# == 1 ];then
         sudo cp $1 "$1.bak"
     else
@@ -487,11 +487,16 @@ function is(){
 
 function run(){
 
+    #默认选项，加上所有参数除了最后两个参数以外
     local option="--network=network --restart=on-failure:2 ${@:1:$#-2}"
+
     set -- ${@: -2}
     local name="$1"
     local image="$2"
 
+    #如果是 start[:step]:count 如：1:2:3 表示从 1开始，步长为2 启动3个镜像，1:5 等价于 1:1:5
+    #如果是 one,tow,three 就表示启动多台，名字分别就是 one tow three
+    #启动多台时，自动带上 -d 表示在后台运行
     if [[ "$name" =~ ':' ]];then
 
         name=(${name//:/' '})
@@ -517,7 +522,7 @@ function run(){
 
 }
 
-function mr(){
+function rmx(){
 
     local name="$1"
     local image="$2"
