@@ -13,10 +13,6 @@ demo(){
     echo ${@:1:$#-2}
     
 
-    case "$1" in
-        -*)         echo docker stop ${1#-};;
-    esac
-    
 
    
 }

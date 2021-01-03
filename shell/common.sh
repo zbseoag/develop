@@ -10,10 +10,8 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令
 export HISTIGNORE="pwd:history" #不记录的命令
 
-#环境变量
-export JAVA_HOME="/usr/lib/jvm/jdk-15.0.1"
-PATH=$PATH:$JAVA_HOME/bin:/d/elasticsearch7.10/bin:/d/kibana7.10/bin
-
+#export JAVA_HOME="/d/jdk15.0"
+export PATH=$PATH:/d/jdk15.0/bin:/d/elasticsearch7.10/bin:/d/kibana7.10/bin
 
 alias python="python3.8"
 alias ba="cd -"
@@ -40,40 +38,31 @@ alias llsbin="ll /usr/local/sbin"
 alias update="sudo apt update && apt list --upgradable"
 alias purge="sudo apt purge"
 
-alias sp="docker ps"
+alias ing="docker ps"
 alias all="docker ps -a"
 alias end="docker ps -f status=exited"
 
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
+alias port="netstat -ap | grep"
+alias addr="show ip"
 
-#'git')  git rm -r --cached $@;;
-
-function search(){
-
-    local software="$1"
-    apt list "$software*";
-    software="lib$software"
-    apt list "$software*";
-
-}
-
-function port(){
-    netstat -ap | grep $1
+function list(){
+    apt list "$1*";
+    apt list "lib$1*";
 }
 
 
 function start(){
 
     local one="$1"
-    shift 1
-    case "$one" in
+    case "$1" in
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
         'redis')    redis-server;;
         'web')      start php && start nginx;;      
-        :*)         [ "$one" == ":" ] && one="$(docker ps -q -f status=exited)" || one=${one#:}; [ -n "$one" ] && eval docker start $one;;
+        :*)         [ "$one" == ":all" ] && one="$(docker ps -q -f status=exited)" || one=${one#:}; [ -n "$one" ] && eval docker start $one;;
         *)          sudo service $one start;;
     esac
     
@@ -82,14 +71,13 @@ function start(){
 function stop(){
 
     local one="$1"
-    shift 1
-    case "$one" in
+    case "$1" in
         'php')      sudo pkill -9 php-fpm;;
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
         'redis')    redis-cli shutdown;;
         -*)         sudo pkill -9 ${one#-};; 
-        :*)         [ "$one" == ":" ] && one="$(docker ps -q)" || one=${one#:}; [ -n "$one" ] && eval docker stop $one;;
+        :*)         [ "$one" == ":all" ] && one="$(docker ps -q)" || one=${one#:}; [ -n "$one" ] && eval docker stop $one;;
         *)          sudo service $one stop;;
     esac
 }
@@ -146,34 +134,6 @@ function see(){
 
 
 
-git.config.init(){
-
-    git config --global user.name "zbseoag"
-    git config --global user.email "zbseoag@163.com"
-    git config --global core.editor code
-    git config --list
-    git config user.name
-    
-}
-
-
-function git.init(){
-
-    git init &&\
-    git add .  &&\
-    git commit -m "first commit" &&\
-    git branch -M main &&\
-    git remote add origin $1 &&\
-    git push -u origin main
-}
-
-function git.remote(){
-    git remote add origin $1 &&\
-    git branch -M main &&\
-    git push -u origin main
-
-}
-
 function tobin(){
     for one in "$@"; do
         local file=`realpath $one`;
@@ -198,28 +158,15 @@ function config(){
     if [ -z "$kw" ];then
         ./configure --help
     else
-        echo "./configure --help | grep -P '$kw'"
         eval "./configure --help | grep -P '$kw'"
     fi
 
 }
 
 
-
-
-
-function change(){
-
-    locas one="$1"
-    shift 1
-    case "$one" in
-        'tty')
-            case "$one" in
-                'title')    ORIGN_PS1=${ORIGN_PS1:-$PS1}; export PS1="$ORIGN_PS1\033]0;$*\007";;
-            esac
-        ;;
-    esac
-
+function title(){
+    ORIGN_PS1=${ORIGN_PS1:-$PS1};
+    export PS1="$ORIGN_PS1\033]0;$*\007"
 }
 
 
@@ -257,27 +204,24 @@ function load(){
                 done
         ;;
 
-        *)      exec bash;;
+        *)      exec bash;
     esac
     
 }
 
 function mywd(){
 
-    php -r "echo  '*' . substr(strtolower(md5('$1')) . strtoupper(md5('$1')), -36, 8) . '*' ;";
+    php -r "echo '*' . substr(strtolower(md5('$1')) . strtoupper(md5('$1')), -36, 8) . '*' ;";
     echo
 }
 
 
 function color(){
 
-    local index="$1"
-    shift 1
+    local index="$1"; shift 1
     declare -A color=([black]=30 [red]=31 [green]=32 [yellow]=33 [blue]=34 )
     [ -z "${color[$index]}" ] && index='black'
-
     echo -e "\033[${color[$index]}m$@\033[0m"
-
 }
 
 
@@ -299,28 +243,31 @@ function execute(){
 
 }
 
+function mkfdir(){
+    local dir=`dirname $1`
+    [ -d "$dir" ] || mkdir $dir
+}
 
 
 ### 打开文件或目录 ###
 function open(){
 
-    if [ $# == 2 ];then
-        local container="$1"
-        local infile="$2"
-        local outfile=/tmp/$1/`basename $infile`
-        [ -d "/tmp/$1" ] || mkdir /tmp/$1
-        docker cp $container:$infile $outfile 2>/dev/null
-        open $outfile
-        return
-    fi
-
     option="$1"
-    shift 1
     case "$option" in
-        'terminal')         gnome-terminal;;
-        'sources')          execute vim /etc/apt/sources.list;;
-        'user-dirs')        echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
-        '')                 explorer.exe .;; #xdg-open $PWD;;
+        'term')     gnome-terminal;;
+        'source')   execute vim /etc/apt/sources.list;;
+        'udirs')    echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
+        'env')      code /etc/environment;;
+        'profile')  code /etc/profile;;
+        'bashrc')   code /etc/bash.bashrc;;
+        :*)
+            local conter="${option#:}"
+            local newfile="/tmp/$conter`basename $2`"
+            mkfdir $newfile
+            docker cp $conter:$2 $newfile 2>/dev/null
+            open $newfile
+        ;;
+        .|'') explorer.exe .;; #xdg-open $PWD;;
         *)
 
             mime=`file --mime-type $option | awk '{print $2}'`
@@ -355,32 +302,24 @@ function open(){
 
 function push(){
 
-    local one="$1"
-    shift 1
-    case "$one" in
-
-        '-g')  git add . &&  git commit  -m '日常更新'  &&  git push;;
-        *)
-            local infile="$1"
-            local outfile=/tmp/$one/`basename $infile`
-            docker cp $outfile $one:$infile || { echo "更新失败！"; return 1; }
-        ;;
-
+    option="$1"
+    case "$option" in
+        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "更新失败！"; return 1; };;
+        '')     git add . && git commit -m '日常更新' && git push;;
+        *)      git add "$@" && git commit -m '日常更新' && git push;;
     esac
 
 }
 
 
-
 function show(){
 
-    local one="$1"
-    shift 1
-    case "$one" in
+    local two="$2"
+    case "$1" in
         'name')         uname -a;;
         'command')      compgen -ac;;
         'arch')         arch;; #处理器架构
-        'zombie')       "ps -A -o stat,ppid,pid,cmd | grep -e '^[Zz]'" ;; #显僵死进程
+        'zombie')       ps -A -o stat,ppid,pid,cmd | grep -e '^[Zz]';; #显僵死进程
         'status')       sudo systemctl status ;;
         'dmidecode')    dmidecode -q;;#显示硬件系统部件(SMBIOS/DMI)
         'issue')        cat /etc/issue;;
@@ -397,17 +336,10 @@ function show(){
         'code')         iconv -l;;#显示可用编码
         'df')           df -h;;#显示
         'name')         cat /etc/issue;;
-        'ip')           [ -z "$one" ] && one='eth0'; ifconfig $one | grep 'inet ' | sed 's/.*inet\s//g' | sed 's/\snet.*//g';;
-        *)              lsb_release -a && uname -a;;
+        'ip')           [ -z "$two" ] && two='eth0'; ifconfig $two | grep 'inet ' | sed 's/.*inet\s//g' | sed 's/\snet.*//g';;
+        *)              lsb_release -a;;
     esac
 
-}
-
-
-function ipx(){
-
-    local one="$1"
-    [ -z "$one" ] && one=$(docker ps -q); [ -n "$one" ] && eval "docker inspect --format '{{.Name}}: {{.NetworkSettings.Networks.network.IPAddress}}' $one"
 }
 
 
@@ -420,20 +352,17 @@ function where(){
 
 }
 
-
 function install(){
 
-    local software="$1"
-    local ext="${software##*.}"
-
+    local ext="${1##*.}"
     case "$ext" in
-        'deb')  sudo dpkg -i $software;;
-        'rpm')  sudo rpm -i $software;;
+        'deb')  sudo dpkg -i $1;;
+        'rpm')  sudo rpm -i $1;;
         *) 
             if [ -n "`which apt`" ];then
-                sudo apt install -y $software && echo $software >> ~/install.log
+                sudo apt install -y $1 && echo $1 >> ~/install.log
             elif [ -n "`which yum`" ];then
-                sudo yum install -y $software && echo $software >> ~/install.log
+                sudo yum install -y $1 && echo $1 >> ~/install.log
             fi
         ;;
     esac
@@ -442,7 +371,7 @@ function install(){
 
 
 #复制文件,如果目录不存在,则自动创建
-function cpx(){
+function copy(){
     if [ $# == 1 ];then
         sudo cp $1 "$1.bak"
     else
@@ -456,8 +385,7 @@ function cpx(){
 
 function is(){
 
-    local cmd="$1"
-    shift 1
+    local cmd="$1"; shift 1
     case "$cmd" in
         'run')
 
@@ -483,9 +411,7 @@ function is(){
 
 }
 
-
-
-function run(){
+run(){
 
     #默认选项，加上所有参数除了最后两个参数以外
     local option="--network=network --restart=on-failure:2 ${@:1:$#-2}"
@@ -522,7 +448,7 @@ function run(){
 
 }
 
-function rmx(){
+function rmc(){
 
     local name="$1"
     local image="$2"
@@ -552,7 +478,7 @@ function rmx(){
 }
 
 
-function exe(){
+function exc(){
 
     local one="$1"
     shift 1
@@ -578,3 +504,17 @@ function img(){
 
 }
 
+
+function get(){
+
+    local format
+    case "$1" in
+        'ip')   format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}';;
+        'port') format='{{range $p, $conf := .NetworkSettings.Ports}}{{$p}} {{end}}';;
+        'json') format="{{json .${2^}}}"; shift 1;;
+    esac
+
+    local con=${2:-"$(docker ps -q)"}
+    [ -n "$con" ] && docker inspect --format="{{.Name}}: $format" $con
+
+}
