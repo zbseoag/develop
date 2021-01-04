@@ -299,7 +299,6 @@ function open(){
 
     esac
 
-
 }
 
 function push(){
@@ -315,7 +314,6 @@ function push(){
     esac
 
 }
-
 
 function show(){
 
