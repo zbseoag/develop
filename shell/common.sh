@@ -309,8 +309,8 @@ function push(){
         'dev')  (cd.develop && push);;
         'lib')  (cd /e/php-library && push);;
         'all')  push dev && push lib;;
-        '')     git add . && git commit -m '日常更新' && git push;;
-        *)      git add "$@" && git commit -m '日常更新' && git push;;
+        '')     push .;;
+        *)      git add $@ && git commit -m '日常更新' && git push;;
     esac
 
 }
