@@ -10,7 +10,7 @@ export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace�
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/d/usr/jdk15.0/bin:/d/usr/elasticsearch7.10/bin:/d/usr/kibana7.10/bin
+export PATH=$PATH:/d/usr/jdk15.0/bin:/d/usr/elasticsearch7.10/bin:/d/usr/kibana7.10/bin:/d/usr/golang/bin
 
 alias python="python3.8"
 alias ba="cd -"
@@ -519,6 +519,7 @@ function get(){
     [ -n "$con" ] && docker inspect --format="{{.Name}}: $format" $con
 
 }
+
 
 function rename(){
     sudo mv $1 `dirname $1`/$2
