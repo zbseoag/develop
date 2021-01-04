@@ -372,7 +372,6 @@ function install(){
 
 }
 
-
 #复制文件,如果目录不存在,则自动创建
 function copy(){
     if [ $# == 1 ];then
@@ -451,7 +450,7 @@ run(){
 
 }
 
-function rmc(){
+function del(){
 
     local name="$1"
     local image="$2"
@@ -481,14 +480,13 @@ function rmc(){
 }
 
 
-function exc(){
+function exe(){
 
     local one="$1"
     shift 1
     case "$one" in
         *) [ $# == 0 ] && docker exec -it $one bash || docker exec -it $one $@ ;;
     esac
-
 }
 
 function img(){
