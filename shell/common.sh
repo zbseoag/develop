@@ -306,9 +306,9 @@ function push(){
 
     option="$1"
     case "$option" in
-        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "更新失败！"; return 1; };;   
-        'dev')  cd.develop && push;;
-        'lib')  cd /e/php-library && push;;
+        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "上传失败"; return 1; };;   
+        'dev')  (cd.develop && push);;
+        'lib')  (cd /e/php-library && push);;
         'all')  push dev && push lib;;
         '')     git add . && git commit -m '日常更新' && git push;;
         *)      git add "$@" && git commit -m '日常更新' && git push;;
