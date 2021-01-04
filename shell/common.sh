@@ -254,20 +254,18 @@ function open(){
 
     option="$1"
     case "$option" in
-        'term')     gnome-terminal;;
         'source')   execute vim /etc/apt/sources.list;;
         'udirs')    echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
-        'env')      code /etc/environment;;
         'profile')  code /etc/profile;;
         'bashrc')   code /etc/bash.bashrc;;
         :*)
-            local conter="${option#:}"
-            local newfile="/tmp/$conter`basename $2`"
-            mkfdir $newfile
-            docker cp $conter:$2 $newfile 2>/dev/null
-            open $newfile
+            local con="${option#:}"
+            local file="/tmp/$con`basename $2`"
+            mkfdir $file
+            docker cp $con:$2 $file 2>/dev/null
+            open $file
         ;;
-        .|'') explorer.exe .;; #xdg-open $PWD;;
+        '') explorer.exe .;; #xdg-open $PWD;;
         *)
 
             mime=`file --mime-type $option | awk '{print $2}'`
@@ -281,12 +279,16 @@ function open(){
                 #用编辑器打开
                 code $option
 
-            elif [ "$mime" = 'inode/directory' -o "$mime" != 'cannot' ];then
+            elif [ "$mime" = 'inode/directory' ];then
+                cd $option && explorer.exe .
+                #xdg-open $option
+
+            elif [ "$mime" != 'cannot' ];then
                 #默认方式打开
                 color red "文件类型：$mime"
-                start.exe $option
+                explorer.exe $option
                 #xdg-open $option
-            
+                
             else
                 color red "新建: $option"
                 [ ! -w . ] && sudo touch $option
