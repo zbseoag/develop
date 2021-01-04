@@ -12,9 +12,6 @@ demo(){
     echo ${@: -2}
     echo ${@:1:$#-2}
     
-
-
-   
 }
 
 
@@ -40,17 +37,14 @@ function args(){
 string(){
 
     local str="11223344"
-    echo 'str="11223344"'
-    echo "\${#str}      ${#str}         长度"
-    echo "\${str:3:5}   ${str:3:5}      按位置截取"
-    echo "\${str#*3}    ${str#*3}       前截取后"
-    echo "\${str##*3}   ${str##*3}      前截取后最长"
-    echo "\${str%*3}     ${str%*3}      后截取前"
-    echo "\${str%%*3}    ${str%%*3}     后截取前最长"
-    echo "\${str/3/a}   ${str/3/a}      替换一次"
-    echo "\${str//3/a}  ${str//3/a}     替换全部"
-    echo "\${str/#11/a} ${str/#11/a}    前缀替换"
-    echo "\${str/%44/a} ${str/%44/a}    后缀替换"
+    echo "${#str}                  长度"
+    echo "${str:3:5}               按位置截取"
+    echo "${str#*3} ${str##*3}     前截取后"
+    echo "${str%*3} ${str%%*3}     后截取前"
+    echo "${str/3/a}      替换一次"
+    echo "${str//3/a}     替换全部"
+    echo "${str/#11/a}    前缀替换"
+    echo "${str/%44/a}    后缀替换"
 
     [[ "$str" =~ "this" ]] && echo "$str contains this" 
 }

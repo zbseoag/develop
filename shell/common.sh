@@ -10,27 +10,16 @@ export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace�
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/d/usr/jdk15.0/bin:/d/usr/elasticsearch7.10/bin:/d/usr/kibana7.10/bin:/d/usr/golang/bin
+export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/golang/bin
 
 alias python="python3.8"
 alias ba="cd -"
 alias up="cd .."
-alias cd.bin="cd /usr/local/bin"
-alias cd.sbin="cd /usr/local/sbin"
 
-alias cdr="cd /"
-alias cdc="cd /c"
-alias cdd="cd /d"
-alias cde="cd /e"
-alias cd.src="cd /d/src"
-alias cd.usr="cd /d/usr"
-alias cd.download="cd /e/Download"
-alias cd.develop="cd /e/develop"
-alias cd.syntax="cd /e/develop/syntax"
-alias cd.desktop="cd /desktop"
 alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
-alias look="ps -aux | grep -v 'grep'| grep"
+alias ps-="ps -aux | grep -v 'grep'| grep"
+alias make="make -j $(nproc)"
 
 alias llbin="ll /usr/local/bin"
 alias llsbin="ll /usr/local/sbin"
@@ -46,13 +35,52 @@ alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
-alias addr="show ip"
+alias clear="reset"
+
+function path(){
+
+    if [ "${1:0:1}" != '-' -a ! -d "$1" ];then
+        local root=${1%:}
+        case "$root" in
+            'c')        root=/c;;
+            'd')        root=/d;;
+            'e')        root=/e;;
+            'src')      root=/d/src;;
+            'usr')      root=/d/usr;;
+            'bin')      root=/usr/local/bin;;
+            'sbin')     root=/usr/local/sbin;;
+            'desktop')  root=/desktop;;
+            'syntax')   root=/e/develop/syntax;;
+            'dev')      root=/e/develop;;
+            'down')     root=/e/Download;;
+        esac
+
+        shift 1
+        for i in "$@";do
+            root="$root/$i"
+        done
+        set -- $root
+    fi
+    echo $@
+}
+
+function p(){
+    for arg in "$@";do echo "参数 $index:   '$arg'";let index+=1; done
+}
+
+function cd(){
+    builtin cd `path $@`
+}
+
+function ll(){
+    eval ls -alF `path $@`
+}
+
 
 function list(){
     apt list "$1*";
     apt list "lib$1*";
 }
-
 
 function start(){
 
@@ -61,11 +89,11 @@ function start(){
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
         'redis')    redis-server;;
-        'web')      start php && start nginx;;      
         :*)         [ "$one" == ":all" ] && one="$(docker ps -q -f status=exited)" || one=${one#:}; [ -n "$one" ] && eval docker start $one;;
+        '')         start docker;;
+        'web')      start php && start nginx;;
         *)          sudo service $one start;;
     esac
-    
 }
 
 function stop(){
@@ -133,12 +161,18 @@ function see(){
 }
 
 
-
 function tobin(){
     for one in "$@"; do
         local file=`realpath $one`;
         sudo ln -fs $file /usr/local/bin
     done
+}
+
+function link(){
+
+    local file=$2
+    [ -d "`dirname $2`" ] || file="./$2"
+    sudo ln -fs `realpath $1` $file
 }
 
 function tosbin(){
@@ -204,7 +238,7 @@ function load(){
                 done
         ;;
 
-        *)      exec bash;
+        *)      eval bash;
     esac
     
 }
@@ -254,10 +288,10 @@ function open(){
 
     option="$1"
     case "$option" in
-        'source')   execute vim /etc/apt/sources.list;;
-        'udirs')    echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
-        'profile')  code /etc/profile;;
-        'bashrc')   code /etc/bash.bashrc;;
+        '-source')   execute vim /etc/apt/sources.list;;
+        '-udirs')    echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
+        '-profile')  code /etc/profile;;
+        '-bashrc')   code /etc/bash.bashrc;;
         :*)
             local con="${option#:}"
             local file="/tmp/$con`basename $2`"
@@ -306,8 +340,8 @@ function push(){
     option="$1"
     case "$option" in
         :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "上传失败"; return 1; };;   
-        'dev')  (cd.develop && push);;
-        'lib')  (cd /e/php-library && push);;
+        'dev')  (cd dev && push);;
+        'lib')  (cd e php-library && push);;
         'all')  push dev && push lib;;
         '')     push .;;
         *)      git add $@ && git commit -m '日常更新' && git push;;
@@ -480,7 +514,7 @@ function del(){
 }
 
 
-function exe(){
+function ex(){
 
     local one="$1"
     shift 1
