@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 ROOTPH="/e/develop/shell"
-source $ROOTPH/demo.sh
 
 #history 配置
 #export HISTFILE=~/.bash_history #命令历史文件名
@@ -10,8 +9,8 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令
 export HISTIGNORE="pwd:history" #不记录的命令
 
-#export JAVA_HOME="/d/jdk15.0"
-export PATH=$PATH:/d/jdk15.0/bin:/d/elasticsearch7.10/bin:/d/kibana7.10/bin
+#export JAVA_HOME="/d/usr/jdk15.0"
+export PATH=$PATH:/d/usr/jdk15.0/bin:/d/usr/elasticsearch7.10/bin:/d/usr/kibana7.10/bin
 
 alias python="python3.8"
 alias ba="cd -"
@@ -24,12 +23,13 @@ alias cdc="cd /c"
 alias cdd="cd /d"
 alias cde="cd /e"
 alias cd.src="cd /d/src"
+alias cd.usr="cd /d/usr"
 alias cd.download="cd /e/Download"
 alias cd.develop="cd /e/develop"
 alias cd.syntax="cd /e/develop/syntax"
 alias cd.desktop="cd /desktop"
 alias tar.src="tar -C /d/src -xvf"
-alias tar.dpan="tar -C /d -xvf"
+alias tar.usr="tar -C /d/usr -xvf"
 alias look="ps -aux | grep -v 'grep'| grep"
 
 alias llbin="ll /usr/local/bin"
@@ -306,7 +306,10 @@ function push(){
 
     option="$1"
     case "$option" in
-        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "更新失败！"; return 1; };;
+        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "更新失败！"; return 1; };;   
+        'dev')  cd.develop && push;;
+        'lib')  cd /e/php-library && push;;
+        'all')  push dev && push lib;;
         '')     git add . && git commit -m '日常更新' && git push;;
         *)      git add "$@" && git commit -m '日常更新' && git push;;
     esac
@@ -519,4 +522,8 @@ function get(){
     local con=${2:-"$(docker ps -q)"}
     [ -n "$con" ] && docker inspect --format="{{.Name}}: $format" $con
 
+}
+
+function rename(){
+    sudo mv $1 `dirname $1`/$2
 }
