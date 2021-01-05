@@ -13,16 +13,13 @@ export HISTIGNORE="pwd:history" #不记录的命令
 export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/golang/bin
 
 alias python="python3.8"
-alias ba="cd -"
+alias wk="cd -"
 alias up="cd .."
 
 alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
 alias ps-="ps -aux | grep -v 'grep'| grep"
 alias make="make -j $(nproc)"
-
-alias llbin="ll /usr/local/bin"
-alias llsbin="ll /usr/local/sbin"
 
 alias update="sudo apt update && apt list --upgradable"
 alias purge="sudo apt purge"
@@ -40,6 +37,7 @@ alias clear="reset"
 function path(){
 
     if [ "${1:0:1}" != '-' -a ! -d "$1" ];then
+    
         local root=${1%:}
         case "$root" in
             'c')        root=/c;;
@@ -65,7 +63,10 @@ function path(){
 }
 
 function p(){
-    for arg in "$@";do echo "参数 $index:   '$arg'";let index+=1; done
+    for arg in "$@";do 
+        echo "参数 $index: '$arg'";
+        let index+=1; 
+    done
 }
 
 function cd(){
@@ -118,10 +119,7 @@ function linux(){
     name["bullseye"]="Debian 11"
     name["buster"]="Debian 10"
     name["stretch"]="Debian 9"
-    name["jessie"]="Debian 8"
-    name["wheezy"]="Debian 7"
     name["alpine"]="Alpine Linux是一个由社区开发的基于musl和BusyBox的Linux操作系统"
-    name["null"]="null"
     name["null"]="null"
 
     typeset -l index; local index="$1"
