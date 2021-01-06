@@ -26,20 +26,36 @@ alias purge="sudo apt purge"
 
 alias ing="docker ps"
 alias all="docker ps -a"
-alias end="docker ps -f status=exited"
 
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
-alias clear="reset"
+alias path="realpath -s"
+alias args="echo \(num \$#\): \$@;return"
 
-function path(){
-
-    if [ "${1:0:1}" != '-' -a ! -d "$1" ];then
+function parse.option(){
     
-        local root=${1%:}
-        case "$root" in
+    local backward="$2"
+    local default="$3"
+    set -- $1
+    local  option="$default"
+    [ $backward -lt  $# ] && option=${@:1:$#-$backward}
+    echo "$option | ${@: -$backward}" ;
+
+}
+
+function parse.path(){
+    
+    local option=`parse.option "$*" 1`;
+    set -- ${option#*|}
+    option="${option%%|*}"
+
+    local root="$1"
+    local name="${1%%/*}"
+
+    if  [ -n "$name"  -a  ! -d "$name"   ];then
+        case "$name" in
             'c')        root=/c;;
             'd')        root=/d;;
             'e')        root=/e;;
@@ -47,20 +63,17 @@ function path(){
             'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
-            'desktop')  root=/desktop;;
-            'syntax')   root=/e/develop/syntax;;
+            'desk')    root=/desktop;;
             'dev')      root=/e/develop;;
-            'down')     root=/e/Download;;
+            'down')   root=/e/Download;;
+            'test')     root=~/test;;
         esac
-
-        shift 1
-        for i in "$@";do
-            root="$root/$i"
-        done
-        set -- $root
+        root="$root${1/#$name/}"
     fi
-    echo $@
+    echo $option $root
+
 }
+
 
 function p(){
     for arg in "$@";do 
@@ -70,13 +83,12 @@ function p(){
 }
 
 function cd(){
-    builtin cd `path $@`
+    builtin cd `parse.path $@`
 }
 
 function ll(){
-    eval ls -alF `path $@`
+    eval ls -alF `parse.path $@`
 }
-
 
 function list(){
     apt list "$1*";
@@ -160,25 +172,42 @@ function see(){
 
 
 function tobin(){
-    for one in "$@"; do
-        local file=`realpath $one`;
-        sudo ln -fs $file /usr/local/bin
+
+    [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`;  }
+    for item in "$@"; do
+        [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
+        [  -f "$item" ] && sudo ln -fs $item /usr/local/bin && echo "$item"
     done
-}
 
-function link(){
-
-    local file=$2
-    [ -d "`dirname $2`" ] || file="./$2"
-    sudo ln -fs `realpath $1` $file
 }
 
 function tosbin(){
 
-    for one in "$@"; do
-        local file=`realpath $one`;
-        sudo ln -fs $file /usr/local/sbin
+    [ $# == 1 -a  -d "$1"  ]  &&  { cd $1; set -- `ls $1`;  }
+    for item in "$@"; do
+        [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
+        [  -f "$item" ] && sudo ln -fs $item /usr/local/sbin && echo "$item"
     done
+
+}
+
+
+function pwdpath(){
+    path="$1"
+     [  ${path:0:1} != '/'  ] && path="`pwd`/$path"
+     echo path;
+}
+
+
+function lnk(){
+
+    local option=`parse.option "$*" 2 '-is'`;
+    set -- ${option#*|}
+    option="${option%%|*}"
+   
+    local target=$1
+    [  ${target:0:1} != '/'  ] && target="`pwd`/$target"
+    sudo ln $option $target $2
 
 }
 
@@ -338,8 +367,8 @@ function push(){
     option="$1"
     case "$option" in
         :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "上传失败"; return 1; };;   
-        'dev')  (cd dev: && push);;
-        'lib')  (cd e: php-library && push);;
+        'dev')  (cd dev && push);;
+        'lib')  (cd e php-library && push);;
         'all')  push dev && push lib;;
         '')     push .;;
         *)      git add $@ && git commit -m '日常更新' && git push;;
@@ -445,7 +474,7 @@ function is(){
 
 }
 
-run(){
+function run(){
 
     #默认选项，加上所有参数除了最后两个参数以外
     local option="--network=network --restart=on-failure:2 ${@:1:$#-2}"
@@ -521,13 +550,16 @@ function ex(){
     esac
 }
 
-function img(){
+
+
+function image(){
 
     local one="$1"
     shift 1
     case "$one" in
 
         'clean')    docker image rm $(docker image ls -f "dangling=true" -q);;
+        '')             docker images;;
         *)  
             local c='.ContainerConfig';
             docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $one
