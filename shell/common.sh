@@ -345,14 +345,13 @@ function push(){
 
     option="$1"
     case "$option" in
-        :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "上传失败"; return 1; };;   
-        'dev')  (cd dev && push);;
-        'lib')  (cd lib && push);;
-        'all')  push dev && push lib;;
-        '')     push .;;
+        :*)     local con="${option#:}"; docker cp /tmp/$con/`basename $2` $con:$2;;   
+        'dev')  (cd dev; push .);;
+        'lib')  (cd lib; push .);;
+        'all')  push dev; push lib;;
+        '')     git push;;
         *)      git add $@ && git commit -m '日常更新' && git push;;
     esac
-
 }
 
 #文件重命令
