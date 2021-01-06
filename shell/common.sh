@@ -2,55 +2,53 @@
 ROOTPH="/e/develop/shell"
 
 #history 配置
-#export HISTFILE=~/.bash_history #命令历史文件名
-#export HISTTIMEFORMAT='%F ' #时间格式化
-export HISTSIZE=5000 #命令历史列表总条数
+export HISTTIMEFORMAT='%F ' #时间格式化
+export HISTSIZE=100 #命令历史列表总条数
 export HISTFILESIZE=10000 #命令历史文件总条数
-export HISTCONTROL="ignoreboth" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令
+export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令  ignoreboth
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
 export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/golang/bin
 
-alias python="python3.8"
 alias wk="cd -"
 alias up="cd .."
+alias p="echo"
+alias end="return"
 
 alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
-alias ps-="ps -aux | grep -v 'grep'| grep"
 alias make="make -j $(nproc)"
-
 alias update="sudo apt update && apt list --upgradable"
 alias purge="sudo apt purge"
-
-alias ing="docker ps"
-alias all="docker ps -a"
 
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias path="realpath -s"
-alias args="echo \(num \$#\): \$@;return"
+alias pargs="echo \(num \$#\): \$@;return"
+
+alias all="docker ps -a"
 
 function parse.option(){
     
     local backward="$2"
     local default="$3"
     set -- $1
-    local  option="$default"
-    [ $backward -lt  $# ] && option=${@:1:$#-$backward}
-    echo "$option | ${@: -$backward}" ;
-
+    local option="$default"
+    local args=""
+    [ "$backward" -lt $# ] && option=${@:1:$#-$backward}
+    [ "$backward" -le $# -a "$backward" -gt 0 ] && args=${@: -$backward}
+    echo "$option|$args"
 }
 
 function parse.path(){
-    
+ 
     local option=`parse.option "$*" 1`;
     set -- ${option#*|}
     option="${option%%|*}"
-
+   
     local root="$1"
     local name="${1%%/*}"
 
@@ -71,11 +69,10 @@ function parse.path(){
         root="$root${1/#$name/}"
     fi
     echo $option $root
-
 }
 
 
-function p(){
+function foreach(){
     for arg in "$@";do 
         echo "参数 $index: '$arg'";
         let index+=1; 
@@ -86,6 +83,7 @@ function cd(){
     builtin cd `parse.path $@`
 }
 
+unalias ll
 function ll(){
     eval ls -alF `parse.path $@`
 }
@@ -95,31 +93,38 @@ function list(){
     apt list "lib$1*";
 }
 
+
 function start(){
 
-    local one="$1"
     case "$1" in
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
         'redis')    redis-server;;
-        :*)         [ "$one" == ":all" ] && one="$(docker ps -q -f status=exited)" || one=${one#:}; [ -n "$one" ] && eval docker start $one;;
+        :*|'all')         
+                    local item="${@#:}"
+                    [ "$@" == "all" ] && item="$(docker ps -q -f status=exited)"
+                    [ -n "$item" ] && docker start $item
+        ;;   
         '')         start docker;;
         'web')      start php && start nginx;;
-        *)          sudo service $one start;;
+        *)          sudo service $1 start;;
     esac
 }
 
 function stop(){
 
-    local one="$1"
     case "$1" in
         'php')      sudo pkill -9 php-fpm;;
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
         'redis')    redis-cli shutdown;;
-        -*)         sudo pkill -9 ${one#-};; 
-        :*)         [ "$one" == ":all" ] && one="$(docker ps -q)" || one=${one#:}; [ -n "$one" ] && eval docker stop $one;;
-        *)          sudo service $one stop;;
+        -*)         sudo pkill -9 ${1#-};;
+        :*|'all')         
+                    local item="${@#:}"
+                    [ "$@" == "all" ] && item="$(docker ps -q)"
+                    [ -n "$item" ] && docker stop $item
+        ;;
+        *)          sudo service $1 stop;;
     esac
 }
 
@@ -170,7 +175,7 @@ function see(){
 
 }
 
-
+#批量将文件链接到 bin 目录，如果参数是一个目录，则链接目录中的所有文件
 function tobin(){
 
     [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`;  }
@@ -231,44 +236,6 @@ function title(){
 }
 
 
-function load(){
-
-    case "$1" in
-        'install')
-
-                [ -z `which sudo` ] && apt install -y sudo
-
-                local software=""
-                until [ "$software" == 'exit' ]
-                do
-                   
-                    echo -en "\033[31m查找: \033[0m"
-                    read software
-
-                    [ "$software" == 'exit' -o -z "$software" ] && break
-                    
-                    apt list "$software*";
-                    software="lib$software"
-                    apt list "$software*";
-
-                    echo -en "\033[31m安装: \033[0m"
-                    read software
-
-                    if [ "$software" == 'next' -o -z "$software" ];then
-                        continue
-                    elif [ "$software" == 'exit' ];then
-                        break
-                    fi
-
-                    sudo apt install -y $software && echo $software >> ~/install.log
-
-                done
-        ;;
-
-        *)      eval bash;
-    esac
-    
-}
 
 function mywd(){
 
@@ -310,23 +277,28 @@ function mkfdir(){
 }
 
 
-### 打开文件或目录 ###
+#打开文件或目录
+#可以打开 docker 容器中的文件，如： open :container /tmp/test.txt  注：参数要冒号开头
+#会把容器中的文件复制到 /tmp/<container>/ 目录中，如果复制为成功，则在该目录新建。
+#可以再结合一个 push :container /tmp/test.txt 就会找到  /tmp/<container>/test.txt 并复制到容器中
+#如果没有参数，表示打开当前目录
+#由于我是用的 WSL 打开当前目录的命令 explorer.exe . 请换成 xdg-open 命令
+
 function open(){
 
     option="$1"
     case "$option" in
-        '-source')   execute vim /etc/apt/sources.list;;
-        '-udirs')    echo '/etc/xdg/user-dirs.defaults || ~/.config/user-dirs.dirs';;
-        '-profile')  code /etc/profile;;
-        '-bashrc')   code /etc/bash.bashrc;;
+        '-source')  code /etc/apt/sources.list;;
+        '-profile') code /etc/profile;;
+        '-bashrc')  code /etc/bash.bashrc;;
         :*)
-            local con="${option#:}"
-            local file="/tmp/$con`basename $2`"
-            mkfdir $file
-            docker cp $con:$2 $file 2>/dev/null
-            open $file
+                    local con="${option#:}"
+                    local file="/tmp/$con`basename $2`"
+                    mkfdir $file
+                    docker cp $con:$2 $file 2>/dev/null
+                    open $file
         ;;
-        '') explorer.exe .;; #xdg-open $PWD;;
+        '')         explorer.exe .;; #xdg-open $PWD;;
         *)
 
             mime=`file --mime-type $option | awk '{print $2}'`
@@ -362,6 +334,9 @@ function open(){
 
 }
 
+
+#可以推送 git
+#可以结合上面 open 可以再把文件推送到容器
 function push(){
 
     option="$1"
@@ -375,6 +350,79 @@ function push(){
     esac
 
 }
+
+#文件重命令
+#第二个参数只是单纯表示新名字，如：rename /home/old.txt new.txt
+function rename(){
+    sudo mv $1 `dirname $1`/$2
+}
+
+#类似于 whereis 命令，但列出内容更详细
+function where(){
+
+	local name="$1"
+    [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
+    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
+    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
+
+}
+
+#综合了 apt install 和 dpkg -i 安装软件
+#如果不带任何参数，则进入查找安装过程
+#如：install 回车，输入 mysql，会列出包名，输入要安装的包名或输入 exit 退出
+
+function install(){
+
+    if [ $# == 0 ];then
+
+        [ -z `which sudo` ] && apt install -y sudo
+        local software=""
+        until [ "$software" == 'exit' ]
+        do
+            
+            echo -en "\033[31m查找: \033[0m"
+            read software
+
+            [ "$software" == 'exit' -o -z "$software" ] && break
+        
+            apt list "$software*";
+            apt list "lib{$software}*";
+            
+            echo -en "\033[31m安装: \033[0m"
+            read software
+
+            if [ "$software" == 'next' -o -z "$software" ];then
+                continue
+            elif [ "$software" == 'exit' ];then
+                break
+            fi
+
+            sudo apt install -y $software && echo $software >> ~/.install.log
+
+        done
+
+    else
+
+        local ext="${1##*.}"
+        case "$ext" in
+            'deb')  sudo dpkg -i $1;;
+            'rpm')  sudo rpm -i $1;;
+            *) 
+                if [ -n "`which apt`" ];then
+                    sudo apt install -y $1 && echo $1 >> ~/install.log
+                elif [ -n "`which yum`" ];then
+                    sudo yum install -y $1 && echo $1 >> ~/install.log
+                fi
+            ;;
+        esac
+
+    fi
+
+}
+
+
+
+
 
 function show(){
 
@@ -406,32 +454,6 @@ function show(){
 
 }
 
-
-function where(){
-
-	local name="$1"
-    [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
-    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
-    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
-
-}
-
-function install(){
-
-    local ext="${1##*.}"
-    case "$ext" in
-        'deb')  sudo dpkg -i $1;;
-        'rpm')  sudo rpm -i $1;;
-        *) 
-            if [ -n "`which apt`" ];then
-                sudo apt install -y $1 && echo $1 >> ~/install.log
-            elif [ -n "`which yum`" ];then
-                sudo yum install -y $1 && echo $1 >> ~/install.log
-            fi
-        ;;
-    esac
-
-}
 
 #复制文件,如果目录不存在,则自动创建
 function copy(){
@@ -511,7 +533,7 @@ function run(){
 
 }
 
-function del(){
+function rm:(){
 
     local name="$1"
     local image="$2"
@@ -541,16 +563,29 @@ function del(){
 }
 
 
-function ex(){
+function exec(){
 
-    local one="$1"
-    shift 1
-    case "$one" in
-        *) [ $# == 0 ] && docker exec -it $one bash || docker exec -it $one $@ ;;
+    case "$1" in
+        :*)
+            set -- ${@#:}
+            local item="-it $1"
+            [ $# == 1 ] && item="$item bash"
+            docker exec -it $item
+        ;;
+        *)  builtin exec $@;;
     esac
+
 }
 
+function ps(){
 
+    case "$1" in
+        :*) docker ps ${@#:};;
+        -*) ps -aux | grep -v 'grep'| grep ${@#-};;
+        *)  /bin/ps $@;;
+    esac
+
+}
 
 function image(){
 
@@ -559,7 +594,7 @@ function image(){
     case "$one" in
 
         'clean')    docker image rm $(docker image ls -f "dangling=true" -q);;
-        '')             docker images;;
+        '')         docker images;;
         *)  
             local c='.ContainerConfig';
             docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $one
@@ -570,7 +605,7 @@ function image(){
 }
 
 
-function get(){
+function info(){
 
     local format
     case "$1" in
@@ -585,6 +620,3 @@ function get(){
 }
 
 
-function rename(){
-    sudo mv $1 `dirname $1`/$2
-}
