@@ -9,7 +9,7 @@ export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace�
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/golang/bin
+export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin
 
 alias wk="cd -"
 alias up="cd .."
@@ -28,7 +28,6 @@ alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias path="realpath -s"
 alias pargs="echo \(num \$#\): \$@;return"
-
 alias all="docker ps -a"
 
 function parse.option(){
@@ -52,8 +51,9 @@ function parse.path(){
     local root="$1"
     local name="${1%%/*}"
 
-    if  [ -n "$name"  -a  ! -d "$name"   ];then
-        case "$name" in
+    if  [ -n "$name"  -a  ! -d "$1" ];then
+        
+        case "${name/%:/}" in
             'c')        root=/c;;
             'd')        root=/d;;
             'e')        root=/e;;
@@ -207,16 +207,19 @@ function pwdpath(){
 
 function lnk(){
 
-    local option=`parse.option "$*" 2 '-is'`;
+    local option=`parse.option "$*" 2 '-isv'`;
     set -- ${option#*|}
     option="${option%%|*}"
    
     local target=$1
     [  ${target:0:1} != '/'  ] && target="`pwd`/$target"
     sudo ln $option $target $2
-
 }
 
+function change(){
+    local file=/d/usr/$1
+    rm $file && ln -sv /d/usr/$1$2 $file
+}
 
 function config(){
 
