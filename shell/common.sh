@@ -61,10 +61,11 @@ function parse.path(){
             'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
-            'desk')    root=/desktop;;
+            'desk')     root=/desktop;;
             'dev')      root=/e/develop;;
-            'down')   root=/e/Download;;
+            'down')     root=/e/Download;;
             'test')     root=~/test;;
+            'lib')      root=/e/php-library;;
         esac
         root="$root${1/#$name/}"
     fi
@@ -343,7 +344,7 @@ function push(){
     case "$option" in
         :*)     local conter="${option#:}"; docker cp /tmp/$conter/`basename $2` $conter:$2 || { echo "上传失败"; return 1; };;   
         'dev')  (cd dev && push);;
-        'lib')  (cd e/php-library && push);;
+        'lib')  (cd lib && push);;
         'all')  push dev && push lib;;
         '')     push .;;
         *)      git add $@ && git commit -m '日常更新' && git push;;
