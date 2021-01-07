@@ -111,9 +111,9 @@ function start(){
         'nginx')    sudo nginx;;
         'redis')    redis-server;;
         :*|'all')         
-                    local item="${@#:}"
-                    [ "$@" == "all" ] && item="$(docker ps -q -f status=exited)"
-                    [ -n "$item" ] && docker start $item
+                    set -- ${@#:}
+                    [ "$@" == "all" ] && set -- "$(docker ps -qf status=exited)"
+                    [ -n "$@" ] && docker stop $@
         ;;   
         '')         start docker;;
         'web')      start php && start nginx;;
@@ -128,11 +128,12 @@ function stop(){
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
         'redis')    redis-cli shutdown;;
+        '')         stop docker;;
         -*)         sudo pkill -9 ${1#-};;
         :*|'all')         
-                    local item="${@#:}"
-                    [ "$@" == "all" ] && item="$(docker ps -q)"
-                    [ -n "$item" ] && docker stop $item
+                    set -- ${@#:}
+                    [ "$@" == "all" ] && set -- "$(docker ps -q)"
+                    [ -n "$@" ] && docker stop $@
         ;;
         *)          sudo service $1 stop;;
     esac
@@ -556,7 +557,7 @@ function exec(){
             set -- ${@#:}
             [ $# == 1 ] && set -- "-it $@ bash"
             [ $# == 2 ] && set -- "-it $@"
-            echo docker exec $@
+            docker exec $@
         ;;
         *)  builtin exec $@;;
     esac
