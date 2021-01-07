@@ -294,7 +294,7 @@ function mkfdir(){
 function open(){
 
     option="$1"
-    case "$option" in
+    case "$1" in
         '-source')  code /etc/apt/sources.list;;
         '-profile') code /etc/profile;;
         '-bashrc')  code /etc/bash.bashrc;;
@@ -346,14 +346,13 @@ function open(){
 #可以结合上面 open 可以再把文件推送到容器
 function push(){
 
-    option="$1"
-    case "$option" in
-        :*)     local con="${option#:}"; docker cp /tmp/$con/`basename $2` $con:$2;;   
+    case "$1" in
+        :*)     local con="${1#:}"; docker cp /tmp/$con/`basename $2` $con:$2;;   
         'dev')  (cd dev; push .);;
         'lib')  (cd lib; push .);;
         'all')  push dev; push lib;;
         '')     git push;;
-        *)      git add $@ && git commit -m '日常更新' && git push;;
+        *)      git add $@; git commit -m '日常更新'; git push;;
     esac
 }
 
