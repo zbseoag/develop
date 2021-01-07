@@ -1,15 +1,21 @@
 import static java.lang.System.out;
 
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.Console;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.*;
+import java.time.*;
+import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 enum Size { Small, Medium, Large};
@@ -135,7 +141,7 @@ public class Main {
 
     }
 
-    public static void liu() throws IOException {
+    public static void stream() throws IOException {
 
         var content = new String(Files.readAllBytes(Paths.get("alice.txt")), StandardCharsets.UTF_8 );
         List<String> words = List.of(content.split("\\PL+"));
@@ -156,10 +162,85 @@ public class Main {
 
     }
 
+    public static void interfaces(){
+
+        /*  为什么不直接提供 compareTo 方法，而要去实现 Comparable 接口呢？
+        因为Java 是强类型语言，遇到 a.compareTo(b)  需要明确对象方法确实存在。*/
+
+        interface Aintface{
+            public static void putout(){ System.out.print(11);   }
+            default int isEmpty(){ return 0; } //默认实现方法
+            default int isEmptys(){ return 0; } //默认实现方法
+
+        }
+
+        class Employee implements Comparable<Employee>, Aintface{
+
+            public int salary = 0;
+            @Override
+            public int compareTo(Employee o) {
+                //compareTo 应当和 equals 方法兼容,除非没有明确方法能确定哪个数更大
+                return Double.compare(salary, o.salary);
+            }
+
+            //当实现的多个接口中，有相当的 default 方法，则必须解决冲突。
+            //超类优先级大于接口，所以它们之间不会有同名的方法冲突
+            public int isEmpty(){
+               return  Aintface.super.isEmpty();
+            }
+        }
+        Employee a = new Employee();
+        Aintface.putout();
+
+
+        class TimePrint implements ActionListener{
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println(Instant.ofEpochMilli(e.getWhen()));
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+
+        class LengthComparator implements Comparator<String>{
+
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.length() - o2.length();
+            }
+        }
+
+        String[] friends = {"peter", "paul", "Mary"};
+        Arrays.sort(friends, new LengthComparator());
+
+        class Emp implements Cloneable{
+
+            public Emp clone() throws CloneNotSupportedException{
+                return (Emp) super.clone();
+            }
+        }
+
+//        Java 中有很多封装代码块的接口，如：ActionListener、Comparator，而 lambda 表达式与之兼容。
+//        对于只有一个抽象方法的接口，需要接口对象时，可以提供一个 lambda 表达式。这种只有一个抽象方法的接口被称为函数式接口。
+        Comparator<String> comp = (first, second) -> first.length() - second.length();
+        ActionListener listen = event-> out.println(111);
+        Arrays.sort(friends, (first, second) -> first.length() - second.length());
+
+        //在 java.util.function 包中定义了很多非常通用的函数式接口。
+        BiFunction<String, String, Integer> c = (first, second) -> first.length() - second.length();
+
+
+        //方法引用
+       // var t = new Timer(100, event -> System.out::println);
+        //list.removeIf(e -> e == null);  list.removeIf(Objects::isNull);
+
+
+    }
+
 
     public static void main(String[] args) throws IOException {
 
-        cls();
+        interfaces();
 
     }
 
@@ -167,4 +248,7 @@ public class Main {
 
 
 }
+
+
+
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-ROOTPH="/e/develop/shell"
 
 #history 配置
 export HISTTIMEFORMAT='%F ' #时间格式化
@@ -13,44 +12,54 @@ export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin
 
 alias wk="cd -"
 alias up="cd .."
-alias p="echo"
-alias end="return"
-
+alias python="python3.8"
+alias ec="echo"
+alias re="return"
 alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
 alias make="make -j $(nproc)"
 alias update="sudo apt update && apt list --upgradable"
-alias purge="sudo apt purge"
-
+alias uninstall="sudo apt purge"
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias path="realpath -s"
-alias pargs="echo \(num \$#\): \$@;return"
 alias all="docker ps -a"
+alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
+alias rearg='argec;return'
+alias ecarglist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
-function parse.option(){
+
+function parse(){
     
-    local backward="$2"
-    local default="$3"
-    set -- $1
-    local option="$default"
+    local defalut="$1"
+    local retain="$2"
+    local option=""
     local args=""
-    [ "$backward" -lt $# ] && option=${@:1:$#-$backward}
-    [ "$backward" -le $# -a "$backward" -gt 0 ] && args=${@: -$backward}
-    echo "$option|$args"
+    shift 2;
+
+    local arr=( "$@" )
+    local length=${#arr[@]}
+    for i in "${!arr[@]}"; do
+        [ -n "`echo ${arr[$i]} | grep -P '\s*\w+\s+\s*'`" ] && arr[$i]="\"${arr[$i]}\""
+    done
+
+    [ $length -eq "$retain" ] && args=${arr[@]:$length - $retain}
+    [ $length -gt "$retain" ] && { option=${arr[@]:0:$length - $retain}; args=${arr[@]:$length - $retain}; }
+    [ -z "$option" -a "$defalut" != '-' ] && option="$defalut"
+
+    echo "([0]='$option' [1]='$args')"
+
 }
 
 function parse.path(){
  
-    local option=`parse.option "$*" 1`;
-    set -- ${option#*|}
-    option="${option%%|*}"
-   
+    declare -A all=`parse - 1 "$@"`
+    set -- ${all[1]}
+
     local root="$1"
     local name="${1%%/*}"
-
     if  [ -n "$name"  -a  ! -d "$1" ];then
         
         case "${name/%:/}" in
@@ -69,7 +78,7 @@ function parse.path(){
         esac
         root="$root${1/#$name/}"
     fi
-    echo $option $root
+    echo ${all[0]} $root
 }
 
 
@@ -198,22 +207,15 @@ function tosbin(){
 }
 
 
-function pwdpath(){
-    path="$1"
-     [  ${path:0:1} != '/'  ] && path="`pwd`/$path"
-     echo path;
-}
+function ln(){
 
+    declare -A all=`parse '-isv' 2 "$@"`
+    set -- ${all[1]}
 
-function lnk(){
-
-    local option=`parse.option "$*" 2 '-isv'`;
-    set -- ${option#*|}
-    option="${option%%|*}"
-   
     local target=$1
     [  ${target:0:1} != '/'  ] && target="`pwd`/$target"
-    sudo ln $option $target $2
+    sudo /usr/bin/ln ${all[0]} $target $2
+
 }
 
 function change(){
@@ -360,15 +362,6 @@ function rename(){
     sudo mv $1 `dirname $1`/$2
 }
 
-#类似于 whereis 命令，但列出内容更详细
-function where(){
-
-	local name="$1"
-    [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
-    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
-    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
-
-}
 
 #综合了 apt install 和 dpkg -i 安装软件
 #如果不带任何参数，则进入查找安装过程
@@ -471,7 +464,7 @@ function copy(){
 }
 
 
-function is(){
+function isrun(){
 
     local cmd="$1"; shift 1
     case "$cmd" in
@@ -496,6 +489,16 @@ function is(){
         ;;
 
     esac
+
+}
+
+#类似于 whereis 命令，但列出内容更详细
+function where(){
+
+	local name="$1"
+    [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
+    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
+    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
 
 }
 
@@ -536,32 +539,12 @@ function run(){
 
 }
 
-function rm:(){
+function rm(){
 
-    local name="$1"
-    local image="$2"
-    if [[ "$name" =~ ':' ]];then
-
-        name=(${name//:/' '})
-        [ -z "${name[2]}" ] && { name[2]=${name[1]}; name[1]=1; }
-
-        local one=${name[0]}
-        for(( i=0; i<${name[2]}; i++))
-        do  
-            docker rm -f "${image%:*}-$one"
-            one=`expr $one + ${name[1]}`
-        done
-
-    elif [[ "$name" =~ ',' ]];then
-
-        name=(${name//,/' '})
-        for i in ${name[*]}
-        do
-            docker rm -f $i
-        done
-    else
-        docker rm -f $name
-    fi
+    case "$1" in
+        :*) set -- ${@#:}; docker rm -f $@;;
+        *)  /usr/bin/rm $@;;
+    esac
   
 }
 
@@ -571,9 +554,9 @@ function exec(){
     case "$1" in
         :*)
             set -- ${@#:}
-            local item="-it $1"
-            [ $# == 1 ] && item="$item bash"
-            docker exec -it $item
+            [ $# == 1 ] && set -- "-it $@ bash"
+            [ $# == 2 ] && set -- "-it $@"
+            echo docker exec $@
         ;;
         *)  builtin exec $@;;
     esac
@@ -621,5 +604,18 @@ function info(){
     [ -n "$con" ] && docker inspect --format="{{.Name}}: $format" $con
 
 }
+
+
+function let(){
+
+   python $ROOTPH/common.py $@
+
+}
+
+
+
+
+
+
 
 
