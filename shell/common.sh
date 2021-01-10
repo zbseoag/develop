@@ -8,15 +8,15 @@ export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace�
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin
+export PATH=$PATH:/mnt/d/usr/jdk/bin:/mnt/d/usr/elasticsearch/bin:/mnt/d/usr/kibana/bin
 
 alias wk="cd -"
 alias up="cd .."
 alias python="python3.8"
 alias ec="echo"
 alias re="return"
-alias tar.src="tar -C /d/src -xvf"
-alias tar.usr="tar -C /d/usr -xvf"
+alias tar.src="tar -C /mnt/d/src -xvf"
+alias tar.usr="tar -C /mnt/d/usr -xvf"
 alias make="make -j $(nproc)"
 alias update="sudo apt update && apt list --upgradable"
 alias uninstall="sudo apt purge"
@@ -30,6 +30,8 @@ alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
 alias rearg='argec;return'
 alias ecarglist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
+alias drm="docker rm -f"
+alias dps="docker ps"
 
 function parse(){
     
@@ -63,18 +65,18 @@ function parse.path(){
     if  [ -n "$name"  -a  ! -d "$1" ];then
         
         case "${name/%:/}" in
-            'c')        root=/c;;
-            'd')        root=/d;;
-            'e')        root=/e;;
-            'src')      root=/d/src;;
-            'usr')      root=/d/usr;;
+            'c')        root=/mnt/c;;
+            'd')        root=/mnt/d;;
+            'e')        root=/mnt/e;;
+            'src')      root=/mnt/d/src;;
+            'usr')      root=/mnt/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
             'desk')     root=/desktop;;
-            'dev')      root=/e/develop;;
-            'down')     root=/e/Download;;
+            'dev')      root=/mnt/e/develop;;
+            'down')     root=/mnt/e/Download;;
             'test')     root=~/test;;
-            'lib')      root=/e/php-library;;
+            'lib')      root=/mnt/e/php-library;;
         esac
         root="$root${1/#$name/}"
     fi
@@ -113,7 +115,7 @@ function start(){
         :*|'all')         
                     set -- ${@#:}
                     [ "$@" == "all" ] && set -- "$(docker ps -qf status=exited)"
-                    [ -n "$@" ] && docker stop $@
+                    [ -n "$@" ] && docker start $@
         ;;   
         '')         start docker;;
         'web')      start php && start nginx;;
@@ -220,8 +222,8 @@ function ln(){
 }
 
 function change(){
-    local file=/d/usr/$1
-    rm $file && ln -sv /d/usr/$1$2 $file
+    local file=/mnt/d/usr/$1
+    rm $file && ln -sv /mnt/d/usr/$1$2 $file
 }
 
 function config(){
@@ -298,11 +300,11 @@ function open(){
         '-source')  code /etc/apt/sources.list;;
         '-profile') code /etc/profile;;
         '-bashrc')  code /etc/bash.bashrc;;
-        :*)
-                    local con="${option#:}"
-                    local file="/tmp/$con`basename $2`"
+        *:*)
+                    set -- "${1%:*}" "${1#*:}"
+                    local file="/tmp/$1/`basename $2`"
                     mkfdir $file
-                    docker cp $con:$2 $file 2>/dev/null
+                    docker cp $1:$2 $file 2>/dev/null
                     open $file
         ;;
         '')         explorer.exe .;; #xdg-open $PWD;;
@@ -347,7 +349,7 @@ function open(){
 function push(){
 
     case "$1" in
-        :*)     local con="${1#:}"; docker cp /tmp/$con/`basename $2` $con:$2;;   
+        *:*)    set -- "${1%:*}" "${1#*:}"; docker cp /tmp/$1/`basename $2` $1:$2;;   
         'dev')  (cd dev; push .);;
         'lib')  (cd lib; push .);;
         'all')  push dev; push lib;;
@@ -539,39 +541,28 @@ function run(){
 
 }
 
-function rm(){
 
-    case "$1" in
-        :*) set -- ${@#:}; docker rm -f $@;;
-        *)  /usr/bin/rm $@;;
-    esac
-  
-}
-
-
-function exec(){
-
-    case "$1" in
-        :*)
-            set -- ${@#:}
-            [ $# == 1 ] && set -- "-it $@ bash"
-            [ $# == 2 ] && set -- "-it $@"
-            docker exec $@
-        ;;
-        *)  builtin exec $@;;
-    esac
+function ex(){
+    [ $# == 1 ] && { 
+        local run="`docker ps -q --filter status=running --filter "name=$1"`"
+        [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
+        [ -z "$run" ] && docker start $1
+        set -- "-it $@ bash"
+    }
+    [ $# == 2 ] && set -- "-it $@"
+    docker exec $@
 
 }
 
 function ps(){
 
     case "$1" in
-        :*) docker ps ${@#:};;
         -*) ps -aux | grep -v 'grep'| grep ${@#-};;
         *)  /bin/ps $@;;
     esac
 
 }
+
 
 function image(){
 
@@ -611,8 +602,6 @@ function let(){
    python $ROOTPH/common.py $@
 
 }
-
-
 
 
 
