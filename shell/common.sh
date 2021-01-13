@@ -8,15 +8,16 @@ export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace�
 export HISTIGNORE="pwd:history" #不记录的命令
 
 #export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/mnt/d/usr/jdk/bin:/mnt/d/usr/elasticsearch/bin:/mnt/d/usr/kibana/bin
+export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin
 
+alias ll="ls -alF"
 alias wk="cd -"
 alias up="cd .."
 alias python="python3.8"
 alias ec="echo"
 alias re="return"
-alias tar.src="tar -C /mnt/d/src -xvf"
-alias tar.usr="tar -C /mnt/d/usr -xvf"
+alias tar.src="tar -C /d/src -xvf"
+alias tar.usr="tar -C /d/usr -xvf"
 alias make="make -j $(nproc)"
 alias update="sudo apt update && apt list --upgradable"
 alias uninstall="sudo apt purge"
@@ -24,14 +25,29 @@ alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
-alias path="realpath -s"
-alias all="docker ps -a"
+alias real="realpath -s"
 alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
-alias rearg='argec;return'
+alias rearg='ecarg;return'
 alias ecarglist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
-alias drm="docker rm -f"
-alias dps="docker ps"
+alias ing="docker ps"
+alias all="docker ps -a"
+alias rm:="docker rm -f"
+
+function init(){
+    echo '
+    function load(){ source ~/.bashrc; }
+    ROOTPH=/e/develop/shell
+    source $ROOTPH/common.sh
+    ' >> ~/.bashrc
+}
+
+function path(){
+
+    local path="${1//\\//}"
+    path="${path/:/}"
+    echo /${path,}
+}
 
 function parse(){
     
@@ -65,18 +81,21 @@ function parse.path(){
     if  [ -n "$name"  -a  ! -d "$1" ];then
         
         case "${name/%:/}" in
-            'c')        root=/mnt/c;;
-            'd')        root=/mnt/d;;
-            'e')        root=/mnt/e;;
-            'src')      root=/mnt/d/src;;
-            'usr')      root=/mnt/d/usr;;
+            'c')        root=/c;;
+            'd')        root=/d;;
+            'e')        root=/e;;
+            'stack')    root=~/oneinstack;;
+            'src')      root=/d/src;;
+            'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
             'desk')     root=/desktop;;
-            'dev')      root=/mnt/e/develop;;
-            'down')     root=/mnt/e/Download;;
+            'dev')      root=/e/develop;;
+            'down')     root=/e/Download;;
             'test')     root=~/test;;
-            'lib')      root=/mnt/e/php-library;;
+            'lib')      root=/e/php-library;;
+            'etc')      root=/d/etc;;
+            'tmp')      root=/tmp;;
         esac
         root="$root${1/#$name/}"
     fi
@@ -84,7 +103,7 @@ function parse.path(){
 }
 
 
-function foreach(){
+function forargs(){
     for arg in "$@";do 
         echo "参数 $index: '$arg'";
         let index+=1; 
@@ -111,15 +130,16 @@ function start(){
     case "$1" in
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
-        'redis')    redis-server;;
-        :*|'all')         
-                    set -- ${@#:}
-                    [ "$@" == "all" ] && set -- "$(docker ps -qf status=exited)"
-                    [ -n "$@" ] && docker start $@
-        ;;   
+        'redis')    redis-server;;  
         '')         start docker;;
         'web')      start php && start nginx;;
-        *)          sudo service $1 start;;
+        *)          
+            [ $# == 1 ] && {
+                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 start; return; }
+            }
+            [ "$1" == "all" ] && set -- "$(docker ps -qf status=exited)"
+            [ -n "$@" ] && docker start $@
+        ;;
     esac
 }
 
@@ -132,12 +152,13 @@ function stop(){
         'redis')    redis-cli shutdown;;
         '')         stop docker;;
         -*)         sudo pkill -9 ${1#-};;
-        :*|'all')         
-                    set -- ${@#:}
-                    [ "$@" == "all" ] && set -- "$(docker ps -q)"
-                    [ -n "$@" ] && docker stop $@
-        ;;
-        *)          sudo service $1 stop;;
+        *)          
+            [ $# == 1 ] && {
+                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 stop; return; }
+            }
+            [ "$1" == "all" ] && set -- "$(docker ps -q)"
+            [ -n "$@" ] && docker stop $@
+        ;;   
     esac
 }
 
@@ -158,34 +179,31 @@ function linux(){
 
 }
 
-
 function see(){
 
-    local cmd=""
-    local end=0
+    local content=""
+    while read line
+    do
+        content="$content\n$line";
+    done <&0;
+
     echo "------------------------------------------------------------------------------------------"
-    for arg in "$@"; do
-    
-        if [ "$end" == 0 ];then
-            cmd="$cmd $arg"
-            shift 1
-            [ "${arg:0:1}" == "-" ] && { [ -z "$1" ] && eval $cmd  || { end=1; cmd="$cmd | grep --"; } }
-        else
-            if [ "${arg:0:1}" == "-" -a "${arg:0:2}" != "--" ];then
-                arg="${arg:1}"
-                for (( i = 0; i < ${#arg}; i = i + 1 )) do
-                    eval $cmd "-${arg:$i:1}"
+    for item in "$@"; do
+
+        if [ "${item:0:1}" == "-" -a "${item:0:2}" != "--" ];then
+
+                item="${item:1}"
+                for (( i = 0; i < ${#item}; i = i + 1 )) do
+                    echo -e $content | grep -- "^-${item:$i:1}"
                     echo "------------------------------------------------------------------------------------------"
                 done
-            else
-                eval $cmd $arg
+        else
+                echo -e $content | grep -- $item
                 echo "------------------------------------------------------------------------------------------"
-            fi
-
         fi
 
     done
-
+   
 }
 
 #批量将文件链接到 bin 目录，如果参数是一个目录，则链接目录中的所有文件
@@ -194,7 +212,7 @@ function tobin(){
     [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`;  }
     for item in "$@"; do
         [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [  -f "$item" ] && sudo ln -fs $item /usr/local/bin && echo "$item"
+        [  -f "$item" ] && sudo ln -fsv $item /usr/local/bin
     done
 
 }
@@ -204,37 +222,53 @@ function tosbin(){
     [ $# == 1 -a  -d "$1"  ]  &&  { cd $1; set -- `ls $1`;  }
     for item in "$@"; do
         [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [  -f "$item" ] && sudo ln -fs $item /usr/local/sbin && echo "$item"
+        [  -f "$item" ] && sudo ln -fsv $item /usr/local/sbin
     done
 
 }
 
 
-function ln(){
+function lnk(){
 
-    declare -A all=`parse '-isv' 2 "$@"`
-    set -- ${all[1]}
+    local target="$1"
+    local link="$2"
+    [ ${1:0:1} != '/'  ] && target="`pwd`/$1"
+    [ ${2:0:1} != '/'  ] && link="`pwd`/$2"
 
-    local target=$1
-    [  ${target:0:1} != '/'  ] && target="`pwd`/$target"
-    sudo /usr/bin/ln ${all[0]} $target $2
+    sudo ln -isv $target $link
 
 }
 
 function change(){
-    local file=/mnt/d/usr/$1
-    rm $file && ln -sv /mnt/d/usr/$1$2 $file
+    local file=/d/usr/$1
+    rm $file && ln -sv /d/usr/$1$2 $file
 }
+
 
 function config(){
 
-    local kw=`echo "$*" | sed 's/[ ][ ]*/.*/g'`
-    kw=`echo "$kw" | sed 's/-/\\\-/g'`
-    if [ -z "$kw" ];then
-        ./configure --help
-    else
-        eval "./configure --help | grep -P '$kw'"
-    fi
+    [ -z "$1" ] && {
+        ./configure --help > config.txt
+        open config.txt
+        return
+    }
+    local word="$1"
+    until [ -z "$word" ]
+    do
+        set -- $word
+        [ -n "$1" ] && {
+            echo "------------------------------------------------------------------------------------------"
+            for kw in "$@"; do
+
+                kw=`echo "$kw" | sed 's/-/\\\-/g'`
+                eval "./configure --help | grep -P '$kw'"
+                echo "------------------------------------------------------------------------------------------"
+            done
+        }
+        echo -en "\033[31m查找: \033[0m"
+        read word
+
+    done
 
 }
 
@@ -300,14 +334,19 @@ function open(){
         '-source')  code /etc/apt/sources.list;;
         '-profile') code /etc/profile;;
         '-bashrc')  code /etc/bash.bashrc;;
-        *:*)
-                    set -- "${1%:*}" "${1#*:}"
-                    local file="/tmp/$1/`basename $2`"
-                    mkfdir $file
-                    docker cp $1:$2 $file 2>/dev/null
-                    open $file
-        ;;
+        '-php')     code "`dirname $(dirname $(which php))`/etc/php.ini";;
+        '-nginx')   code "`dirname $(dirname $(which nginx))`/conf/nginx.conf";;
+        '-common')  code "$ROOTPH/common.sh";;
+        '-demo')    code "$ROOTPH/demo.sh";;
         '')         explorer.exe .;; #xdg-open $PWD;;
+        *:*)
+            set -- "${1%:*}" "${1#*:}"
+            local file="/tmp/$1/`basename $2`"
+            mkfdir $file
+            docker cp $1:$2 $file 2>/dev/null
+            open $file
+        ;;
+
         *)
 
             mime=`file --mime-type $option | awk '{print $2}'`
@@ -382,13 +421,12 @@ function install(){
             read software
 
             [ "$software" == 'exit' -o -z "$software" ] && break
-        
-            apt list "$software*";
-            apt list "lib{$software}*";
+            set -- $software
+            apt list "$1*";
+            apt list "lib$1*";
             
             echo -en "\033[31m安装: \033[0m"
             read software
-
             if [ "$software" == 'next' -o -z "$software" ];then
                 continue
             elif [ "$software" == 'exit' ];then
@@ -402,14 +440,16 @@ function install(){
     else
 
         local ext="${1##*.}"
+        local log=~/.install.log
         case "$ext" in
-            'deb')  sudo dpkg -i $1;;
-            'rpm')  sudo rpm -i $1;;
+            'deb')      sudo dpkg -i $1;;
+            'rpm')      sudo rpm -i $1;;
+            'list')     cat $log;;
             *) 
                 if [ -n "`which apt`" ];then
-                    sudo apt install -y $1 && echo $1 >> ~/install.log
+                    sudo apt install -y $1 && echo $1 >> $log
                 elif [ -n "`which yum`" ];then
-                    sudo yum install -y $1 && echo $1 >> ~/install.log
+                    sudo yum install -y $1 && echo $1 >> $log
                 fi
             ;;
         esac
@@ -419,14 +459,12 @@ function install(){
 }
 
 
-
-
-
 function show(){
 
     local two="$2"
     case "$1" in
-        'name')         uname -a;;
+        'uname')        uname -a;;
+        'name')         cat /etc/issue;;
         'command')      compgen -ac;;
         'arch')         arch;; #处理器架构
         'zombie')       ps -A -o stat,ppid,pid,cmd | grep -e '^[Zz]';; #显僵死进程
@@ -445,7 +483,7 @@ function show(){
         'sda')          hdparm -tT /dev/sda;;#测试性读取操作
         'code')         iconv -l;;#显示可用编码
         'df')           df -h;;#显示
-        'name')         cat /etc/issue;;
+        'host')         cat /etc/hosts;;
         'ip')           [ -z "$two" ] && two='eth0'; ifconfig $two | grep 'inet ' | sed 's/.*inet\s//g' | sed 's/\snet.*//g';;
         *)              lsb_release -a;;
     esac
@@ -542,7 +580,7 @@ function run(){
 }
 
 
-function ex(){
+function exe(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
         [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
@@ -551,15 +589,6 @@ function ex(){
     }
     [ $# == 2 ] && set -- "-it $@"
     docker exec $@
-
-}
-
-function ps(){
-
-    case "$1" in
-        -*) ps -aux | grep -v 'grep'| grep ${@#-};;
-        *)  /bin/ps $@;;
-    esac
 
 }
 
@@ -604,6 +633,20 @@ function let(){
 }
 
 
+
+function into(){
+
+    local command="$1"
+    until [ -z "$command" -o  "$command" == 'exit' ]
+    do
+        read -p ":" args
+        [ "$args" == 'exit' ] && break
+        set -- $args
+        $command $@
+
+    done
+
+}
 
 
 

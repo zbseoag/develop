@@ -1,9 +1,4 @@
-function test1(){
 
-
-    echo tet;
-
-}
 
 
 
@@ -55,6 +50,13 @@ ${string ?     new}             string  是否已存在？会报错
 ${string :?    new}             string  是否不为空？会报错
 [[ "$str" =~ "this" ]]          是否包含
 
+typeset -u|-i name
+name='asdasdas'
+echo $name
+
+${parameter^|^^pattern}
+${parameter,|,,pattern}
+
 ===============================================================================================
 ${data[@]}                      所有元素
 ${#data[@]}                     长度
@@ -105,6 +107,7 @@ done
 #  while read line
 #  do
 #      echo $line;
+
 #  done <&0;
 
 function dock(){

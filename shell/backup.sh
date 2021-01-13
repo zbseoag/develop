@@ -12,9 +12,6 @@
 
 
 
-
-
-
 comment(){
 
 for file in $(ls); do
