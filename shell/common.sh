@@ -149,7 +149,6 @@ function stop(){
         'php')      sudo pkill -9 php-fpm;;
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
-        'redis')    redis-cli shutdown;;
         '')         stop docker;;
         -*)         sudo pkill -9 ${1#-};;
         *)          
@@ -161,6 +160,24 @@ function stop(){
         ;;   
     esac
 }
+
+function restart(){
+
+    case "$1" in
+        'php')      stop php && start php;;
+        'nginx')    stop nginx && start nginx;;
+        'web')      stop web && start web;;
+        '')         restart docker;;
+        *)          
+            [ $# == 1 ] && {
+                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 restart ; return; }
+            }
+            [ "$1" == "all" ] && set -- "$(docker ps -q)"
+            [ -n "$@" ] && docker restart $@ 
+        ;;   
+    esac
+}
+
 
 
 function linux(){
@@ -649,5 +666,14 @@ function into(){
 }
 
 
+function git.init(){
 
+    git init &&\
+    git add .  &&\
+    git commit -m "first commit" &&\
+    git branch -M main &&\
+    git remote add origin git@github.com:zbseoag/$1 && \
+    git push -u origin main
+
+}
 
