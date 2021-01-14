@@ -130,7 +130,8 @@ function start(){
     case "$1" in
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
-        'redis')    redis-server;;  
+        'redis')    redis-server;;
+        'mysql')    start mysqld;;  
         '')         start docker;;
         'web')      start php && start nginx;;
         *)          
@@ -149,6 +150,7 @@ function stop(){
         'php')      sudo pkill -9 php-fpm;;
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
+        'mysql')    stop mysqld;;  
         '')         stop docker;;
         -*)         sudo pkill -9 ${1#-};;
         *)          
@@ -474,7 +476,10 @@ function install(){
     fi
 
 }
-
+#dpkg --configure -a
+function fix.mysql(){
+    usermod -d /var/lib/mysql/ mysql
+}
 
 function show(){
 
@@ -521,7 +526,7 @@ function copy(){
 }
 
 
-function isrun(){
+function is(){
 
     local cmd="$1"; shift 1
     case "$cmd" in
@@ -559,10 +564,15 @@ function where(){
 
 }
 
+#运行容器
+#run [options] <name> <image>
+#run 0:2:3  mysql
+#run aaa,bbb,ccc  mysql
+#run db mysql
 function run(){
 
     #默认选项，加上所有参数除了最后两个参数以外
-    local option="--network=network --restart=on-failure:2 ${@:1:$#-2}"
+    local option="--privileged=true --restart=on-failure:1 ${@:1:$#-2}"
 
     set -- ${@: -2}
     local name="$1"
@@ -570,7 +580,6 @@ function run(){
 
     #如果是 start[:step]:count 如：1:2:3 表示从 1开始，步长为2 启动3个镜像，1:5 等价于 1:1:5
     #如果是 one,tow,three 就表示启动多台，名字分别就是 one tow three
-    #启动多台时，自动带上 -d 表示在后台运行
     if [[ "$name" =~ ':' ]];then
 
         name=(${name//:/' '})
@@ -591,13 +600,13 @@ function run(){
             docker run $option -d --name="$i" $image
         done
     else
-        docker run $option --name="$name" $image
+        echo docker run --privileged=true -d $@
     fi
 
 }
 
 
-function exe(){
+function into(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
         [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
@@ -612,15 +621,16 @@ function exe(){
 
 function image(){
 
-    local one="$1"
+    local cmd="$1"
     shift 1
-    case "$one" in
+    case "$cmd" in
 
         'clean')    docker image rm $(docker image ls -f "dangling=true" -q);;
+        'rm')       docker image rm $@;;
         '')         docker images;;
         *)  
             local c='.ContainerConfig';
-            docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $one
+            docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $cmd
         ;;
        
     esac
@@ -651,7 +661,7 @@ function let(){
 
 
 
-function into(){
+function whith(){
 
     local command="$1"
     until [ -z "$command" -o  "$command" == 'exit' ]
