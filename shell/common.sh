@@ -20,19 +20,21 @@ alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
 alias make="make -j $(nproc)"
 alias update="sudo apt update && apt list --upgradable"
-alias uninstall="sudo apt purge"
+alias upgrade="sudo apt upgrade -y"
+alias remove="sudo apt remove"
+alias autoremove="sudo apt autoremove"
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias real="realpath -s"
-alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
-alias rearg='ecarg;return'
-alias ecarglist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
-
+alias ecar='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
+alias rear='ecarg;return'
+alias eclist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 alias ing="docker ps"
 alias all="docker ps -a"
-alias rm:="docker rm -f"
+alias rmc="docker rm -f"
+
 
 function init(){
     echo '
@@ -136,7 +138,10 @@ function start(){
         'web')      start php && start nginx;;
         *)          
             [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 start; return; }
+                [ "`type -t $1`" == "file" ] && { 
+                    sudo service $1 start
+                    return
+                }
             }
             [ "$1" == "all" ] && set -- "$(docker ps -qf status=exited)"
             [ -n "$@" ] && docker start $@
@@ -155,7 +160,11 @@ function stop(){
         -*)         sudo pkill -9 ${1#-};;
         *)          
             [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 stop; return; }
+                [ "`type -t $1`" == "file" ] && {
+
+                    sudo service $1 stop
+                    return
+                }
             }
             [ "$1" == "all" ] && set -- "$(docker ps -q)"
             [ -n "$@" ] && docker stop $@
@@ -172,7 +181,11 @@ function restart(){
         '')         restart docker;;
         *)          
             [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 restart ; return; }
+                [ "`type -t $1`" == "file" ] && {
+
+                    sudo service $1 stop
+                    return
+                }
             }
             [ "$1" == "all" ] && set -- "$(docker ps -q)"
             [ -n "$@" ] && docker restart $@ 
@@ -266,12 +279,14 @@ function change(){
 
 function config(){
 
-    [ -z "$1" ] && {
+    [ "$1" == 'help' ] && {
         ./configure --help > config.txt
         open config.txt
         return
     }
-    local word="$1"
+
+
+    local word="$@"
     until [ -z "$word" ]
     do
         set -- $word
@@ -549,6 +564,10 @@ function is(){
 
             [ -n "$name" ] && echo $name
         ;;
+        *)
+            test $@
+            [ $? == 1 ] && echo yes || echo no
+        ;;
 
     esac
 
@@ -559,8 +578,8 @@ function where(){
 
 	local name="$1"
     [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
-    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
-    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
+    [ -n "`type -t $name`" ] && { color red "命令列表:"; type -a $name; }
+    [ "`whereis $name`" != "$name:" ] && { color red "相关目录:"; whereis $name; }
 
 }
 
@@ -573,7 +592,6 @@ function run(){
 
     #默认选项，加上所有参数除了最后两个参数以外
     local option="--privileged=true --restart=on-failure:1 ${@:1:$#-2}"
-
     set -- ${@: -2}
     local name="$1"
     local image="$2"
@@ -600,13 +618,14 @@ function run(){
             docker run $option -d --name="$i" $image
         done
     else
-        echo docker run --privileged=true -d $@
+        [ "$name" == "test" -o "$name" == "demo" -o "$name" == "aaa" ] && docker rm -f $name > /dev/null 2>&1
+        docker run $option --name=$name $image
     fi
 
 }
 
+function exe(){
 
-function into(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
         [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
@@ -687,3 +706,16 @@ function git.init(){
 
 }
 
+
+function init.container(){
+    docker cp ~/base.sh $1:/ && docker exec --detach $1 cat /base.sh >> /root/.bashrc
+}
+
+
+function change.etc(){
+
+    cp -r /etc/$1 /d/etc/ &&\
+    sudo rm -rf /etc/$1 &&\
+    sudo ln -s /d/etc/$1 /etc/$1
+
+}
