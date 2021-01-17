@@ -133,7 +133,6 @@ function start(){
         'php')      sudo php-fpm;;
         'nginx')    sudo nginx;;
         'redis')    redis-server;;
-        'mysql')    start mysqld;;  
         '')         start docker;;
         'web')      start php && start nginx;;
         *)          
@@ -155,13 +154,11 @@ function stop(){
         'php')      sudo pkill -9 php-fpm;;
         'nginx')    sudo nginx -s stop;;
         'web')      stop php && stop nginx;;
-        'mysql')    stop mysqld;;  
         '')         stop docker;;
         -*)         sudo pkill -9 ${1#-};;
         *)          
             [ $# == 1 ] && {
                 [ "`type -t $1`" == "file" ] && {
-
                     sudo service $1 stop
                     return
                 }
@@ -714,8 +711,23 @@ function init.container(){
 
 function change.etc(){
 
-    cp -r /etc/$1 /d/etc/ &&\
-    sudo rm -rf /etc/$1 &&\
-    sudo ln -s /d/etc/$1 /etc/$1
+    local newpath=`basename $(dirname $1)`
+    [ -d $newpath ] && sudo mkdir -p $newpath
+    cp -r $1 /d/etc/$newpath &&\
+    sudo rm -rf $1 &&\
+    sudo ln -s /d/etc/$newpath ${1%/}
+
+}
+
+function cp(){
+
+    [ "$#" == 1 ] && {
+        echo sudo docker cp $1 `dirname "${1#*:}"`
+    } || {
+        /usr/bin/cp $@
+    }
+
+
+    
 
 }
