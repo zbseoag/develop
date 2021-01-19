@@ -84,9 +84,7 @@ function parse.path(){
     if  [ -n "$name"  -a  ! -d "$1" ];then
         
         case "${name/%:/}" in
-            'c')        root=/c;;
-            'd')        root=/d;;
-            'e')        root=/e;;
+            ?)          root="/${name/%:/}";;
             'src')      root=/d/src;;
             'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
@@ -673,7 +671,6 @@ function git.init(){
 
 
 alias git.rm="git rm -r --cached"
-
 git.init.config(){
 
     git config --global user.name "zbseoag"
