@@ -20,15 +20,17 @@ alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
 alias make="make -j $(nproc)"
 alias update="sudo apt update && apt list --upgradable"
-alias uninstall="sudo apt purge"
+alias remove="sudo apt purge"
+alias upgrade="sudo apt upgrade -y"
+alias remove="sudo apt remove"
 alias close.nautilus="killall nautilus"
 alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias real="realpath -s"
-alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
-alias rearg='ecarg;return'
-alias ecarglist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
+alias ecar='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
+alias rear='ecarg;return'
+alias eclist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
 alias ing="docker ps"
 alias all="docker ps -a"
@@ -36,9 +38,10 @@ alias rm:="docker rm -f"
 
 function init(){
     echo '
-    function load(){ source ~/.bashrc; }
-    ROOTPH=/e/develop/shell
-    source $ROOTPH/common.sh
+function open(){ sudo vim $@; }
+function load(){ source ~/.bashrc; }
+SHELL_PATH=/d/develop/shell
+source $SHELL_PATH/common.sh
     ' >> ~/.bashrc
 }
 
@@ -46,7 +49,7 @@ function path(){
 
     local path="${1//\\//}"
     path="${path/:/}"
-    echo /${path,}
+    echo \"/${path,}\"
 }
 
 function parse(){
@@ -84,16 +87,14 @@ function parse.path(){
             'c')        root=/c;;
             'd')        root=/d;;
             'e')        root=/e;;
-            'stack')    root=~/oneinstack;;
             'src')      root=/d/src;;
             'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
-            'desk')     root=/desktop;;
-            'dev')      root=/e/develop;;
+            'desk')     root=/c/desktop;;
+            'dev')      root=/d/develop;;
             'down')     root=/e/Download;;
             'test')     root=~/test;;
-            'lib')      root=/e/php-library;;
             'etc')      root=/d/etc;;
             'tmp')      root=/tmp;;
         esac
@@ -122,65 +123,41 @@ function ll(){
 function list(){
     apt list "$1*";
     apt list "lib$1*";
+    apt search $1*;
 }
 
 
-function start(){
+alias start="srv start"
+alias stop="srv stop"
+alias restart="srv restart"
+function srv(){
 
     case "$1" in
-        'php')      sudo php-fpm;;
-        'nginx')    sudo nginx;;
-        'redis')    redis-server;;
-        'mysql')    start mysqld;;  
-        '')         start docker;;
-        'web')      start php && start nginx;;
-        *)          
-            [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 start; return; }
-            }
-            [ "$1" == "all" ] && set -- "$(docker ps -qf status=exited)"
-            [ -n "$@" ] && docker start $@
+        'php')
+            case "$2" in
+                'start')  sudo php-fpm;;
+                'stop')   sudo pkill -9 php-fpm;;
+                *)        srv php stop; srv php start;;  
+            esac 
         ;;
+        'nginx')   
+            case "$2" in    
+                'start')  sudo nginx;;
+                'stop')   sudo nginx -s stop;;
+                *)        srv nginx stop; srv nginx start;;  
+            esac
+        ;;
+        'web')  srv php start; srv nginx start;;
+        'start'|'stop'|'restart')
+            [ "$2" == "all" ] && set -- $1 $(docker ps -qf status=exited)
+            [ -n "$2" ] && docker $@ 
+        ;;
+        *)  [ -z "$1" ] && set -- 'docker start'
+            echo sudo service $@
+        ;;        
     esac
+
 }
-
-function stop(){
-
-    case "$1" in
-        'php')      sudo pkill -9 php-fpm;;
-        'nginx')    sudo nginx -s stop;;
-        'web')      stop php && stop nginx;;
-        'mysql')    stop mysqld;;  
-        '')         stop docker;;
-        -*)         sudo pkill -9 ${1#-};;
-        *)          
-            [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 stop; return; }
-            }
-            [ "$1" == "all" ] && set -- "$(docker ps -q)"
-            [ -n "$@" ] && docker stop $@
-        ;;   
-    esac
-}
-
-function restart(){
-
-    case "$1" in
-        'php')      stop php && start php;;
-        'nginx')    stop nginx && start nginx;;
-        'web')      stop web && start web;;
-        '')         restart docker;;
-        *)          
-            [ $# == 1 ] && {
-                [ -n "`type $1 2>/dev/null`" ] && {  sudo service $1 restart ; return; }
-            }
-            [ "$1" == "all" ] && set -- "$(docker ps -q)"
-            [ -n "$@" ] && docker restart $@ 
-        ;;   
-    esac
-}
-
-
 
 function linux(){
 
@@ -225,6 +202,7 @@ function see(){
    
 }
 
+
 #批量将文件链接到 bin 目录，如果参数是一个目录，则链接目录中的所有文件
 function tobin(){
 
@@ -258,10 +236,6 @@ function lnk(){
 
 }
 
-function change(){
-    local file=/d/usr/$1
-    rm $file && ln -sv /d/usr/$1$2 $file
-}
 
 
 function config(){
@@ -292,11 +266,11 @@ function config(){
 }
 
 
+
 function title(){
     ORIGN_PS1=${ORIGN_PS1:-$PS1};
     export PS1="$ORIGN_PS1\033]0;$*\007"
 }
-
 
 
 function mywd(){
@@ -355,8 +329,7 @@ function open(){
         '-bashrc')  code /etc/bash.bashrc;;
         '-php')     code "`dirname $(dirname $(which php))`/etc/php.ini";;
         '-nginx')   code "`dirname $(dirname $(which nginx))`/conf/nginx.conf";;
-        '-common')  code "$ROOTPH/common.sh";;
-        '-demo')    code "$ROOTPH/demo.sh";;
+        '-common')  code "$SHELL_PATH/common.sh";;
         '')         explorer.exe .;; #xdg-open $PWD;;
         *:*)
             set -- "${1%:*}" "${1#*:}"
@@ -402,6 +375,7 @@ function open(){
 }
 
 
+
 #可以推送 git
 #可以结合上面 open 可以再把文件推送到容器
 function push(){
@@ -443,6 +417,7 @@ function install(){
             set -- $software
             apt list "$1*";
             apt list "lib$1*";
+            apt search $1*;
             
             echo -en "\033[31m安装: \033[0m"
             read software
@@ -464,6 +439,14 @@ function install(){
             'deb')      sudo dpkg -i $1;;
             'rpm')      sudo rpm -i $1;;
             'list')     cat $log;;
+            'docker')   curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && sudo usermod -aG docker $USER;;
+            'ssh-server')
+                    sudo apt install openssh-server &&\
+                    sudo sed -i -e 's/^#\s*Port.*/Port 22/' -e 's/^#\s*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config  &&\
+                    sudo systemctl restart ssh
+                    sudo systemctl enable ssh
+                    #sudo systemctl disable ssh
+            ;;
             *) 
                 if [ -n "`which apt`" ];then
                     sudo apt install -y $1 && echo $1 >> $log
@@ -477,9 +460,6 @@ function install(){
 
 }
 #dpkg --configure -a
-function fix.mysql(){
-    usermod -d /var/lib/mysql/ mysql
-}
 
 function show(){
 
@@ -507,6 +487,7 @@ function show(){
         'df')           df -h;;#显示
         'host')         cat /etc/hosts;;
         'ip')           [ -z "$two" ] && two='eth0'; ifconfig $two | grep 'inet ' | sed 's/.*inet\s//g' | sed 's/\snet.*//g';;
+        path)           echo $PATH | awk -F ':' '{for(i=1;i<=NF;i++){print "  " $i;}}';;
         *)              lsb_release -a;;
     esac
 
@@ -524,7 +505,6 @@ function copy(){
         sudo cp $@
     fi
 }
-
 
 function is(){
 
@@ -549,64 +529,49 @@ function is(){
 
             [ -n "$name" ] && echo $name
         ;;
+        *)
+            test $@
+            [ $? == 1 ] && echo yes || echo no
+        ;;
 
     esac
 
 }
 
-#类似于 whereis 命令，但列出内容更详细
+
+
 function where(){
 
 	local name="$1"
     [ -n "`which $name`" ]  && { color red "当前命令:"; which $name; } 
-    [ -n "`type -a $name 2>/dev/null`" ] && { color red "命令列表:"; type -a $name; }
-    [ "`whereis $name`" != "$name:" ] && { color red "目录列表:"; whereis $name; } || color red "$name 不存在"
+    [ -n "`type -t $name`" ] && { color red "命令列表:"; type -a $name; }
+    [ "`whereis $name`" != "$name:" ] && { color red "相关目录:"; whereis $name; }
 
 }
 
 #运行容器
-#run [options] <name> <image>
-#run 0:2:3  mysql
-#run aaa,bbb,ccc  mysql
-#run db mysql
 function run(){
 
-    #默认选项，加上所有参数除了最后两个参数以外
-    local option="--privileged=true --restart=on-failure:1 ${@:1:$#-2}"
+    local option=`echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`
+    option="--privileged=true --restart=unless-stopped $option"   #on-failure:1  always
+   
+    local name=`echo "$@" | grep -oP '((?<=--name=)|(?<=--name\s))(\w|,)+'`
 
-    set -- ${@: -2}
-    local name="$1"
-    local image="$2"
-
-    #如果是 start[:step]:count 如：1:2:3 表示从 1开始，步长为2 启动3个镜像，1:5 等价于 1:1:5
-    #如果是 one,tow,three 就表示启动多台，名字分别就是 one tow three
-    if [[ "$name" =~ ':' ]];then
-
-        name=(${name//:/' '})
-        [ -z "${name[2]}" ] && { name[2]=${name[1]}; name[1]=1; }
-
-        local one=${name[0]}
-        for(( i=0; i<${name[2]}; i++))
-        do  
-            docker run $option -d --name="${image%:*}-$one" $image
-            one=`expr $one + ${name[1]}`
-        done
-
-    elif [[ "$name" =~ ',' ]];then
-
+    if [[ "$name" =~ ',' ]];then
         name=(${name//,/' '})
         for i in ${name[*]}
         do
-            docker run $option -d --name="$i" $image
+            echo docker run -d $(echo $option | sed -r "s/#name#/ --name=$i /")
         done
     else
-        echo docker run --privileged=true -d $@
+        [ "$name" == "test" -o "$name" == "demo" ] && docker rm -f $name > /dev/null 2>&1
+        echo docker run $(echo $option | sed -r "s/#name#/ --name=$name /")
     fi
 
 }
 
 
-function into(){
+function exec:(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
         [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
@@ -615,6 +580,20 @@ function into(){
     }
     [ $# == 2 ] && set -- "-it $@"
     docker exec $@
+
+}
+
+function whith(){
+
+    local command="$1"
+    until [ -z "$command" -o  "$command" == 'exit' ]
+    do
+        read -p ":" args
+        [ "$args" == 'exit' ] && break
+        set -- $args
+        $command $@
+
+    done
 
 }
 
@@ -653,27 +632,30 @@ function info(){
 }
 
 
-function let(){
+
+
+function tools(){
 
    python $ROOTPH/common.py $@
 
+:<<EOF
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+import sys
+
+def hello(a, b, c):
+    print(a)
+
+
+if __name__ == '__main__':
+    eval(sys.argv[1])(*sys.argv[2:])
+
+EOF
+
+
 }
 
 
-
-function whith(){
-
-    local command="$1"
-    until [ -z "$command" -o  "$command" == 'exit' ]
-    do
-        read -p ":" args
-        [ "$args" == 'exit' ] && break
-        set -- $args
-        $command $@
-
-    done
-
-}
 
 
 function git.init(){
@@ -687,3 +669,444 @@ function git.init(){
 
 }
 
+
+
+
+alias git.rm="git rm -r --cached"
+
+git.init.config(){
+
+    git config --global user.name "zbseoag"
+    git config --global user.email "zbseoag@163.com"
+    git config --global core.editor code
+    #git config --list
+    #git config user.name
+    
+}
+
+
+git.remote(){
+    git remote add origin $1 &&\
+    git branch -M main &&\
+    git push -u origin main
+
+}
+
+function append(){
+    sed -i "\$a $1" $2
+}
+
+
+function auto.install(){
+
+    local software=$1
+
+    if [ -z "$software" ];then
+        PS3="请选择安装: "
+        select software in -init docker docker-compose redis lua zookeeper ssh-server
+        do
+            if [ -n "$software" ];then
+                echo "开始安装 $software ..."; break
+            fi
+        
+        done
+    fi
+
+    cd $PACKAGE
+    case "$software" in
+
+        '-init') sudo apt install gcc libssl-dev curl wget;;
+
+        '--mysql')
+
+            sudo apt update
+            sudo apt install mysql-server
+            sudo systemctl status mysql
+            sudo mysql
+            #ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'very_strong_password';
+            #GRANT ALL PRIVILEGES ON *.* TO 'administrator'@'localhost' IDENTIFIED BY 'very_strong_password';
+        ;;
+
+        'docker') curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && sudo usermod -aG docker $USER;;
+        'docker-compose')
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose  &&\
+            sudo chmod +x /usr/local/bin/docker-compose  &&\
+            docker-compose --version
+        ;;
+
+        'redis')
+            
+            local package='redis-6.0.9.tar.gz'
+            local dir=${package%.tar*}
+            #sudo apt install gcc libssl-dev
+
+            #如果目录不存在
+            if [ ! -d "$dir" ];then
+                #如果包不存在则下载
+                if [ ! -f "$package" ];then  curl -R -O "http://download.redis.io/releases/${package}"; fi
+                #解压
+                tar -xvf $package
+            fi
+            rm $package
+            cd $dir &&\
+            make clean &&\
+            #sudo make MALLOC=libc BUILD_TLS=yes prefix=$PROGRAM/redis install
+            sudo make
+        
+        ;;
+
+        "zookeeper")
+
+            local package='apache-zookeeper-3.6.2-bin.tar.gz'
+            local dir=${package%.tar*}
+
+            if [ ! -f "$package" ];then curl -R -O https://mirrors.bfsu.edu.cn/apache/zookeeper/zookeeper-3.6.2/${package}; fi
+            rm -rf $dir
+            sudo tar -xvf $package &&\
+            sudo mv $dir $PROGRAM/$software  &&\
+            cd $PROGRAM/$software
+        ;;
+
+
+        *) color red "没有安装步骤" ;;
+
+    esac
+
+
+}
+
+
+
+
+function lang(){
+echo '===============================================================================================
+$0             :脚本名称
+$#             :参数个数
+$@             :参数列表,空格分隔,展开引号
+$*             :参数列表,空格分隔,展开引号
+"$*"           :所有参数合成一个字符串(1个参数)
+"$@"           :可以区分引号(原始数量)
+$!             :进程 PID
+$_             :上一条命令最后一个参数值
+$$             :脚本自身的 PID
+$PPID          :父进程 PID
+$?             :上一条命令的退出状态码,0表成功,非0表失败
+$BASH          :Bash 程序路径
+$BASH_VERSION  :Bash 版本号
+$EUID          :有效用户 ID
+$UID           :用户 ID 号
+$GROUPS        :用户所属的组
+$HOSTNAME      :主机名称
+$IFS           :域分隔符,默认为空白符
+$OLDPWD        :上一个工作目录
+$PS1           :主提示符
+$PS2           :第二提示符,出现在需要补充输入时，默认值为 >
+$PS4           :第四提示符,使用 -x 选项调用脚本时，它会出现在每行开头，默认为 +
+
+
+===============================================================================================
+${#str}                         字符长度
+${str:3:5}                      按位置截取
+${str#*head} ${str##*head}      从前面截断
+${str%end*} ${str%%end*}        从后面截断
+${str/find/replace}             替换一次
+${str//find/replace}            替换全部
+${str/#beginwith/replace}       前缀替换
+${str/%endwith/replace}         后缀替换
+${string -     new}             string  是否已存在？
+${string :-    new}             string  是否不为空？
+${string +     new}             string  是否不存在？
+${string :+    new}             string  是否为空？
+${string :+    new}             string  是否为空？
+${string =     new}             string  是否已存在？会改变 string 的值
+${string :=    new}             string  是否不为空？会改变 string 的值
+${string ?     new}             string  是否已存在？会报错
+${string :?    new}             string  是否不为空？会报错
+[[ "$str" =~ "this" ]]          是否包含
+
+typeset -u|-i name
+name='asdasdas'
+echo $name
+
+${parameter^|^^pattern}
+${parameter,|,,pattern}
+
+===============================================================================================
+${data[@]}                      所有元素
+${#data[@]}                     长度
+${data[@]:start:count}          位置截取,取 start 以及后面 count 个元素
+${data[@]#$1} ${data[@]##$1}    查找
+${data[@]%$1} ${data[@]%%$1}    从后面查找
+${data[@]/$1/$2}                替换
+${data[@]/#$1/$2}               replace-head 
+${data[@]/%$1/$2}               replace-end
+
+
+===============================================================================================
+/etc/xdg/user-dirs.defaults  ~/.config/user-dirs.dirs
+[ -z ${num//0-9/} ]   把变量中的数字替换为空后 ，查看长度是否为0 ，是就表示 是数字
+
+
+
+===============================================================================================
+declare -A array=([black]=30 [red]=31)
+${@: -2}    最后两个参数
+${@:1:$#-2} 取到倒数第二个参数为止
+
+local arr=( "$@" )
+for i in "${!arr[@]}"; do
+    [ -n "`echo ${arr[$i]} | grep -P '\s*\w+\s+\s*'`" ] && arr[$i]="\"${arr[$i]}\""
+done
+
+for item in "${arr[@]}";do
+     echo $item,
+done
+
+for i in "${!arr[@]}"; do 
+    echo "${arr[$i]}"
+done 
+
+
+
+
+==============================================================================================='
+
+}
+
+
+#  if [ $# -gt 0 ];then
+#      exec 0<$1;#判断是否传入参数：文件名，如果传入，将该文件绑定到标准输入
+#  fi
+
+#  while read line
+#  do
+#      echo $line;
+
+#  done <&0;
+
+function dock(){
+
+    local manage="$1"
+    shift 1
+    case "$manage" in
+        'init')
+            echo sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
+            echo apt update 
+            echo apt install iputils-ping
+        ;;
+
+        'info')
+            [ -z "$@" ] && docker info || docker info | grep "$@"
+        ;;
+
+        'pid')
+            local container="$1"
+            [ -z "$container" ] && container='docker ps -q'
+            docker inspect --format '{{.Name}}: {{.State.Pid}}' $($container)
+        ;;
+
+        'all')
+            echo -e "镜像   \t\t网络   \t\t端口   \t\t\t\t状态   \t\t名称"
+            docker ps -a --format '{{.Image}}   \t{{.Networks}}   \t{{.Ports}}   \t\t{{.Status}}   \t{{.Names}}'
+        ;;
+    esac
+
+    
+
+}
+
+
+
+
+###########################################################
+##########################################################
+
+# local cmd=""
+# until [ "$cmd" == 'exit' ]
+# do
+#     read -p ":" cmd
+#     [ "$cmd" == 'exit' ] && break
+#     docker-helper $cmd
+
+# done
+
+
+function __comment(){
+
+x=`expr $x + 1`
+
+for file in $(ls); do
+    echo $file
+done
+
+foo=10
+x=foo
+eval y='$'$x
+
+cdtrack=$((cdtrack-1))
+
+until who | grep "$1" > /dev/null; do
+    sleep 10
+done
+
+case "$a" in
+    [Yy]|[Yy][Ee][Ss] ) echo "good";;
+    [nN]* ) echo "bad";;
+    * ) echo "error"
+esac
+
+
+#gcc $file -o /tmp/a.out && /tmp/a.out
+
+#windows换行转linux换行
+#sudo sed -i 's/\r$//' $arguemnt
+
+
+}
+
+
+
+
+function cover(){
+
+    set -- $(getopt -u -o rh --long rm,help -- $@)
+    #echo $@   
+    local rm=false
+    for i in "$@"
+    do
+        case "$1" in
+        -r|--rm)    rm=true;;
+        -h|--help)
+echo "cover [option] <source> [target]
+功能：用一个 source 文件覆盖 target 文件，如果省略 target，则根据 source.bak 自动推导
+用法：
+    cover source.conf target.conf
+    cover config.conf.bak 
+选项:
+    -r, --rm    删除源文件
+    -h, --help  帮助"; return 0
+        ;;
+        --)         shift 1; break;;
+        *)          echo "无效选项：$1"; return 0 ;;
+        esac
+        shift 1
+
+    done
+
+    local source=$1
+    local target=$2
+    [ -z "$target" ] && target="${source%.bak}"
+    sudo bash -c "cat $source > $target"
+
+    [ $rm == 'true' ] && { [ "$?" -eq 0 ] && sudo rm $source; }
+
+}
+
+
+
+function mk.file(){
+
+    eval set -- `getopt -o t:e:r:dh -l help -- "$@"`
+
+    local _tpl=''
+    local _ext='conf'
+    local _run=''
+    local _dir=false
+
+    for i in "$@"
+    do
+        case "$1" in
+        -t)  _tpl="$2"; shift 1;; #处理了带值参数,所以多跳一下.
+        -e)  _ext="$2"; shift 1;;
+        -r)  _run="$2"; shift 1;;
+        -d)  _dir=true;;
+
+        -h|--help)
+echo "mk.file [option] port1 [port2 ...]
+功能：根据模板批量创建配置文件, 模板文件中的 {port} 会被替换
+用法：
+    mk.file -t cluster.tpl 32768 32769 32770
+    mk.file -t cluster.tpl -r "redis-serer :file --daemonize yes" 32768 32769 32770
+
+选项:
+    -t          模板文件
+    -e          文件扩展名如 ini conf
+    -r          运行的命令
+    -d          是否生成二级目录
+    -h, --help  帮助"; return 0
+;;
+
+        --)    shift 1; break;;#终止时,最后跳一下
+         *)    echo "无效选项：$1"; return 0 ;;
+        esac
+        shift 1 #每次处理完一个参数,跳一下
+    done
+
+    local file=''
+    local command=''
+    for port in "$@"
+    do
+
+        if [ $_dir == 'true' ];then
+            mkdir -p $port
+            file="$port/$port.$_ext"
+        else
+            file="$port.$_ext"
+        fi
+
+        cat "$_tpl" > $file
+        sed -i -e "s/{port}/$port/" $file
+      
+        if [ -n "$_run" ];then
+            command=${_run/':file'/$file};
+            echo "$command";
+            eval "$command"
+        else
+            echo $file
+        fi 
+   
+    done
+
+}
+
+
+function cp(){
+
+    [ "$#" == 1 ] && {
+        echo sudo docker cp $1 `dirname "${1#*:}"`
+    } || {
+        /usr/bin/cp $@
+    }
+
+}
+
+
+
+
+
+function init.container(){
+    docker cp ~/base.sh $1:/ && docker exec --detach $1 cat /base.sh >> /root/.bashrc
+}
+
+
+function change.etc(){
+
+    local newpath=`basename $(dirname $1)`
+    [ -d $newpath ] && sudo mkdir -p $newpath
+    cp -r $1 /d/etc/$newpath &&\
+    sudo rm -rf $1 &&\
+    sudo ln -s /d/etc/$newpath ${1%/}
+
+}
+
+
+
+    # sudo dpkg --get-selections | awk '/i386/{print $1}'
+    # sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
+    # sudo dpkg --remove-architecture i386	  //移除i386架构
+    # sudo dpkg --print-foreign-architectures //显示已启用的异质体系结构
+    
+    #xrandr
+    #cvt 1920x1080
+    #xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
+    #xrandr --addmode HDMI-1 "1920x1080_60.00"

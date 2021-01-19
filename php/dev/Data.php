@@ -2,7 +2,32 @@
 
 
 class Data {
-    
+
+    /**
+     * 滑动时间窗口
+     * 每次成功访问时，记录访问时间点
+     * 每次清理N分钟之前的访问时间点
+     * 对访问次数进行计数，判断是否超过次数
+     * @param $minute
+     * @param $count
+     * @param $times
+     * @return bool
+     */
+    public static function timeWindows($minute, $count, &$times){
+
+        $now = time();
+        $point = $now - $minute * 60;//从当前时间往前推N分钟的时间点
+        foreach($times as $key => $item){
+            if($item < $point) unset($times[$key]); //把N分钟之前的访问清理掉
+        }
+
+        if(count($times) <= $count){
+            $times[] = $now; //成功时，记录本次访问时间点
+            return true;
+        }
+        return false;
+
+    }
     
     /**
      * 取得值
