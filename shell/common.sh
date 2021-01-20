@@ -81,7 +81,8 @@ function parse.path(){
 
     local root="$1"
     local name="${1%%/*}"
-    if  [ -n "$name"  -a  ! -d "$1" ];then
+
+    if  [ -n "$name" -a "$name" != '-' -a  ! -d "$1" ];then
         
         case "${name/%:/}" in
             ?)          root="/${name/%:/}";;
@@ -110,6 +111,7 @@ function forargs(){
 }
 
 function cd(){
+    
     builtin cd `parse.path $@`
 }
 
@@ -150,8 +152,9 @@ function srv(){
             [ "$2" == "all" ] && set -- $1 $(docker ps -qf status=exited)
             [ -n "$2" ] && docker $@ 
         ;;
-        *)  [ -z "$1" ] && set -- 'docker start'
-            echo sudo service $@
+        *)  
+            [ $# == 1 ] && set -- $1 'start'
+            sudo service $@
         ;;        
     esac
 
@@ -1067,19 +1070,6 @@ echo "mk.file [option] port1 [port2 ...]
 }
 
 
-function cp(){
-
-    [ "$#" == 1 ] && {
-        echo sudo docker cp $1 `dirname "${1#*:}"`
-    } || {
-        /usr/bin/cp $@
-    }
-
-}
-
-
-
-
 
 function init.container(){
     docker cp ~/base.sh $1:/ && docker exec --detach $1 cat /base.sh >> /root/.bashrc
@@ -1098,12 +1088,12 @@ function change.etc(){
 
 
 
-    # sudo dpkg --get-selections | awk '/i386/{print $1}'
-    # sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
-    # sudo dpkg --remove-architecture i386	  //移除i386架构
-    # sudo dpkg --print-foreign-architectures //显示已启用的异质体系结构
-    
-    #xrandr
-    #cvt 1920x1080
-    #xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
-    #xrandr --addmode HDMI-1 "1920x1080_60.00"
+# sudo dpkg --get-selections | awk '/i386/{print $1}'
+# sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
+# sudo dpkg --remove-architecture i386	  //移除i386架构
+# sudo dpkg --print-foreign-architectures //显示已启用的异质体系结构
+
+#xrandr
+#cvt 1920x1080
+#xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
+#xrandr --addmode HDMI-1 "1920x1080_60.00"
