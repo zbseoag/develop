@@ -14,8 +14,7 @@ alias ll="ls -alF"
 alias wk="cd -"
 alias up="cd .."
 alias python="python3.8"
-alias ec="echo"
-alias re="return"
+alias pip="pip3"
 alias tar.src="tar -C /d/src -xvf"
 alias tar.usr="tar -C /d/usr -xvf"
 alias make="make -j $(nproc)"
@@ -28,13 +27,14 @@ alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias real="realpath -s"
-alias ecar='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
-alias rear='ecarg;return'
+alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
+alias rearg='ecarg;return'
 alias eclist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
 alias ing="docker ps"
 alias all="docker ps -a"
-alias rm:="docker rm -f"
+alias rmc="docker rm -f"
+alias rmi="docker rmi"
 
 function init(){
     echo '
@@ -111,9 +111,10 @@ function forargs(){
 }
 
 function cd(){
-    
     builtin cd `parse.path $@`
 }
+
+
 
 unalias ll
 function ll(){
@@ -207,10 +208,11 @@ function see(){
 #批量将文件链接到 bin 目录，如果参数是一个目录，则链接目录中的所有文件
 function tobin(){
 
-    [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`;  }
+    [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`; }
     for item in "$@"; do
-        [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [  -f "$item" ] && sudo ln -fsv $item /usr/local/bin
+        [ ${item:0:1} != '/'  ] && item="`pwd`/$item"
+        [ -f "$item" ]  && item="/d/bin/$item"
+        [ -f "$item" ] && sudo ln -fsv $item /usr/local/bin
     done
 
 }
@@ -220,7 +222,8 @@ function tosbin(){
     [ $# == 1 -a  -d "$1"  ]  &&  { cd $1; set -- `ls $1`;  }
     for item in "$@"; do
         [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [  -f "$item" ] && sudo ln -fsv $item /usr/local/sbin
+        [ -f "$item" ]  && item="/d/bin/$item"
+        [ -f "$item" ] && sudo ln -fsv $item /usr/local/sbin
     done
 
 }
@@ -242,10 +245,11 @@ function lnk(){
 function config(){
 
     [ -z "$1" ] && {
-        ./configure --help > config.txt
-        open config.txt
-        return
+        ./configure --help > config.txt; open config.txt;    return
+    } || [ "$1" == '--help' ] && {
+        ./configure --help; return
     }
+
     local word="$1"
     until [ -z "$word" ]
     do
@@ -261,7 +265,6 @@ function config(){
         }
         echo -en "\033[31m查找: \033[0m"
         read word
-
     done
 
 }
@@ -390,6 +393,19 @@ function push(){
         *)      git add $@; git commit -m '日常更新'; git push;;
     esac
 }
+
+
+function pull(){
+
+    #如果只有一个参数，并且该参数不是选项，则识别为 docker 命令
+    [ $# == 1 -a "${1:0:1}" != '-' -a -z "${1#*:}" ] && set - "$1:latest" 
+
+    case "$1" in
+        *:*|*@*)   docker pull $@;;
+        *)         git pull $@;;
+    esac
+}
+
 
 #文件重命令
 #第二个参数只是单纯表示新名字，如：rename /home/old.txt new.txt
@@ -553,10 +569,9 @@ function where(){
 #运行容器
 function run(){
 
-    local option=`echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`
-    option="--privileged=true --restart=unless-stopped $option"   #on-failure:1  always
-   
+    local option="--restart=on-failure:1 `echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`" #默认选项 on-failure:1  always
     local name=`echo "$@" | grep -oP '((?<=--name=)|(?<=--name\s))(\w|,)+'`
+    [ -z "$name" ] && { name='test'; option="#name# $option"; } #如果没有名字，则取名 test
 
     if [[ "$name" =~ ',' ]];then
         name=(${name//,/' '})
@@ -566,13 +581,15 @@ function run(){
         done
     else
         [ "$name" == "test" -o "$name" == "demo" ] && docker rm -f $name > /dev/null 2>&1
-        echo docker run $(echo $option | sed -r "s/#name#/ --name=$name /")
+        docker run $(echo $option | sed -r "s/#name#/ --name=$name /")
     fi
 
 }
 
 
-function exec:(){
+
+
+function exc(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
         [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
@@ -601,20 +618,14 @@ function whith(){
 
 function image(){
 
-    local cmd="$1"
-    shift 1
-    case "$cmd" in
-
+    case "$1" in
         'clean')    docker image rm $(docker image ls -f "dangling=true" -q);;
-        'rm')       docker image rm $@;;
-        '')         docker images;;
-        *)  
-            local c='.ContainerConfig';
-            docker image inspect --format "{{printf \"端口:\t%s \n目录:\t%s \n命令:\t%s \n入口:\t%s \" $c.ExposedPorts $c.WorkingDir $c.Cmd $c.Entrypoint}}" $cmd
-        ;;
-       
+        '')         set -- 'ls -a';;
+        *)
+            [ $# == 1 ] && set -- inspect $1
+        ;; 
     esac
-
+    docker image $@
 }
 
 
@@ -1071,11 +1082,6 @@ echo "mk.file [option] port1 [port2 ...]
 
 
 
-function init.container(){
-    docker cp ~/base.sh $1:/ && docker exec --detach $1 cat /base.sh >> /root/.bashrc
-}
-
-
 function change.etc(){
 
     local newpath=`basename $(dirname $1)`
@@ -1086,6 +1092,9 @@ function change.etc(){
 
 }
 
+function bashrc.to(){
+    docker cp ~/.bashrc $1:/root/.bashrc
+}
 
 
 # sudo dpkg --get-selections | awk '/i386/{print $1}'
