@@ -241,6 +241,10 @@ class Helper {
 
     }
 
+    function password($string){
+        echo '*' . substr(strtolower(md5($string)) . strtoupper(md5($string)), -36, 8) . '*' ;
+    }
+
 }
 
 

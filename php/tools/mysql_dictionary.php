@@ -1,15 +1,11 @@
 <?php
 /**
-
 生成数据表字典工具
-
 **/
-
-
-$host = 'localhost';
+$host = '127.0.0.1';
 $username = 'root';
-$password = 'root';
-$dbname = 'test';
+$password = '123456';
+$dbname = 'mysql';
 
 $db = new Mysql();
 $db->connect($host, $username, $password, $dbname);
@@ -66,7 +62,7 @@ td, th{white-space: nowrap;  word-break: keep-all;}
     <th>允许为空</th>
     <th>备注</th>
     <th style="background:#FFDAC8;">记录1</th>
-    <th style="background:#FFDAC8;">记录2</th>
+    <th style="background:#f8b9b7">记录2</th>
 </tr>
      
 

@@ -35,23 +35,65 @@ alias ing="docker ps"
 alias all="docker ps -a"
 alias rmc="docker rm -f"
 alias rmi="docker rmi"
+alias start="xfor 'srv start'"
+alias stop="xfor 'srv stop'"
+unalias ll
 
-function init(){
-    echo '
-function open(){ sudo vim $@; }
+:<<EOF
+
+function open(){ sudo vim "$@"; }
 function load(){ source ~/.bashrc; }
 SHELL_PATH=/d/develop/shell
 source $SHELL_PATH/common.sh
-    ' >> ~/.bashrc
+>> ~/.bashrc
+
+EOF
+
+####################################################################################
+# xargs 的改进修正了无法调用自定义函数
+# echo "a b" | xeach myfunc --option  #分别运行 myfunc --option a; myfunc --option b
+####################################################################################
+function xeach(){
+
+  [ "`type -t $1`" == 'function' ] && export -f $1 || {
+    local cmd=`which $1`
+    [ -n "$cmd" ] && { shift 1; set -- $cmd "$@"; }
+  }
+  local command="$@"
+  xargs -d ' ' -n1 -I '?' bash -c "$command ?"
 }
 
+####################################################################################
+# 批量运行命令：
+# xfor <command> one tow ... #分别运行 command one; command two;...
+####################################################################################
+function xfor(){
+  local func="$1"
+  shift 1
+  for item in "$@";do
+    eval $func $item
+  done
+
+}
+
+####################################################################################
+# 路径转换
+# window 路径转 linux 路径
+####################################################################################
 function path(){
-
-    local path="${1//\\//}"
-    path="${path/:/}"
-    echo \"/${path,}\"
+  local path="${1//\\//}";
+  path="/${path/:/}";
+  echo \"${path//\/\//\/}\";
 }
 
+
+####################################################################################
+# 参数解析，分割成选项列表和参数列表
+# parse <default> <retain> "$@" 
+# <default> 默认选项，没有则用'-' 占位
+# <retain> 保留最后多少位作为参数 
+# 示例  parse - 1 "$@"
+####################################################################################
 function parse(){
     
     local defalut="$1"
@@ -74,6 +116,10 @@ function parse(){
 
 }
 
+
+####################################################################################
+# 自定义解析路径，方便快速切换目录
+####################################################################################
 function parse.path(){
  
     declare -A all=`parse - 1 "$@"`
@@ -115,8 +161,6 @@ function cd(){
 }
 
 
-
-unalias ll
 function ll(){
     eval ls -alF `parse.path $@`
 }
@@ -124,38 +168,45 @@ function ll(){
 function list(){
     apt list "$1*";
     apt list "lib$1*";
-    apt search $1*;
 }
 
-
-alias start="srv start"
-alias stop="srv stop"
-alias restart="srv restart"
+####################################################################################
+# 服务运行两种命令形式，如：
+# srv <name> start 表示启动服务
+# srv start <name> 表示启动 docker 或 dokcer 容器
+####################################################################################
 function srv(){
 
     case "$1" in
         'php')
             case "$2" in
-                'start')  sudo php-fpm;;
+                'start')  srv php stop 1>/dev/null 2>&1; sudo php-fpm;;
                 'stop')   sudo pkill -9 php-fpm;;
-                *)        srv php stop; srv php start;;  
+                *)        srv php start;;
             esac 
         ;;
         'nginx')   
             case "$2" in    
-                'start')  sudo nginx;;
+                'start')  srv nginx stop 1>/dev/null 2>&1; sudo nginx;;
                 'stop')   sudo nginx -s stop;;
-                *)        srv nginx stop; srv nginx start;;  
+                *)        srv nginx start;;
             esac
         ;;
         'web')  srv php start; srv nginx start;;
-        'start'|'stop'|'restart')
+
+        'start'|'stop')
+            [ -z "$2" ] && { srv docker "$1"; }
             [ "$2" == "all" ] && set -- $1 $(docker ps -qf status=exited)
-            [ -n "$2" ] && docker $@ 
+
+            [ -n "$2" ] && {
+              [ "$1" == 'start' ] && docker stop "$2" 1>/dev/null 2>&1
+              docker "$@"
+            }
         ;;
         *)  
             [ $# == 1 ] && set -- $1 'start'
-            sudo service $@
+            [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1
+            sudo service "$@"
         ;;        
     esac
 
@@ -235,9 +286,7 @@ function lnk(){
     local link="$2"
     [ ${1:0:1} != '/'  ] && target="`pwd`/$1"
     [ ${2:0:1} != '/'  ] && link="`pwd`/$2"
-
     sudo ln -isv $target $link
-
 }
 
 
@@ -269,20 +318,14 @@ function config(){
 
 }
 
-
-
 function title(){
     ORIGN_PS1=${ORIGN_PS1:-$PS1};
     export PS1="$ORIGN_PS1\033]0;$*\007"
 }
 
-
-function mywd(){
-
-    php -r "echo '*' . substr(strtolower(md5('$1')) . strtoupper(md5('$1')), -36, 8) . '*' ;";
-    echo
+function md5(){
+    echo -n $1 | md5sum | cut -d ' ' -f1
 }
-
 
 function color(){
 
@@ -316,14 +359,14 @@ function mkfdir(){
     [ -d "$dir" ] || mkdir $dir
 }
 
-
+####################################################################################
 #打开文件或目录
 #可以打开 docker 容器中的文件，如： open :container /tmp/test.txt  注：参数要冒号开头
 #会把容器中的文件复制到 /tmp/<container>/ 目录中，如果复制为成功，则在该目录新建。
 #可以再结合一个 push :container /tmp/test.txt 就会找到  /tmp/<container>/test.txt 并复制到容器中
 #如果没有参数，表示打开当前目录
 #由于我是用的 WSL 打开当前目录的命令 explorer.exe . 请换成 xdg-open 命令
-
+####################################################################################
 function open(){
 
     option="$1"
@@ -379,9 +422,13 @@ function open(){
 }
 
 
-
-#可以推送 git
-#可以结合上面 open 可以再把文件推送到容器
+####################################################################################
+# 推送命令
+# push [path] [message]
+# 不带参数时等于 git push
+# 带 [path] 表示添加注释并提交到服务器
+# push <container>:<file> 结合上面 open ，再把文件推送到容器中
+####################################################################################
 function push(){
 
     case "$1" in
@@ -390,34 +437,37 @@ function push(){
         'lib')  (cd lib; push .);;
         'all')  push dev; push lib;;
         '')     git push;;
-        *)      git add $@; git commit -m '日常更新'; git push;;
+        *)      git add $1; git commit -m ${2:-'日常更新'}; git push;;
     esac
 }
-
 
 function pull(){
 
     #如果只有一个参数，并且该参数不是选项，则识别为 docker 命令
-    [ $# == 1 -a "${1:0:1}" != '-' -a -z "${1#*:}" ] && set - "$1:latest" 
-
+    [ $# == 1 -a "${1:0:1}" != '-' -a -z "${1#*:}" ] && set - "$1:latest"
     case "$1" in
         *:*|*@*)   docker pull $@;;
         *)         git pull $@;;
     esac
 }
 
-
-#文件重命令
-#第二个参数只是单纯表示新名字，如：rename /home/old.txt new.txt
+####################################################################################
+# 文件重命令
+# rename <file> [newname]
+# 如果只有一个参数，会自动截取最后一段后缀，作为新文件名
+# rename ~/nginx.conf.default # 等同于 rename ~/nginx.conf.default nginx.conf
+####################################################################################
 function rename(){
-    sudo mv $1 `dirname $1`/$2
+  local file=`basename $1`
+  [ $# == 1 ] && set -- $1 ${file%.*}
+  sudo mv $1 `dirname $1`/$2
 }
 
-
+####################################################################################
 #综合了 apt install 和 dpkg -i 安装软件
 #如果不带任何参数，则进入查找安装过程
 #如：install 回车，输入 mysql，会列出包名，输入要安装的包名或输入 exit 退出
-
+####################################################################################
 function install(){
 
     if [ $# == 0 ];then
@@ -434,8 +484,7 @@ function install(){
             set -- $software
             apt list "$1*";
             apt list "lib$1*";
-            apt search $1*;
-            
+
             echo -en "\033[31m安装: \033[0m"
             read software
             if [ "$software" == 'next' -o -z "$software" ];then
@@ -443,7 +492,6 @@ function install(){
             elif [ "$software" == 'exit' ];then
                 break
             fi
-
             sudo apt install -y $software && echo $software >> ~/.install.log
 
         done
@@ -510,8 +558,9 @@ function show(){
 
 }
 
-
+####################################################################################
 #复制文件,如果目录不存在,则自动创建
+####################################################################################
 function copy(){
     if [ $# == 1 ];then
         sudo cp $1 "$1.bak"
@@ -587,8 +636,6 @@ function run(){
 }
 
 
-
-
 function exc(){
     [ $# == 1 ] && { 
         local run="`docker ps -q --filter status=running --filter "name=$1"`"
@@ -601,18 +648,15 @@ function exc(){
 
 }
 
-function whith(){
-
+function use(){
+    title "在 $1 命令中"
     local command="$1"
-    until [ -z "$command" -o  "$command" == 'exit' ]
-    do
-        read -p ":" args
+    until [ -z "$command" ]; do
+        echo -en "\033[31m> $command \033[0m"
+        read args
         [ "$args" == 'exit' ] && break
-        set -- $args
-        $command $@
-
+        $command $args
     done
-
 }
 
 
@@ -629,7 +673,7 @@ function image(){
 }
 
 
-function info(){
+function inspect(){
 
     local format
     case "$1" in
@@ -642,8 +686,6 @@ function info(){
     [ -n "$con" ] && docker inspect --format="{{.Name}}: $format" $con
 
 }
-
-
 
 
 function tools(){
@@ -682,17 +724,14 @@ function git.init(){
 }
 
 
-
-
 alias git.rm="git rm -r --cached"
-git.init.config(){
+git.config(){
 
     git config --global user.name "zbseoag"
     git config --global user.email "zbseoag@163.com"
     git config --global core.editor code
     #git config --list
     #git config user.name
-    
 }
 
 
@@ -706,7 +745,6 @@ git.remote(){
 function append(){
     sed -i "\$a $1" $2
 }
-
 
 function auto.install(){
 
@@ -814,7 +852,6 @@ $PS1           :主提示符
 $PS2           :第二提示符,出现在需要补充输入时，默认值为 >
 $PS4           :第四提示符,使用 -x 选项调用脚本时，它会出现在每行开头，默认为 +
 
-
 ===============================================================================================
 ${#str}                         字符长度
 ${str:3:5}                      按位置截取
@@ -851,7 +888,6 @@ ${data[@]%$1} ${data[@]%%$1}    从后面查找
 ${data[@]/$1/$2}                替换
 ${data[@]/#$1/$2}               replace-head 
 ${data[@]/%$1/$2}               replace-end
-
 
 ===============================================================================================
 /etc/xdg/user-dirs.defaults  ~/.config/user-dirs.dirs
