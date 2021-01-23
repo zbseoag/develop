@@ -5,7 +5,7 @@
 $host = '127.0.0.1';
 $username = 'root';
 $password = '123456';
-$dbname = 'mysql';
+$dbname = 'yacheng';
 
 $db = new Mysql();
 $db->connect($host, $username, $password, $dbname);

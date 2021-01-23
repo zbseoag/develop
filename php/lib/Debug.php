@@ -130,9 +130,7 @@ class Debug {
         $cli = PHP_SAPI == 'cli'? true : false;
         $output = $cli? '' : '<pre style="background:#f3f3f4;padding:5px;border:1px solid #aaa;">' ;
         foreach($args as $key => $data){
-            $data = self::format($data);
-            $output .= print_r($data, true);
-
+            $output .= print_r(self::format($data), true);
             if($key < $count - 1) $output .= $cli? PHP_EOL."--------------------------------------------------------".PHP_EOL : '<hr/>';
         }
 
