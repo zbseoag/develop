@@ -1,11 +1,13 @@
 <?php
 /**
-生成数据表字典工具
+* 数据表字典工具 
+* http://tools.com/database.php?h=localhost&u=root&p=123456&d=mysql
 **/
-$host = '127.0.0.1';
-$username = 'root';
-$password = '123456';
-$dbname = 'yacheng';
+$host       = isset($_GET['h']) ? $_GET['h'] : '127.0.0.1';
+$username   = isset($_GET['u']) ? $_GET['u']: 'root';
+$password   = isset($_GET['p']) ? $_GET['p']: '123456';
+$dbname     = isset($_GET['d']) ? $_GET['d']: 'mysql';
+
 
 $db = new Mysql();
 $db->connect($host, $username, $password, $dbname);
@@ -49,7 +51,6 @@ td, th{white-space: nowrap;  word-break: keep-all;}
 </head>
 <body>
 <h2 style="text-align:center;"><?php echo $dbname;?> 数据字典</h2>
-
 
 <?php foreach($tables as $key => $row){ ?>
 <h3><?php echo ($key+1) . '、' . $row['info']['TABLE_NAME'] .(empty($row['info']['TABLE_COMMENT'])? '' : " ( {$row['info']['TABLE_COMMENT']} )") ?></h3>
@@ -224,13 +225,7 @@ class Mysql {
         else return $this->sql;
     }
     
-    public function __destruct(){
-        
 
-    }
-    
 }
-
-
 
 ?>
