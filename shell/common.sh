@@ -170,8 +170,8 @@ function list(){
 
 ####################################################################################
 # 服务运行两种命令形式，如：
-# srv <name> start 表示启动服务
-# srv start <name> 表示启动 docker 或 dokcer 容器
+# srv <name> [start]|stop 表示启动/停止服务
+# srv start|stop <name> 表示启动/停止 dokcer 容器
 ####################################################################################
 function srv(){
 
@@ -198,8 +198,6 @@ function srv(){
 
             [ -n "$2" ] && {
               [ "$1" == 'start' ] && docker stop "$2" 1>/dev/null 2>&1
-
-
               docker "$@"
             }
         ;;
@@ -214,17 +212,29 @@ function srv(){
 }
 
 
+####################################################################################
+# 同时启动多个服务如：
+# start php nginx mysql 表示启动服务
+# start -c php nginx mysql 选项 -c 表示启动的是容器
+####################################################################################
 function start(){
     local c=0
     [ "$1" == '-c' ] && { c=1; shift 1; }
+    [ -z "$1" ] && set -- docker
     for item in "$@";do
         [ "$c" == 1 ] && { srv start $item; return; } || srv $item start
     done
 }
 
+####################################################################################
+# 同时停止多个服务如：
+# stop php nginx mysql 表示停止服务
+# stop -c php nginx mysql 选项 -c 表示停止的是容器
+####################################################################################
 function stop(){
     local c=0
     [ "$1" == '-c' ] && { c=1; shift 1; }
+    [ -z "$1" ] && set -- docker
     for item in "$@";do
         [ "$c" == 1 ] && { srv stop $item; return; } || srv $item stop
     done
