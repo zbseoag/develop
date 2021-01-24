@@ -730,6 +730,8 @@ git.config(){
     git config --global user.name "zbseoag"
     git config --global user.email "zbseoag@163.com"
     git config --global core.editor code
+    #中文乱码
+    git config --global core.quotepath false
     #git config --list
     #git config user.name
 }
