@@ -3,10 +3,10 @@
 * 数据表字典工具 
 * http://tools.com/database.php?h=localhost&u=root&p=123456&d=mysql
 **/
-$host       = isset($_GET['h']) ? $_GET['h'] : '127.0.0.1';
-$username   = isset($_GET['u']) ? $_GET['u']: 'root';
-$password   = isset($_GET['p']) ? $_GET['p']: '123456';
-$dbname     = isset($_GET['d']) ? $_GET['d']: 'mysql';
+$host       = $_GET['h'] ?? '127.0.0.1';
+$username   = $_GET['u'] ?? 'root';
+$password   = $_GET['p'] ?? '123456';
+$dbname     = $_GET['d'] ?? 'mysql';
 
 
 $db = new Mysql();

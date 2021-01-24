@@ -35,8 +35,6 @@ alias ing="docker ps"
 alias all="docker ps -a"
 alias rmc="docker rm -f"
 alias rmi="docker rmi"
-alias start="xfor 'srv start'"
-alias stop="xfor 'srv stop'"
 unalias ll
 
 :<<EOF
@@ -200,16 +198,36 @@ function srv(){
 
             [ -n "$2" ] && {
               [ "$1" == 'start' ] && docker stop "$2" 1>/dev/null 2>&1
+
+
               docker "$@"
             }
         ;;
         *)  
+            [ "$1" == 'mysql' ] && { shift 1; set -- mysqld $@; }
             [ $# == 1 ] && set -- $1 'start'
             [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1
             sudo service "$@"
         ;;        
     esac
 
+}
+
+
+function start(){
+    local c=0
+    [ "$1" == '-c' ] && { c=1; shift 1; }
+    for item in "$@";do
+        [ "$c" == 1 ] && { srv start $item; return; } || srv $item start
+    done
+}
+
+function stop(){
+    local c=0
+    [ "$1" == '-c' ] && { c=1; shift 1; }
+    for item in "$@";do
+        [ "$c" == 1 ] && { srv stop $item; return; } || srv $item stop
+    done
 }
 
 function linux(){
