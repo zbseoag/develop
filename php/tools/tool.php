@@ -6,13 +6,12 @@ if (!empty($_REQUEST)){
 
     $action = $_REQUEST['action'];
     $tool = new Tool($_REQUEST['data']);
-
-    $method = new \ReflectionMethod($tool, $action);
+    if(method_exists($tool, $action)) $method = new \ReflectionMethod($tool, $action);
 
     if(function_exists($action)){
         $tool->output = $action($tool->data);
-    }else if($method->isStatic()){
-        $tool->output = $tool->$action($tool->data);
+    }else if(isset($method) && $method->isStatic()){
+        $tool->output = Tool::$action($tool->data);
     }else{
         $tool->$action();
     }
