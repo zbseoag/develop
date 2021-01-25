@@ -1,16 +1,24 @@
 <?php
-
-/**
-author：zbseoag
-仅限于本地使用,不要放在服务器上
- **/
 error_reporting(E_ALL);
 date_default_timezone_set('Asia/Shanghai');
 
 if (!empty($_REQUEST)){
-    (new Tool($_REQUEST['data']))->{$_REQUEST['action']}();
+
+    $action = $_REQUEST['action'];
+    $tool = new Tool($_REQUEST['data']);
+
+    $method = new \ReflectionMethod($tool, $action);
+
+    if(function_exists($action)){
+        $tool->output = $action($tool->data);
+    }else if($method->isStatic()){
+        $tool->output = $tool->$action($tool->data);
+    }else{
+        $tool->$action();
+    }
     exit;
 }
+
 ?>
 
 <!doctype html>
@@ -42,7 +50,39 @@ if (!empty($_REQUEST)){
         </ul>
     </form>
 
-    <button class="button" type="button" accesskey="a" value="toArray">转数组</button>
+    <button class="button" type="button" accesskey="s" value="bash_sh">Shell (S)</button>
+    <button class="button" type="button" accesskey="p" value="python3.8_py" >Python (P)</button>
+    <button class="button" type="button" accesskey="l" value="lua" >Lua (L)</button>
+    <button class="button" type="button" accesskey="h" value="php" >PHP (H)</button>
+    <button class="button" type="button" accesskey="c" value="c" >C 语言 (C)</button>
+    <button class="button" type="button" accesskey="j" value="java" >Java (J)</button>
+    <button class="button" type="button" accesskey="g" value="go_run_go" >Go (G)</button>
+    <br/>
+    <button class="button" value="datetime" type="button">时间戳</button>
+    <button class="button" value="md5" type="button">md5</button>
+    <button class="button" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
+    <button class="button" data-switch-value="urlencode|urldecode|http_build_query" value="" type="button">url 解码</button>
+    <button class="button" data-switch-value="parse_url|http_build_query" value="" type="button">url 解析</button>
+    <button class="button" data-switch-value="deunicode|unicode" type="button">unicode 解码</button>
+
+    <button class="button" value="strip_tags" type="button">标签过滤</button>
+    <button class="button" value="htmlFormat" type="button">html 格式化</button>
+
+    <button class="button" value="templateTable" type="button">模板表格</button>
+    <button class="button" value="select_array" type="button">&lt;select&gt;</button>
+    <button class="button" value="table_array" type="button">&lt;table&gt;</button>
+    <button class="button" value="myTagToArray" type="button">&lt;tag&gt;</button>
+
+    <button class="button" value="arrayFluctuate" type="button">数组变换</button>
+    <button class="button" value="json_array" type="button">JSON 转数组</button>
+
+    <button class="button" value="createSetAndGetmethod" type="button">Seter 方法</button>
+    <button class="button" value="notExist" type="button">对比存在</button>
+    <button class="button" value="sql_field" type="button">SQL数组</button>
+    <button class="button" value="filter" type="button">清除空白</button>
+    <button class="button" value="nameStyle" type="button">命令风格</button>
+    <button class="button" value="maketplfile" type="button">创建文件</button>
+
 
     <div id="run" style="margin-top:1.6em;"></div>
     <div id="code"></div>
@@ -140,11 +180,25 @@ class Form {
 
 var buttons = document.querySelectorAll(".button");
 buttons.forEach(function(item){
+
+
     item.onclick = function(){
+
+        if(item.hasAttribute('data-switch-value')){
+
+            let switch_value = item.getAttribute('data-switch-value').split('|');
+            let index = 0;
+            for(var i in switch_value){
+                if(item.getAttribute('value') == switch_value[i]){
+                    if(i == switch_value.length - 1) break;
+                    index = ++i; break;
+                }
+            }
+            item.setAttribute('value', switch_value[index]);
+        }
 
         localStorage.setItem('action', item.getAttribute('value'));
         el('run').innerHTML = el('code').innerHTML = '';
-
         new Form('form').post({'action': item.getAttribute('value')}).then(data => {
 
             if(el('data').value == ''){
@@ -174,6 +228,32 @@ class Tool{
     public $data =  '';
     public $command = '';
 
+    public $template = array(
+
+    'go' => ['
+package main
+import "fmt"
+func main(){
+    fmt.Println("Hello, World!")
+}'],
+
+    'java' => ['
+import static java.lang.System.out;
+import java.util.*;
+public class Main {
+    public static void main(String[] args) throws Exception{
+
+    }
+}', 'javac -encoding UTF8 {file} 2>&1 && java -Dfile.encoding=UTF8 {file}'],
+
+    'c' => ['
+#include <stdio.h>
+#include <math.h>
+int main(){
+    printf("Hello, World \n");
+    
+}', 'echo "root" | sudo -S gcc -o {file}.out {file} 2>&1 && {file}.out'],
+);
 
     public function __construct($data){
 
@@ -200,34 +280,39 @@ class Tool{
             $this->command = empty($this->template[$ext][1]) ? implode(' ', $cmd) . " $this->file" : str_replace('{file}', $this->file, $this->template[$ext][1]);
        
         }
-
     }
 
     public function __destruct(){
 
-        array_walk($this->output, function($item){self::p($item);});
+        if ($this->command) {
+            $this->output = shell_exec($this->command . ' 2>&1');
+            $this->output = preg_replace('/\[sudo\].*:\s+/', '', $this->output);
+            self::p($this->command, htmlspecialchars($this->output, ENT_NOQUOTES));
+       
+        } else if(empty($this->data)) {
+            echo self::format(htmlspecialchars($this->output, ENT_NOQUOTES));
+        } else{
+            self::p(htmlspecialchars($this->output, ENT_NOQUOTES));
+        }
+       
     }
 
-    public function toArray(){
-
-        $this->data = explode("\n", $this->data);
-
-        $array = array_map(function($item){
-            return preg_replace('/(\w+)\s.*/', '$1:', $item);
-        }, $this->data);
-
-        $this->output[] = '<p contenteditable="true" style="width:100%;box-sizing:border-box;padding:5px 0 20px 5px;">' . implode("\n", $array) . '</p>';
-
-        $array = array_map(function($item){
-            return preg_replace('/(\w+)\s(.*)/', "\t'$1' => 'null', //$2", $item);
-        }, $this->data);
-
-        $this->output[] = '[<br>' . implode('<br/>', $array) . '<br>]';
-  
-
+    public function look(){
+        $this->output = file_get_contents($this->file . '.' . $this->resolve($this->data)[1]);
     }
 
+    public function save(){
+        file_put_contents($this->file, $this->data, LOCK_EX);
+    }
 
+    public function resolve($value){
+
+        $cmd = explode('_', $value);
+        count($cmd) == 1 && array_push($cmd, $value);
+        $ext = array_pop($cmd);
+        return [$cmd, $ext];
+
+    }
 
     /**
      * 格式化数据
@@ -296,7 +381,46 @@ class Tool{
     }
 
 
+    public static function unicode($str){
+        preg_match_all('/./u',$str,$matches);
+        $unicodeStr = "";
+        foreach($matches[0] as $m){
+            $unicodeStr .= "&#".base_convert(bin2hex(iconv('UTF-8',"UCS-4",$m)),16,10);
+        }
+        return $unicodeStr;
+    }
+
+    /**
+     * unicode 解码
+     * @param $string
+     * @return string|string[]|null
+     */
+    public static function deunicode($string) {
+
+        return preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function($match){
+            return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+        }, $string);
+
+    }
+
+    //命名风格
+    public function nameStyle(){
+
+        $this->data = explode("\n", trim($this->data));
+        foreach($this->data as $line){
+            if(strpos($line, '_')  === false ){
+                $this->output .= "\n" .strtolower(ltrim(preg_replace('/([A-Z])/', '_${1}', $line), '_')) . "\n";
+            }else{
+                $this->output .= "\n" . str_replace(' ', '', ucwords(str_replace('_', ' ', trim($line)))). "\n";
+            }
+        }
+
+    }
 
 }
+
+
+
+
 
 ?>

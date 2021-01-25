@@ -135,7 +135,7 @@ function parse.path(){
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
             'desk')     root=/c/desktop;;
-            'dev')      root=/d/develop;;
+            'dev')      root=/e/develop;;
             'down')     root=/e/Download;;
             'test')     root=~/test;;
             'etc')      root=/d/etc;;
