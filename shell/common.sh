@@ -7,8 +7,8 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令  ignoreboth
 export HISTIGNORE="pwd:history" #不记录的命令
 
-#export JAVA_HOME="/d/usr/jdk15.0"
-export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin
+export JAVA_HOME="/d/usr/jdk"
+export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/zookeeper/bin
 
 alias ll="ls -alF"
 alias wk="cd -"
@@ -35,6 +35,7 @@ alias ing="docker ps"
 alias all="docker ps -a"
 alias rmc="docker rm -f"
 alias rmi="docker rmi"
+
 unalias ll
 
 :<<EOF
@@ -192,6 +193,13 @@ function list(){
 function srv(){
 
     case "$1" in
+        'zkServer')
+            case "$2" in
+                'start')  zkServer.sh stop 1>/dev/null 2>&1; zkServer.sh start;;
+                'stop')   zkServer.sh;;
+                *)        srv zkServer start;;
+            esac 
+        ;;
         'php')
             case "$2" in
                 'start')  srv php stop 1>/dev/null 2>&1; sudo php-fpm;;
@@ -314,7 +322,7 @@ function tobin(){
     [ $# == 1 -a  -d "$1"  ]  && { cd $1;  set -- `ls $1`; }
     for item in "$@"; do
         [ ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [ -f "$item" ]  && item="/d/bin/$item"
+        [ ! -f "$item" ]  && item="/d/bin/$item"
         [ -f "$item" ] && sudo ln -fsv $item /usr/local/bin
     done
 
