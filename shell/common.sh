@@ -80,6 +80,7 @@ function xfor(){
 ####################################################################################
 function path(){
   local path="${1//\\//}";
+  path="${path,}";
   path="/${path/:/}";
   echo \"${path//\/\//\/}\";
 }
@@ -155,7 +156,22 @@ function forargs(){
 }
 
 function cd(){
-    builtin cd `parse.path $@`
+    
+    if [[ "$1" =~ ':' ]] && [ -n "${1#*:}" ];then
+
+        local work=( ${1/:/' '} )
+        local run="`docker ps -q --filter status=running --filter "name=${work[0]}"`"
+        [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=${work[0]}"`"
+        [ -z "$run" ] && docker start ${work[0]}
+
+        shift 1
+        [ $# == 0 ] && set -- bash
+        docker exec -itw ${work[1]} ${work[0]} $@
+    else
+        builtin cd `parse.path $@`
+    fi
+
+    
 }
 
 
@@ -222,7 +238,11 @@ function start(){
     [ "$1" == '-c' ] && { c=1; shift 1; }
     [ -z "$1" ] && set -- docker
     for item in "$@";do
-        [ "$c" == 1 ] && { srv start $item; return; } || srv $item start
+        if [ "$c" == 1 ];then
+            srv start $item
+        else
+            srv $item start
+        fi
     done
 }
 
@@ -236,7 +256,11 @@ function stop(){
     [ "$1" == '-c' ] && { c=1; shift 1; }
     [ -z "$1" ] && set -- docker
     for item in "$@";do
-        [ "$c" == 1 ] && { srv stop $item; return; } || srv $item stop
+        if [ "$c" == 1 ];then
+            srv stop $item
+        else
+            srv $item stop
+        fi
     done
 }
 
@@ -664,17 +688,6 @@ function run(){
 }
 
 
-function exc(){
-    [ $# == 1 ] && { 
-        local run="`docker ps -q --filter status=running --filter "name=$1"`"
-        [ -z "$run" ] && run="`docker ps -q --filter status=running --filter "id=$1"`"
-        [ -z "$run" ] && docker start $1
-        set -- "-it $@ bash"
-    }
-    [ $# == 2 ] && set -- "-it $@"
-    docker exec $@
-
-}
 
 function use(){
     title "在 $1 命令中"
