@@ -3,6 +3,24 @@
 
 class Data {
 
+    protected static $string = '';
+
+    public static function string($string){
+
+        self::$string = $string;
+        return new static();
+
+    }
+
+
+    public function toWord(string $delimiter=' ') :string {
+
+        $string = str_replace(['_', '-','/', '\\', '*', '"', '.', ":"], ' ', self::$string);
+        return strtolower(trim(preg_replace(['/([A-Z])[a-z]/', '/\s+/'], [' ${1}', $delimiter], $string)));
+
+    }
+
+
     /**
      * 滑动时间窗口
      * 每次成功访问时，记录访问时间点

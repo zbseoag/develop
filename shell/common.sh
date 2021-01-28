@@ -54,12 +54,16 @@ EOF
 ####################################################################################
 function xeach(){
 
-  [ "`type -t $1`" == 'function' ] && export -f $1 || {
+  if [ "`type -t $1`" == 'function' ];then
+    export -f $1
+  else
     local cmd=`which $1`
     [ -n "$cmd" ] && { shift 1; set -- $cmd "$@"; }
-  }
+  fi
+
   local command="$@"
   xargs -d ' ' -n1 -I '?' bash -c "$command ?"
+
 }
 
 ####################################################################################
@@ -136,7 +140,7 @@ function parse.path(){
             'usr')      root=/d/usr;;
             'bin')      root=/usr/local/bin;;
             'sbin')     root=/usr/local/sbin;;
-            'desk')     root=/c/desktop;;
+            'desk')     root=/c/Users/admin/Desktop;;
             'dev')      root=/e/develop;;
             'down')     root=/e/Download;;
             'test')     root=~/test;;
@@ -195,40 +199,44 @@ function srv(){
     case "$1" in
         'zkServer')
             case "$2" in
-                'start')  zkServer.sh stop 1>/dev/null 2>&1; zkServer.sh start;;
+                'start')  zkServer.sh stop  2>/dev/null; zkServer.sh start;;
                 'stop')   zkServer.sh;;
                 *)        srv zkServer start;;
             esac 
         ;;
         'php')
             case "$2" in
-                'start')  srv php stop 1>/dev/null 2>&1; sudo php-fpm;;
+                'start')  sudo pkill -9 php-fpm 2>/dev/null; sudo php-fpm;;
                 'stop')   sudo pkill -9 php-fpm;;
-                *)        srv php start;;
+                *)        sudo php-fpm;;
             esac 
         ;;
-        'nginx')   
+        'nginx')
             case "$2" in    
-                'start')  srv nginx stop 1>/dev/null 2>&1; sudo nginx;;
-                'stop')   sudo nginx -s stop;;
-                *)        srv nginx start;;
+                'start'|'') sudo nginx -s stop 2>/dev/null; sudo nginx;;
+                'stop')     sudo nginx -s stop;;
+                *)          sudo nginx -s $2;;
             esac
         ;;
         'web')  srv php start; srv nginx start;;
 
         'start'|'stop')
-            [ -z "$2" ] && { srv docker "$1"; }
+   
             [ "$2" == "all" ] && set -- $1 $(docker ps -qf status=exited)
-
             [ -n "$2" ] && {
-              [ "$1" == 'start' ] && docker stop "$2" 1>/dev/null 2>&1
-              docker "$@"
+                if [ "$1" == 'start' ];then
+                    docker restart $2
+                else
+                    docker "$@"
+                fi
             }
         ;;
         *)  
+            # mysql 转变名字
             [ "$1" == 'mysql' ] && { shift 1; set -- mysqld $@; }
+
             [ $# == 1 ] && set -- $1 'start'
-            [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1
+            [ "$2" == 'start' ] && sudo service "$1" stop 2>/dev/null
             sudo service "$@"
         ;;        
     esac
@@ -333,7 +341,7 @@ function tosbin(){
     [ $# == 1 -a  -d "$1"  ]  &&  { cd $1; set -- `ls $1`;  }
     for item in "$@"; do
         [  ${item:0:1} != '/'  ] && item="`pwd`/$item"
-        [ -f "$item" ]  && item="/d/bin/$item"
+        [ ! -f "$item" ]  && item="/d/bin/$item"
         [ -f "$item" ] && sudo ln -fsv $item /usr/local/sbin
     done
 
@@ -353,11 +361,11 @@ function lnk(){
 
 function config(){
 
-    [ -z "$1" ] && {
-        ./configure --help > config.txt; open config.txt;    return
-    } || [ "$1" == '--help' ] && {
+    if [ -z "$1" ];then
+        ./configure --help > config.txt; open config.txt;  return
+    elif [ "$1" == '--help' ];then
         ./configure --help; return
-    }
+    fi
 
     local word="$1"
     until [ -z "$word" ]
@@ -435,7 +443,7 @@ function open(){
         '-profile') code /etc/profile;;
         '-bashrc')  code /etc/bash.bashrc;;
         '-php')     code "`dirname $(dirname $(which php))`/etc/php.ini";;
-        '-nginx')   code "`dirname $(dirname $(which nginx))`/conf/nginx.conf";;
+        '-vhost')   code /etc/nginx/conf.d/default.conf;;
         '-common')  code "$SHELL_PATH/common.sh";;
         '')         explorer.exe .;; #xdg-open $PWD;;
         *:*)
@@ -642,7 +650,7 @@ function is(){
             local ip=$2
 
             if [ -z "$ip" ];then
-                name="`ps -aux | grep -P \"$name\" | grep -v 'grep'`"
+                name="`ps -ef | grep -P \"$name\" | grep -v 'grep'`"
 
             else
                 #如果是纯数字,表示则表示端口
@@ -997,6 +1005,7 @@ function dock(){
             [ -z "$@" ] && docker info || docker info | grep "$@"
         ;;
 
+
         'pid')
             local container="$1"
             [ -z "$container" ] && container='docker ps -q'
@@ -1183,6 +1192,20 @@ function bashrc.to(){
     docker cp ~/.bashrc $1:/root/.bashrc
 }
 
+
+function repository(){
+
+    case "$1" in
+        'composer')
+            if [ "$2" == 'reset' ];then
+                composer config -g --unset repos.packagist   
+            else 
+                composer config -g repo.packagist composer https://packagist.phpcomposer.com
+            fi
+        ;;                
+    esac
+    
+}
 
 # sudo dpkg --get-selections | awk '/i386/{print $1}'
 # sudo apt-get remove --purge `dpkg --get-selections | awk '/i386/{print $1}'`
