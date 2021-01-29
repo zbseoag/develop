@@ -3,22 +3,28 @@
 
 class Data {
 
-    protected static $string = '';
 
-    public static function string($string){
+    /**
+     * 字符串分割成单词
+     * @param string $delimiter
+     * @return string
+     */
+    public static function toWord(string $string, string $delimiter=' ') :string {
 
-        self::$string = $string;
-        return new static();
-
-    }
-
-
-    public function toWord(string $delimiter=' ') :string {
-
-        $string = str_replace(['_', '-','/', '\\', '*', '"', '.', ":"], ' ', self::$string);
+        $string = str_replace(['_', '-','/', '\\', '*', '"', '.', ":"], ' ', $string);
         return strtolower(trim(preg_replace(['/([A-Z])[a-z]/', '/\s+/'], [' ${1}', $delimiter], $string)));
 
     }
+
+
+    /**
+     * 清徐空白
+     */
+    public function filter(string $string){
+
+        return preg_replace('/(\s|&nbsp;|　|\xc2\xa0)/', '',  $string);
+    }
+
 
 
     /**

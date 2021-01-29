@@ -126,45 +126,7 @@ class Html{
         return self::tag('img', ['src'=>$src, 'class'=>$class]);
         
     }
-    
-    /**
-     * 生成table
-     */
-    public static function table($header, $data = [], $class = ''){
-        
-        if(empty($data)){
-            $data = $header;
-            $header = array_keys(current($data));
-        }
-        
-        $instance = self::$instance;
-        $html = self::html();
-        foreach($header as $key => $value){
-            self::tag('th', null, $value);
-        }
-        self::warp('tr');
-        self::warp('thead');
-        $thead = self::html();
-        
-        foreach($header as $key => $value){
-            if(is_numeric($key)) $key = $value;
-            foreach($data as $row){
-                self::tag('td', null, $row[$key]);
-            }
-            self::warp('tr');
-            
-        }
-        
-        self::warp('tbody');
-        $tbody= self::html();
-        
-        self::$html = $html;
-        self::$instance = $instance;
-        return self::warp('table', [ 'class'=>$class, 'border'=> 1], $thead . $tbody);
-        
-        
-    }
-    
+
 
     
     /**

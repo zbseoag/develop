@@ -6,14 +6,27 @@ if (!empty($_REQUEST)){
 
     $action = $_REQUEST['action'];
     $tool = new Tool($_REQUEST['data']);
-    if(method_exists($tool, $action)) $method = new \ReflectionMethod($tool, $action);
 
-    if(function_exists($action)){
+    if(preg_match('/\(.*\)/', $action)){
+        $tool->output = eval('return ' . str_replace('$VAL', $tool->data ?? '', $action) . ';');
+
+    }else if(function_exists($action)){
         $tool->output = $action($tool->data);
-    }else if(isset($method) && $method->isStatic()){
-        $tool->output = Tool::$action($tool->data);
+
     }else{
-        $tool->$action();
+
+        $method = false;
+        if(method_exists($tool, $action)){
+            $method = new \ReflectionMethod($tool, $action);
+
+        }
+        if($method && $method->isStatic()){
+            $tool->output = Tool::$action($tool->data);
+        }else{
+            $tool->$action();
+
+        }
+
     }
     exit;
 }
@@ -29,64 +42,70 @@ if (!empty($_REQUEST)){
 <style>
     * {padding: 0; margin: 0;font: 14px "微软雅黑"; }
     html,body { width: 100%; }
-    button {  padding: 4px 10px; }
-    .action {}
-    .button { min-width: 110px; margin: 4px 0; }
-    li {margin-bottom: 10px; }
+    button {  padding: 4px 10px; margin:0px -4px; min-width: 80px; }
+    .button { min-width: 100px; margin:10px -4px;}
+    li {margin-bottom: -2px; }
     table{ border-collapse: collapse;  }
     tr{   border: 1px solid  #CCC; }
     td, th{  border: 1px solid  #CCC; }
 </style>
 
-<body style="padding:10px; box-sizing: border-box;">
+<body style="padding:2px; box-sizing: border-box;">
     <form id="form" autocomplete="off">
         <ul style="list-style:none;">
-            <li><textarea name="data" id="data" style="width: 100%;padding: 4px;font:16px 'Courier New'; box-sizing: border-box;" rows="20"></textarea></li>
-            <li style="position: absolute; top: 10px; right: 10px;">
-                <button type="button" class="action" value="translates">翻译</button>
-                <button type="button" id="seecode">源码</button>
-                <a target="_blank" href="http://tmp.com"><button type="button">浏览</button></a>
+
+            <li style="float:left; padding:10px 0 0 4px;">
+
                 <button type="reset">清空</button>
+                <button type="button" onclick="el('data').value = el('run').innerText">加载</button>
+                <button type="button" class="action" value="translates">翻译</button>
+                <button class="action" value="timestamp" type="button">时间戳</button>
+                <button class="action" value="md5" type="button">MD5</button>
+                <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
+                <button class="action" data-switch-value="urlencode|urldecode" value="" type="button">URL</button>
+                <button class="action" data-switch-value="deunicode|unicode" type="button">Unicode</button>
+                <button class="action" value="nameStyle" type="button">命名</button>
+                <button class="action" value="pregMatch" type="button">正则</button>
+
             </li>
+
+            <li style="float:right;padding:10px 4px 0 0px;">
+                <button class="action" type="button" accesskey="s" value="lang:bash_sh">Shell (S)</button>
+                <button class="action" type="button" accesskey="h" value="lang:php" >PHP (H)</button>
+                <button class="action" type="button" accesskey="p" value="lang:python3.8_py" >Python (P)</button>
+                <button class="action" type="button" accesskey="l" value="lang:lua" >Lua (L)</button>
+                <button class="action" type="button" accesskey="c" value="lang:c" >C 语言 (C)</button>
+                <button class="action" type="button" accesskey="j" value="lang:java" >Java (J)</button>
+                <button class="action" type="button" accesskey="g" value="lang:go_run_go" >Go (G)</button>
+                <a target="_blank" href="http://tmp.com"><button type="button">浏览</button></a>
+
+            </li>
+
+            <li><textarea name="data" id="data" style="padding:6px;width: 100%; font:16px 'Courier New'; box-sizing: border-box;" rows="20"></textarea></li>
+
+            <li style="padding-left:4px;">
+                <button class="button" data-switch-value="parse_url|http_build_query" value="" type="button">url 解析</button>
+                <button class="button" value="table_array" type="button">&lt;table&gt;</button>
+
+                <button class="button" value="strip_tags" type="button">标签过滤</button>
+                <button class="button" value="htmlFormat" type="button">html 格式化</button>
+                <button class="button" value="templateTable" type="button">模板表格</button>
+                <button class="button" value="select2Array" type="button">&lt;select&gt;</button>
+
+                <button class="button" value="myTagToArray" type="button">&lt;tag&gt;</button>
+                <button class="button" value="arrayFluctuate" type="button">数组变换</button>
+                <button class="button" value="json2Array" type="button">JSON数组</button>
+                <button class="button" value="notExist" type="button">对比存在</button>
+                <button class="button" value="sql_field" type="button">SQL字段</button>
+
+            </li>
+
+
         </ul>
     </form>
 
-    <button class="button" type="button" accesskey="s" value="bash_sh">Shell (S)</button>
-    <button class="button" type="button" accesskey="p" value="python3.8_py" >Python (P)</button>
-    <button class="button" type="button" accesskey="l" value="lua" >Lua (L)</button>
-    <button class="button" type="button" accesskey="h" value="php" >PHP (H)</button>
-    <button class="button" type="button" accesskey="c" value="c" >C 语言 (C)</button>
-    <button class="button" type="button" accesskey="j" value="java" >Java (J)</button>
-    <button class="button" type="button" accesskey="g" value="go_run_go" >Go (G)</button>
-    <button class="button" value="datetime" type="button">时间戳</button>
-    <button class="button" value="md5" type="button">md5</button>
-    <button class="button" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
-    <button class="button" data-switch-value="urlencode|urldecode" value="" type="button">url 解码</button>
-    <button class="button" data-switch-value="parse_url|http_build_query" value="" type="button">url 解析</button>
-    <button class="button" data-switch-value="deunicode|unicode" type="button">unicode 解码</button>
-    <button class="button" value="nameStyle" type="button">命令风格</button>
-
-
-    <button class="button" value="strip_tags" type="button">标签过滤</button>
-    <button class="button" value="htmlFormat" type="button">html 格式化</button>
-
-    <button class="button" value="templateTable" type="button">模板表格</button>
-    <button class="button" value="select_array" type="button">&lt;select&gt;</button>
-    <button class="button" value="table_array" type="button">&lt;table&gt;</button>
-    <button class="button" value="myTagToArray" type="button">&lt;tag&gt;</button>
-
-    <button class="button" value="arrayFluctuate" type="button">数组变换</button>
-    <button class="button" value="json_array" type="button">JSON 转数组</button>
-
-    <button class="button" value="createSetAndGetmethod" type="button">Seter 方法</button>
-    <button class="button" value="notExist" type="button">对比存在</button>
-    <button class="button" value="sql_field" type="button">SQL数组</button>
-    <button class="button" value="filter" type="button">清除空白</button>
-    <button class="button" value="maketplfile" type="button">创建文件</button>
-
 
     <div id="run" style="margin-top:1.6em;"></div>
-    <div id="code"></div>
 </body>
 
 </html>
@@ -199,13 +218,14 @@ buttons.forEach(function(item){
         }
 
         localStorage.setItem('action', item.getAttribute('value'));
-        el('run').innerHTML = el('code').innerHTML = '';
+
+        el('run').innerHTML = ''
         new Form('form').post({'action': item.getAttribute('value')}).then(data => {
 
-            if(el('data').value == ''){
+            if(el('data').value == '' && localStorage.getItem('action').substr(0,5) == 'lang:'){
                 el('data').value = data; 
             }else{
-                el('run').innerHTML = data; 
+                el('run').innerHTML = data;
             }
             
         }).catch(e => console.error( e.message));
@@ -213,10 +233,6 @@ buttons.forEach(function(item){
     }
 });
 
-
-el('seecode').onclick = function(){
-    post('', {'action': 'look', 'data': localStorage.getItem('action') }).then(data => { el('code').innerHTML = data; }).catch(e => console.error( e.message));
-}
 
 </script>
 
@@ -227,7 +243,7 @@ class Tool{
     public $file = '';
     public $output =  null;
     public $data =  '';
-    public $command = '';
+    public $lang = '';
     public $isHtml = false;
 
     public $template = array(
@@ -259,52 +275,47 @@ int main(){
 
     public function __construct($data){
 
-        $this->file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'Main';
+        $this->file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'Main';
         $this->data = preg_replace('/(\r\n|\r|\n)+/', PHP_EOL, trim($data));
     }
 
     public function __call($method, $args){
 
-        list($cmd, $ext) = $this->resolve($method);
+        if(substr($method, 0, 5) != 'lang:') return false;
+        list($cmd, $ext) = $this->resolve(substr($method, 5));
+
         if (empty($this->data)){
-            if(isset($this->template[$ext])){
-                $this->output = trim($this->template[$ext][0]);
-            }
-        } else {
+            $this->lang = true;
+            if(isset($this->template[$ext])) echo trim($this->template[$ext][0]);
+
+        }else{
+
             if ($ext == 'php')  $this->data = "<?php\n\n" . $this->data;
             if ($ext == 'java'){
                 preg_match('/public\s+class\s+(\w+)/', $this->data, $subject);
                 if(!empty($subject)) $this->file = dirname($this->file) . DIRECTORY_SEPARATOR .$subject[1];
-            } 
-            
+            }
             $this->file .= ".$ext";
             $this->save();
-            $this->command = empty($this->template[$ext][1]) ? implode(' ', $cmd) . " $this->file" : str_replace('{file}', $this->file, $this->template[$ext][1]);
-       
+            $this->lang = empty($this->template[$ext][1]) ? implode(' ', $cmd) . " $this->file" : str_replace('{file}', $this->file, $this->template[$ext][1]);
+            $this->output = shell_exec($this->lang . ' 2>&1');
+            $this->output = preg_replace('/\[sudo\].*:\s+/', '', $this->output);
+            $this->output = [$this->lang, htmlspecialchars($this->output, ENT_NOQUOTES)];
         }
+
     }
 
     public function __destruct(){
 
-        if ($this->command) {
-            $this->output = shell_exec($this->command . ' 2>&1');
-            $this->output = preg_replace('/\[sudo\].*:\s+/', '', $this->output);
-            self::p($this->command, htmlspecialchars($this->output, ENT_NOQUOTES));
-       
-        } else if(empty($this->data)) {
-            echo self::format(htmlspecialchars($this->output, ENT_NOQUOTES));
-        } else {
-
-            //if(!$this->isHtml && is_string($this->output)) $this->output = htmlspecialchars($this->output, ENT_NOQUOTES);
-            self::p($this->output);
-            
+        if($this->lang && empty($this->data)){
+            return false;
         }
-       
+
+        if(!is_array($this->output)) $this->output = [$this->output];
+        array_map(function($item){self::p($item); }, $this->output);
+
     }
 
-    public function look(){
-        $this->output = file_get_contents($this->file . '.' . $this->resolve($this->data)[1]);
-    }
 
     public function save(){
         file_put_contents($this->file, $this->data, LOCK_EX);
@@ -432,7 +443,7 @@ int main(){
 
         foreach($this->data as $key => $item){
 
-            $item = Data::string($item)->toWord("\n");
+            $item = Data::toWord($item, "\n");
             if(preg_match('/^[\x{4e00}-\x{9fa5}]+$/u', $item) > 0) {
                 $this->output[] = translate($item, 'zh', 'en');
             }else{
@@ -470,10 +481,209 @@ int main(){
  
     }
 
+
+    public function pregMatch(){
+
+        $this->data = explode("\n", $this->data, 2);
+        if($this->data[0]{0} != '/') $this->data[0] = '/'.$this->data[0].'/';
+        preg_match_all($this->data[0], $this->data[1], $this->output, PREG_SET_ORDER); //PREG_PATTERN_ORDER
+
+        if (preg_last_error() !== PREG_NO_ERROR) {
+            $this->output = 'Error:' . preg_last_error();
+        }else{
+
+            $this->output = array_reduce($this->output, function($carry, $item){
+
+                $carry .= '<tr>' .  array_reduce($item, function($carry, $item){
+                        $carry .= '<td style="padding:4px 10px;">' . $item . '</td>';
+                        return $carry;
+
+                }, '') . '</tr>';
+
+                return $carry;
+            }, '');
+
+
+            $this->output = '<table><tr><td colspan="100" style="text-align:center;padding:4px 10px;">匹配/分组</td></tr>' . $this->output . '</table>';
+
+        }
+
+    }
+
+    /**
+     * 时间戳转换
+     */
+    public function timestamp(){
+
+        if($this->data){
+            if(is_numeric($this->data))
+
+                $this->output = date('Y-m-d H:i:s', trim($this->data));
+            else if(is_string($this->data))
+                $this->output = strtotime($this->data);
+        }else{
+            $time = time();
+            $this->output = $time .'<br/>' . date('Y-m-d H:i:s', $time);
+        }
+
+    }
+
+
+    public  function table_array(){
+
+
+        $this->title = '';
+        if($this->title !== ''){
+            $this->title = explode(',', trim($this->title));
+        }
+
+        $html = Html::toArray($this->data, 'tr');
+
+        $result['th'] = Html::toArray($html[0], 'th', true);
+        unset($html[0]);
+
+        foreach($html as $row){
+            $result['td'][] = Html::toArray($row, 'td', true);
+        }
+
+
+        $html = '| ' .implode(' | ', $result['th']) . ' |<br/>|:---|<br/>';
+        foreach($result['td'] as $line => &$row){
+
+            if(!empty($this->title)){
+
+                $newrow = array();
+                foreach($this->title as $allow_key){
+                    $newrow[] = isset($row[$allow_key])? $row[$allow_key] : '';
+                }
+                $row = $newrow;
+
+            }
+
+            $html .= '| ' . implode(' | ', $row) . ' |<br/>';
+            if(!empty($this->title) && is_array($this->title) && count($this->title) == 1) $result['td'][$line] = array_pop($row);
+        }
+
+
+        self::p(var_export($result, true));
+        $this->output = $html;
+
+    }
+
+    /**
+     * 打印的数组元素转成模板变量调用
+     * -v 遍历时的变量名
+     */
+    public function template(){
+
+        $this->output = '';
+        $this->command += array('-v'=>'$row');
+
+        $regex = "/[\['](\w*)['\]]/";
+        preg_match_all($regex, $this->data, $matches);
+
+        foreach($matches[1] as $key => $val){
+            $this->output .= '&lt;th&gt;'.$val.'&lt;/th&gt;<br/>';
+        }
+        $this->output .= '<hr/>';
+        foreach($matches[1] as $key => $val){
+            $this->output .= "&lt;td&gt;{" . $this->command['-v'] . ".$val}" . "&lt;/td&gt;<br/>";
+        }
+
+    }
+
+
+
+
+    /**
+     * 从建表语句中分离出字段
+     */
+    public function sql_field(){
+
+        preg_match('/\(.*\)/ms', $this->data, $this->data);
+        $this->data = preg_split('/,\n/', current($this->data));
+
+        foreach($this->data as $item){
+
+            preg_match('/`(\w+)`(?:.*(?<=COMMENT)\s+\'(.+)\')?/',  $item, $item);
+            if(empty($item)) continue;
+            $item = array_pad($item, 3, '');
+            $this->output .= "    '$item[1]' => null, //$item[2]\n";
+        }
+
+        $this->output = "\$field = [\n$this->output];";
+
+    }
+
+
+    public function select2Array(){
+
+        if(substr($this->data, 0, 5) === 'array'){
+
+            $data= eval("return $this->data;");
+            $html = '';
+            foreach($data as $key => $value){
+                $html .= sprintf("\t<option value=\"%s\">%s</option>\n", $key, $value);
+            }
+
+            $this->output = sprintf("<select name=\"\" class=\"form-control\">\n%s</select>", $html);
+            $this->output = htmlentities($this->output, ENT_QUOTES, "UTF-8");
+
+        }else{
+
+            preg_match_all('/<option\s+.*value="(.*)">(.*)<\/option>/U', $this->data, $this->data, PREG_SET_ORDER);
+            $this->output = array_combine(array_column($this->data, 1), array_column($this->data, 2));
+            $this->output = var_export($this->output, true) . ';';
+
+        }
+
+    }
+
+
+    public function json2Array(){
+
+        $this->data = trim($this->data);
+
+        $this->data = preg_replace(array('/^\$\w+\s+=\s+\'*/', '/\';$/'), array('', ''), $this->data);
+
+        if(substr($this->data, 0, 5) === 'Array'){
+            $pattern = array('/Array\s+\(/', '/\[(\w+)\]\s=>\s/', '/=>#~#(.*)/', '/[\r\n]\',/', '/\'NULL\'/i', "/'array\(',/", '/([\r\n]+\s+)\)/');
+            $replacement = array('array(', "'$1'=>#~#", " => '$1',", "',", 'null', 'array(', "$1),");
+            $this->data =  preg_replace($pattern, $replacement, $this->data);
+            $this->output = $this->data . ';';
+            return;
+        }
+
+
+        if(substr($this->data, 0, 5) === 'array' || $this->data{0} == '['){
+
+            $data= eval("return $this->data;");
+            $this->output = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        }else if(substr($this->data, 0, 1) === '{' || substr($this->data, 0, 1) === '['){
+
+            $data = json_decode($this->data, true);
+            for($i = 1; $i < 3; $i++){
+                if(!empty($data)) break;
+
+                $this->data = stripslashes($this->data);
+                $data = json_decode($this->data, true);
+            }
+
+            $this->output = var_export($data, true) . ';';
+
+
+        }else{
+            parse_str($this->data, $this->output);
+            return;
+        }
+
+
+
+    }
+
+
 }
-
-
-
 
 
 ?>
