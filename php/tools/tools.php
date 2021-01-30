@@ -8,7 +8,7 @@ if (!empty($_REQUEST)){
     $tool = new Tool($_REQUEST['data']);
 
     if(preg_match('/\(.*\)/', $action)){
-        $tool->output = eval('return ' . str_replace('$VAL', $tool->data ?? '', $action) . ';');
+        $tool->output = eval('return ' . str_replace('$0', $tool->data ?? '', $action) . ';');
 
     }else if(function_exists($action)){
         $tool->output = $action($tool->data);
@@ -40,15 +40,45 @@ if (!empty($_REQUEST)){
     <title>我的工具包</title>
 </head>
 <style>
-    * {padding: 0; margin: 0;font: 14px "微软雅黑"; }
-    html,body { width: 100%; }
-    button {  padding: 4px 10px; margin:0px -4px; min-width: 80px; }
+    * {padding: 0; margin: 0; font: 14px "微软雅黑"; box-sizing:border-box; }
+    html,body { width: 100%;}
+    button {  padding: 4px 10px; margin:0px -4px; min-width: 80px;  }
     .button { min-width: 100px; margin:10px -4px;}
-    li {margin-bottom: -2px; }
+    li { margin-bottom: -2px; }
     table{ border-collapse: collapse;  }
     tr{   border: 1px solid  #CCC; }
     td, th{  border: 1px solid  #CCC; }
+    #win{
+        list-style:none;position: absolute;  border:1px solid red;left:40%;top:8%;visibility: visible;
+        padding:20px; padding-top: 0;
+    }
+    #win input{
+        padding:10px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    #win .close{
+        float:right;position:relative;top:-5px; right: -10px;
+        cursor:default;
+    }
+
 </style>
+
+<ul  id="win">
+    <li>
+        <h3 style="line-height: 20px;padding:10px 0;font-size: 16px;">连接服务器 <i class="close" onclick="el('win').style.visibility='hidden'">X</i></h3>
+    <li>
+        <form action="database.php" target="_blank">
+            <input name="h" placeholder="主机:"><br>
+            <input name="u" placeholder="用户名:"><br/>
+            <input name="p" placeholder="密码:"><br/>
+            <input name="d" placeholder="数据库:"><br/>
+            <button style="margin-left: 0;" type="submit" onclick="el('win').style.visibility='hidden';return true;">确定</button>
+        </form>
+    </li>
+    <li></li>
+</ul>
+
 
 <body style="padding:2px; box-sizing: border-box;">
     <form id="form" autocomplete="off">
@@ -66,6 +96,7 @@ if (!empty($_REQUEST)){
                 <button class="action" data-switch-value="deunicode|unicode" type="button">Unicode</button>
                 <button class="action" value="nameStyle" type="button">命名</button>
                 <button class="action" value="pregMatch" type="button">正则</button>
+                <button onclick="openWindow()" type="button">数据字典</button>
 
             </li>
 
@@ -97,6 +128,7 @@ if (!empty($_REQUEST)){
                 <button class="button" value="json2Array" type="button">JSON数组</button>
                 <button class="button" value="notExist" type="button">对比存在</button>
                 <button class="button" value="sql_field" type="button">SQL字段</button>
+
 
             </li>
 
@@ -234,7 +266,19 @@ buttons.forEach(function(item){
 });
 
 
+function openWindow(){
+
+    el('win').style.visibility = 'visible';
+
+}
+
+
+
 </script>
+
+
+
+
 
 <?php
 
