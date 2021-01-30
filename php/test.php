@@ -258,7 +258,6 @@ ReflectionType 类用于获取函数、类方法的参数或者返回值的类�
  *
  */
 
-
 //$foo = new ReflectionMethod('Testing', 'foo');
 //echo implode(' ', Reflection::getModifierNames($foo->getModifiers())) . "\n";
 
@@ -275,58 +274,51 @@ class Testing{
     protected function ccc(int $c=3){}
 }
 
-$rf = new ReflectionClass('Testing');
 
-$consts = $rf->getReflectionConstants();
-foreach($consts as $key => $item){
+$rf = new ReflectionClass('ReflectionClass');
 
-    $const[$key]['name'] = $item->getName();
-    $const[$key]['value'] = $item->getValue();
-    $const[$key]['txt'] = sprintf("const %s = %s;", $const[$key]['value'], $const[$key]['name']);
+$class['const'] = $rf->getReflectionConstants();
+foreach($class['const'] as $key => $item){
 
+    $consts[$key]['name'] = $item->getName();
+    $consts[$key]['value'] = $item->getValue();
+    $consts[$key]['txt'] = sprintf("const %s = %s;", $consts[$key]['value'], $consts[$key]['name']);
 }
+$class['const'] = $consts;
 
-$class['const'] = $const;
 
 $fields = $rf->getProperties();
-
-
 $class['field'] = $fields;
 
-$methods = $rf->getMethods();
-foreach($methods as $key => $item){
 
-    $method[$key]['acc'] = implode(' ', Reflection::getModifierNames($item->getModifiers()));
-    $method[$key]['name'] = $item->name;
+
+$class['method'] = $rf->getMethods();
+foreach($class['method'] as $key => $item){
+
+    $methods[$key]['acc'] = implode(' ', Reflection::getModifierNames($item->getModifiers()));
+    $methods[$key]['name'] = $item->name;
 
     $params = $item->getParameters();
 
-    $method[$key]['param'] = '';
+    $methods[$key]['param'] = '';
     if($params){
         foreach($params as $item1){
 
             $name = $item1->getName();
-            $method[$key]['param'] .= $item1->getType() . " $name";
-            if($item1->isDefaultValueAvailable()) $method[$key]['param'] .= '='.$item1->getDefaultValue() . ', ';
-            else $method[$key]['param'] .= ', ';
+            $methods[$key]['param'] .= $item1->getType() . " $name";
+            if($item1->isDefaultValueAvailable()) $methods[$key]['param'] .= '='.$item1->getDefaultValue() . ', ';
+            else $methods[$key]['param'] .= ', ';
         }
-        $method[$key]['param'] = rtrim($method[$key]['param'], ', ');
+        $methods[$key]['param'] = rtrim($methods[$key]['param'], ', ');
     }
-    $method[$key]['txt'] = $method[$key]['acc'] . " $item->name(" .  $method[$key]['param'] . '){}';
+    $methods[$key]['txt'] = $methods[$key]['acc'] . " $item->name(" .  $methods[$key]['param'] . '){}';
 
 }
 
 
-$class['method'] = $method;
+$class['method'] = $methods;
+
 p($class);
-
-
-
-
-//p($rf->getMethod('bar')->getParameters()[2]->getType()->getName());
-//p($rf->getMethod('bar')->getParameters()[2]->getDefaultValue());
-
-
 
 
 
