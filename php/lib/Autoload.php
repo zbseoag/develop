@@ -30,37 +30,11 @@ Autoload::home(__DIR__)->register()->load('Debug');// Debug类中有几个函数
 Autoload::home('/e/develop/php/dev/')->register();
 
 
-
-function start(){
-    $GLOBALS['__test__']['start']['time'] = time();
-    $GLOBALS['__test__']['start']['usage']  = memory_get_usage();
-
-}
-
-function over($summary=false){
-
-    $GLOBALS['__test__']['over']['time']    = time();
-    $GLOBALS['__test__']['over']['usage']   = memory_get_usage();
-
-    $GLOBALS['__test__']['summary']['time']   = $GLOBALS['__test__']['over']['time'] - $GLOBALS['__test__']['start']['time'];
-    $GLOBALS['__test__']['summary']['usage']  = $GLOBALS['__test__']['over']['usage'] - $GLOBALS['__test__']['start']['usage'];
-
-    if($summary){
-        print_r($GLOBALS['__test__']['summary']);
-    }else{
-        print_r($GLOBALS['__test__']);
-    }
-
-
-}
-
-
-
 class Autoload {
 
     public $home = '.';
     public $match = '';
-    public $suffix = 'php';
+    public $suffix = '.php';
     public static $file = '';
     public static $error = [];
 
@@ -93,16 +67,15 @@ class Autoload {
     }
 
     /**
-     * 类名文件后缀，如 'class.php'
+     * 类名文件后缀，如 '.class.php'
      * @param $value
      * @return $this
      */
     public function suffix($value) {
 
-        $this->suffix = ltrim($value, '.');
+        $this->suffix = '.'. ltrim($value, '.');
         return $this;
     }
-
 
     public function register() {
 
@@ -126,7 +99,7 @@ class Autoload {
 
         self::$file = '';
         if(empty($this->match) || strpos($class, $this->match) === 0){
-            self::$file = strtr($this->home . '/' . $class, '\\', '/') . '.' . $this->suffix;
+            self::$file = strtr($this->home . '/' . $class, '\\', '/') . $this->suffix;
         }
         return $this;
 
@@ -162,6 +135,7 @@ class Autoload {
         $class = new \ReflectionClass($class);
         return $class->newInstanceArgs($arguments);
     }
+
 
     public static function error() {
 

@@ -291,6 +291,31 @@ if(!function_exists('get')){
 }
 
 
+function start(){
+
+    $GLOBALS['__test__']['start']['time'] = microtime(true);
+    $GLOBALS['__test__']['start']['usage']  = memory_get_usage();
+
+}
+
+function over(bool $summary=false){
+
+    $GLOBALS['__test__']['over']['time']    = microtime(true);
+    $GLOBALS['__test__']['over']['usage']   = memory_get_usage();
+
+    $GLOBALS['__test__']['summary']['time']   = $GLOBALS['__test__']['over']['time'] - $GLOBALS['__test__']['start']['time'];
+    $GLOBALS['__test__']['summary']['usage']  = $GLOBALS['__test__']['over']['usage'] - $GLOBALS['__test__']['start']['usage'];
+
+    if($summary){
+        print_r($GLOBALS['__test__']['summary']);
+    }else{
+        print_r($GLOBALS['__test__']);
+    }
+
+
+}
+
+
 
 
 

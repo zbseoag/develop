@@ -137,6 +137,20 @@ class Html{
     }
 
 
+    public static function script($src = ''){
+
+        $inner = '';
+        $attrs['type'] = 'text/javascript';
+        if(strtolower(substr(strrchr($src, '.'), 0, 3)) == '.js'){
+            $attrs['src'] = $src;
+        }else{
+            $inner =  $src;
+        }
+        return self::tag('script', $attrs, $inner);
+
+    }
+
+
     /**
      * 生成下拉
      */
@@ -198,7 +212,7 @@ class Html{
 
         }
 
-        echo $table->make();
+        return $table->make();
 
     }
 
@@ -224,6 +238,112 @@ class Html{
         if(!empty($keys)) $matches = array_combine($keys, $matches);
 
         return $matches;
+
+    }
+
+
+    /**
+     * html标签转数组
+     * @param $html
+     * @param string $tag 标签名
+     * @param bool $strip 是否过虑其他标签
+     * @param array $keys 创建关联数组的key
+     * @param array $append 追加数组
+     * @return array
+     */
+    public static function  tagToArray($html,  $tag = 'td', $strip = true, $keys = array(), $append = array()){
+
+        if($strip) $html = strip_tags($html, "<$tag>");
+        $pattern = "/<{$tag}\b.*?>(.*?)<\/{$tag}>/s";
+        preg_match_all($pattern , $html, $matches);
+
+        $matches = $matches[1];
+        foreach($matches as &$value) $value = trim($value);
+
+        if($append) $matches = $matches + $append;
+        if(!empty($keys)) $matches = array_combine($keys, $matches);
+
+        return $matches;
+
+    }
+
+
+    public static function tableToArray($html){
+
+        $html = self::tagToArray($html, 'tr', false);
+
+        $result['th'] = self::tagToArray($html[0], 'th');
+        unset($html[0]);
+        foreach($html as $row){
+            $result['td'][] = self::tagToArray($row, 'td');
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * 过滤标签
+     * @param unknown $content
+     * @param unknown $tags
+     * @param string $allow
+     * @return unknown|string
+     */
+    public  static function filter($content, $tags, $allow = true){
+
+        if(empty($tags)) return $content;
+
+        $tags = explode(',', preg_replace('/\s+/', '', $tags));
+        if($allow){
+
+            $contents = [];
+            foreach($tags as $tag){
+                $pattern = '/<'.$tag.'\s[^>]*>[\s\S]*?<\/'.$tag.'>|<'.$tag.'[^>]*>/';
+                preg_match_all($pattern, $content, $matches);
+                $contents = array_merge($contents, $matches[0]);
+            }
+            return implode($contents);
+
+        }else{
+
+            foreach($tags as $tag){
+                $pattern[] = '/<'.$tag.'\s[^>]*>[\s\S]*?<\/'.$tag.'>|<'.$tag.'[^>]*>/';
+            }
+            return preg_replace($pattern, '', $content);
+        }
+
+    }
+
+
+    public static function login($form, $field, $submit = ''){
+
+        $html = "\n".'<script>'."\n".'$(function(){'."\n";
+        $html .= 'var $form = $("'. $form .'");'."\n";
+        $html .= '$form.removeAttr("action").removeAttr("onsubmit");'."\n";
+        if($submit) $html .= '$form.find("'.$submit.'").off().removeAttr("onclick");'."\n";
+
+        if(is_string($field)) $field = array($field => '');
+        foreach($field as $name => $vlaue){
+            $html .= '$form.find("[name='.$name.']").val("'.$vlaue.'");';
+        }
+
+        $html .= "\n".'});'."\n".'</script>';
+
+        return $html;
+
+    }
+
+
+    public static function captcha($keyword, $content, $url){
+
+        $pattern = '/<img\s+(?:.|\n)*?'.$keyword.'(?:.|\n)*?>/';
+        preg_match($pattern, $content, $match);
+        if(isset($match[0])){
+            $img = preg_replace('/src=\s*".*?"/', 'src="'.$url.'"', $match[0]);
+            $content = preg_replace($pattern, $img, $content);
+        }
+
+        return $content;
 
     }
 
