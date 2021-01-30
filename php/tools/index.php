@@ -49,7 +49,7 @@ if (!empty($_REQUEST)){
     tr{   border: 1px solid  #CCC; }
     td, th{  border: 1px solid  #CCC; }
     #win{
-        list-style:none;position: absolute;  border:1px solid red;left:40%;top:8%;visibility: visible;
+        list-style:none;position: absolute;  border:1px solid red;left:40%;top:8%;visibility: hidden;
         padding:20px; padding-top: 0;
     }
     #win input{
@@ -60,6 +60,7 @@ if (!empty($_REQUEST)){
     #win .close{
         float:right;position:relative;top:-5px; right: -10px;
         cursor:default;
+        padding:6px;
     }
 
 </style>
@@ -88,15 +89,15 @@ if (!empty($_REQUEST)){
 
                 <button type="reset">清空</button>
                 <button type="button" onclick="el('data').value = el('run').innerText">加载</button>
+                <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
                 <button type="button" class="action" value="translates">翻译</button>
                 <button class="action" value="timestamp" type="button">时间戳</button>
                 <button class="action" value="md5" type="button">MD5</button>
-                <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
                 <button class="action" data-switch-value="urlencode|urldecode" value="" type="button">URL</button>
                 <button class="action" data-switch-value="deunicode|unicode" type="button">Unicode</button>
                 <button class="action" value="nameStyle" type="button">命名</button>
                 <button class="action" value="pregMatch" type="button">正则</button>
-                <button onclick="openWindow()" type="button">数据字典</button>
+                <button onclick="el('win').style.visibility='visible';" type="button">数据字典</button>
 
             </li>
 
@@ -264,13 +265,6 @@ buttons.forEach(function(item){
 
     }
 });
-
-
-function openWindow(){
-
-    el('win').style.visibility = 'visible';
-
-}
 
 
 
