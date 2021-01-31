@@ -442,7 +442,6 @@ function open(){
         '-source')  code /etc/apt/sources.list;;
         '-profile') code /etc/profile;;
         '-bashrc')  code /etc/bash.bashrc;;
-        '-php')     code "`dirname $(dirname $(which php))`/etc/php.ini";;
         '-vhost')   code /etc/nginx/conf.d/default.conf;;
         '-common')  code "$SHELL_PATH/common.sh";;
         '')         explorer.exe .;; #xdg-open $PWD;;
