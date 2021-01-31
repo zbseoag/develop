@@ -38,31 +38,58 @@ if (!empty($_REQUEST)){
 <head>
     <meta charset="utf-8">
     <title>我的工具包</title>
+    <script src="form.js"></script>
+    <link rel="stylesheet" href="lib/codemirror.css">
+    <script src="lib/codemirror.js"></script>
+
+    <script src="addon/selection/active-line.js"></script>
+    <script src="addon/edit/matchbrackets.js"></script>
+    <script src="mode/htmlmixed/htmlmixed.js"></script>
+    <script src="mode/xml/xml.js"></script>
+    <script src="mode/javascript/javascript.js"></script>
+    <script src="mode/css/css.js"></script>
+    <script src="mode/clike/clike.js"></script>
+    <script src="mode/php/php.js"></script>
+
+
+    <!--引入css文件，用以支持主题-->
+    <link rel="stylesheet" href="theme/eclipse.css">
+    <link rel="stylesheet" href="theme/seti.css">
+    <link rel="stylesheet" href="theme/dracula.css">
+
+    <!--支持代码折叠-->
+    <link rel="stylesheet" href="addon/fold/foldgutter.css"/>
+    <script src="addon/fold/foldcode.js"></script>
+    <script src="addon/fold/foldgutter.js"></script>
+    <script src="addon/fold/brace-fold.js"></script>
+    <script src="addon/fold/comment-fold.js"></script>
+
+
+    <!--全屏模式-->
+    <link rel="stylesheet" href="addon/display/fullscreen.css">
+    <script src="addon/display/fullscreen.js"></script>
+
+    <!--括号匹配-->
+    <script src="addon/edit/matchbrackets.js"></script>
+
+    <!--自动补全-->
+    <link rel="stylesheet" href="addon/hint/show-hint.css">
+    <script src="addon/hint/show-hint.js"></script>
+    <script src="addon/hint/anyword-hint.js"></script>
 </head>
 <style>
     * {padding: 0; margin: 0; font: 14px "微软雅黑"; box-sizing:border-box; }
-    html,body { width: 100%;}
+    html,body { width: 100%; height: 100%;}
     button {  padding: 4px 10px; margin:0px -4px; min-width: 80px;  }
     .button { min-width: 100px; margin:10px -4px;}
     li { margin-bottom: -2px; }
     table{ border-collapse: collapse;  }
     tr{   border: 1px solid  #CCC; }
     td, th{  border: 1px solid  #CCC; }
-    #win{
-        list-style:none;position: absolute;  border:1px solid red;left:40%;top:8%;visibility: hidden;
-        padding:20px; padding-top: 0;
-    }
-    #win input{
-        padding:10px;
-        margin-bottom: 10px;
-        width: 100%;
-    }
-    #win .close{
-        float:right;position:relative;top:-5px; right: -10px;
-        cursor:default;
-        padding:6px;
-    }
-
+    #win{list-style:none;position: absolute; z-index: 10; border:1px solid red;left:40%;top:10%;visibility: hidden;padding:20px; padding-top: 0; width: 20%;}
+    #win input{padding:10px;margin-bottom: 10px;width: 100%;}
+    #win .close{float:right;position:relative;top:-5px; right: -10px;cursor:default;padding:6px;}
+    .CodeMirror {border: 1px solid black; font-size:14px; width: 100%; height:800px; }
 </style>
 
 <ul  id="win">
@@ -144,92 +171,35 @@ if (!empty($_REQUEST)){
 </html>
 <script>
 var log = console.log;
-
 function el(id){
     return document.getElementById(id);
 }
 
-async function get(url){
-    if(type == 'json'){
-        return await fetch(url).then(response => response.json());
-    }else{
-        return await fetch(url).then(response => response.text());
-    }
-}
+var editor = CodeMirror.fromTextArea(el('data'), {
 
-async function post(url, data, type='text'){
+    styleActiveLine: true,
+    matchBrackets: true,
+    mode:"application/x-httpd-php",
 
-    let form = new FormData();
-    for(let key in data) {
-        form.append(key, data[key]);
-    }
+    //显示行号
+    lineNumbers:true,
 
-    let option = {method:'POST', body:form};
-    if(type == 'json'){
-        return await fetch(url, option).then(response => response.json());
-    }else{
-        return await fetch(url, option).then(response => response.text());
-    }
+    //设置主题
+    theme:"eclipse",
 
-}
+    //代码折叠
+    lineWrapping:true,
+    foldGutter: true,
+    gutters:["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 
-class Form {
+    //全屏模式
+    fullScreen:false,
 
-    constructor(id, url=''){
-
-        this.option = {
-            'header':new Headers(), 
-            'method':'POST', 
-            body: new FormData(document.getElementById(id))
-        };
-        this.url = url;
-        this.type = 'text';
-    }
-
-    text(value='text'){
-        this.type = value;
-        return this;
-    }
-
-    append(key, value){
-        this.option.body.append(key, value);
-        return this;
-    }
-
-    header(value = null){
-        if(value) this.option.header = new Headers(value);
-        return this;
-    }
-
-    method(value = 'POST'){
-        if(value) this.option.method = value;
-        return this;
-    }
-  
-    data(value = null){
-        if(value){
-            for(let key in value) {
-                this.append(key, value[key]);
-            }
-        }
-        return this;
-    }
-
-    async send(method, data){
-        this.data(data);
-        this.method(method);
-        if(this.type == 'json'){
-            return await fetch(this.url, this.option).then(response => response.json());
-        }else{
-            return await fetch(this.url, this.option).then(response => response.text());
-        }
-    }
-
-    post(data = null){
-        return this.send('POST', data);
-    }
-    
-}
+    //括号匹配
+    matchBrackets:true,
+    //智能提示
+    extraKeys:{"Ctrl-Alt":"autocomplete"}
+});
 
 var buttons = document.querySelectorAll(".button, .action");
 buttons.forEach(function(item){
@@ -253,10 +223,10 @@ buttons.forEach(function(item){
         localStorage.setItem('action', item.getAttribute('value'));
 
         el('run').innerHTML = ''
-        new Form('form').post({'action': item.getAttribute('value')}).then(data => {
+        new Form('form').post({'action': item.getAttribute('value'), 'data':editor.doc.getValue() }).then(data => {
 
-            if(el('data').value == '' && localStorage.getItem('action').substr(0,5) == 'lang:'){
-                el('data').value = data; 
+            if(editor.doc.getValue() == '' && localStorage.getItem('action').substr(0,5) == 'lang:'){
+                editor.doc.setValue(data);
             }else{
                 el('run').innerHTML = data;
             }
@@ -268,10 +238,9 @@ buttons.forEach(function(item){
 
 
 
+
+
 </script>
-
-
-
 
 
 <?php
@@ -536,7 +505,7 @@ int main(){
     public function pregMatch(){
 
         $this->data = explode("\n", $this->data, 2);
-        if($this->data[0]{0} != '/') $this->data[0] = '/'.$this->data[0].'/';
+        if($this->data[0][0] != '/') $this->data[0] = '/'.$this->data[0].'/';
         preg_match_all($this->data[0], $this->data[1], $this->output, PREG_SET_ORDER); //PREG_PATTERN_ORDER
 
         if (preg_last_error() !== PREG_NO_ERROR) {
@@ -704,7 +673,7 @@ int main(){
         }
 
 
-        if(substr($this->data, 0, 5) === 'array' || $this->data{0} == '['){
+        if(substr($this->data, 0, 5) === 'array' || $this->data[0] == '['){
 
             $data= eval("return $this->data;");
             $this->output = json_encode($data, JSON_UNESCAPED_UNICODE);

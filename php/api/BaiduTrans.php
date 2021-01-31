@@ -6,7 +6,7 @@ define("APP_ID", "20210128000683492"); //APPID
 define("SEC_KEY", "LKYujGG0oAykwn0rsuFj");//密钥
 
 //翻译入口
-function translate($query, $from='auto', $to) {
+function translate($query, $from, $to) {
 
     $args = array(
         'q' => $query,
