@@ -26,7 +26,7 @@ $field = [
 //echo $db->select($field)->select('c', 'c1,c2')->from('tableA')->join("inner", " bbbb b ", "b=b" )->limit(1, false);
 
 
-echo $db->where(array( [['age', '>', 20], ['sss', 'eq', '223']],  ['xxx', 'eq', '223'], ['xxsfssx', 'eq', '223'] ))->where();
+echo $db->where('name', '>', 39)->where([   [['age', '>', 20], ['sss', 'in', '223']],    ['xxx', '<=', '223'] ])->where();
 
 class Mysql extends PDO {
 
@@ -134,7 +134,7 @@ class Mysql extends PDO {
                 }
 
             }
-            return trim($where, 'AND ');
+            return $where;
 
         }else{
 
@@ -142,13 +142,16 @@ class Mysql extends PDO {
                 foreach($field as $key => $value){
 
                     if(is_array(current($value))){
-                        foreach($value as $key2 => $item){
 
-                            $this->options['where'][$key][] = $item;
-                            if(isset($field[$key2 + 1]) && !is_string($field[$key2 + 1])) $this->options['where'][$key][] = 'AND';
+                        foreach($value as $key2 => $item){
+                            $w[] = $item;
+                            if(isset($value[$key2 + 1]) && !is_string($value[$key2 + 1])) $w[] = 'AND';
                         }
 
+                        $this->options['where'][] = $w;
+
                     }else{
+
                         $this->options['where'][] = $value;
                         if(isset($field[$key + 1]) && !is_string($field[$key + 1])) $this->options['where'][] = 'AND';
                     }
