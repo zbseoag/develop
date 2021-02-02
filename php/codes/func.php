@@ -1,5 +1,48 @@
 <?php
 
+/**
+ * 括号是否匹配
+ * @param $s
+ * @return false
+ */
+function isPairBrackets($s){
+
+    $len = strlen($s);
+    if($len % 2 == 1) return false;
+
+    $pairs = [
+        ')' => '(',
+        ']' => '[',
+        '}' => '{',
+        '>' => '<',
+    ];
+    $stack = new SplStack();
+
+    for($i = 0; $i < $len; $i++){
+
+        $char = $s[$i];
+        if(empty($char)) continue;
+
+        //如果遇到右括号
+        if(key_exists($char, $pairs)){
+
+            //如果当前队列是空的,以右括号开始不合法。如果栈顶的左括号与当前正规的右括号不匹配
+            if($stack->isEmpty() || $stack->top() != $pairs[$char]) {
+                return false;
+            }
+            //若能匹配，则弹出
+            $stack->pop();
+        }else{
+            //括号入栈
+            $stack->push($char);
+        }
+    }
+    return $stack->isEmpty();
+
+}
+
+
+
 $word = $argv[1];
 $lines = 0;
 $handle = fopen("bbe.txt", "r");
@@ -56,9 +99,9 @@ function cny($money){
     for($i = 0; $i < strlen($integer); $i++){
 
         //如果数字大于 0 或者在分割位上
-        if($integer{$i} > 0 || $i % 4 == 0){
+        if($integer[$i] > 0 || $i % 4 == 0){
 
-            if($integer{$i} == 0){
+            if($integer[$i] == 0){
                 //如果是0,则只保留单位
                 $str = $unit[$i] . $str;
             }else{
@@ -77,7 +120,7 @@ function cny($money){
     if($decimal){
         for($i = 0; $i < strlen($decimal); $i++){
 
-            if($decimal{$i} > 0){
+            if($decimal[$i] > 0){
                 $str .= $capital[$decimal[$i]] . $small[$i];
             }else{
                 $str .= $capital[$decimal[$i]];
@@ -101,9 +144,9 @@ function cny($money){
  */
 function thumbnail($image, $width, $height, $file, $quality = 100) {
 
-    $imgage = getimagesize($image);
+    $image = getimagesize($image);
 
-    switch($imgage[2]){
+    switch($image[2]){
     case 1: $im = imagecreatefromgif($image);
         break;
     case 2: $im = imagecreatefromjpeg($image);
@@ -112,8 +155,8 @@ function thumbnail($image, $width, $height, $file, $quality = 100) {
         break;
     }
 
-    $src_W = $imgage[0]; //获取大图片宽度
-    $src_H = $imgage[1]; //获取大图片高度
+    $src_W = $image[0]; //获取大图片宽度
+    $src_H = $image[1]; //获取大图片高度
     $tn = imagecreatetruecolor($width, $height); //创建缩略图
     imagecopyresampled($tn, $im, 0, 0, 0, 0, $width, $height, $src_W, $src_H); //复制图像并改变大小
     imagejpeg($tn, $file, $quality); //输出图像
@@ -132,7 +175,7 @@ $array = ['1', '2', '3', '4', '5'];
 combination($array, 2);
  *
  */
-function combination($array, $count){
+function combination($array, int $count){
 
     foreach($array as $key => $value){
 
@@ -162,7 +205,7 @@ function combination($array, $count){
  *
  * print_r(monkeyKing(0, 6, 7));
  */
-function monkeyKing($start, $end, $cycle){
+function monkeyKing($start, $end, int $cycle){
 
     $array = range($start, $end);
 
@@ -283,7 +326,7 @@ function loopdir($dir){
  * @param $word
  * @return array
  */
-function word_pos($content, $word){
+function word_pos2($content, $word){
 
     $length = strlen($word);
     $offset = 0;

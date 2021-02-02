@@ -49,10 +49,10 @@ class Debug {
         if($data === '') $data = '""';
         
         //thinphp 支持
-        if(is_array($data) && current($data) instanceof \think\Model){
+        if($data instanceof \think\Model || (is_array($data) && current($data) instanceof \think\Model)){
             $data = collection($data)->toArray();
         }
-
+ 
         if(is_string($data)) $data = self::unicode($data);
 
         $output = array();

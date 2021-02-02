@@ -1,7 +1,8 @@
 <?php
 error_reporting(E_ALL);
+ini_set('display_errors', true);
 date_default_timezone_set('Asia/Shanghai');
-
+session_start();
 if (!empty($_REQUEST)){
 
     $action = $_REQUEST['action'];
@@ -34,7 +35,7 @@ if (!empty($_REQUEST)){
 ?>
 
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>我的工具包</title>
@@ -80,8 +81,8 @@ if (!empty($_REQUEST)){
 <style>
     * {padding: 0; margin: 0; font: 14px "微软雅黑"; box-sizing:border-box; }
     html,body { width: 100%; height: 100%;}
-    button {  padding: 4px 10px; margin:0px -4px; min-width: 80px;  }
-    .button { min-width: 100px; margin:10px -4px;}
+    #form button {  padding: 4px 10px; margin:0px -4px; min-width: 80px; }
+    .button { min-width: 100px!important; margin:0px -4px 10px -4px!important;}
     li { margin-bottom: -2px; }
     table{ border-collapse: collapse;  }
     tr{   border: 1px solid  #CCC; }
@@ -89,12 +90,11 @@ if (!empty($_REQUEST)){
     #win{list-style:none;position: absolute; z-index: 10; border:1px solid red;left:40%;top:10%;visibility: hidden;padding:20px; padding-top: 0; width: 20%;}
     #win input{padding:10px;margin-bottom: 10px;width: 100%;}
     #win .close{float:right;position:relative;top:-5px; right: -10px;cursor:default;padding:6px;}
-    .CodeMirror {border: 1px solid black; font-size:14px; width: 100%; height:800px; }
+    .CodeMirror {border: 1px solid black; font-size:14px; width: 100%; height:500px; }
 </style>
 
 <ul  id="win">
-    <li>
-        <h3 style="line-height: 20px;padding:10px 0;font-size: 16px;">连接服务器 <i class="close" onclick="el('win').style.visibility='hidden'">X</i></h3>
+    <li><h3 style="line-height: 20px;padding:10px 0;font-size: 16px;">连接服务器 <i class="close" onclick="el('win').style.visibility='hidden'">X</i></h3></li>
     <li>
         <form action="database.php" target="_blank">
             <input name="h" placeholder="主机:"><br>
@@ -104,7 +104,6 @@ if (!empty($_REQUEST)){
             <button style="margin-left: 0;" type="submit" onclick="el('win').style.visibility='hidden';return true;">确定</button>
         </form>
     </li>
-    <li></li>
 </ul>
 
 
@@ -113,7 +112,6 @@ if (!empty($_REQUEST)){
         <ul style="list-style:none;">
 
             <li style="float:left; padding:10px 0 0 4px;">
-
                 <button type="reset">清空</button>
                 <button type="button" onclick="el('data').value = el('run').innerText">加载</button>
                 <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
@@ -125,7 +123,6 @@ if (!empty($_REQUEST)){
                 <button class="action" value="nameStyle" type="button">命名</button>
                 <button class="action" value="pregMatch" type="button">正则</button>
                 <button onclick="el('win').style.visibility='visible';" type="button">数据字典</button>
-
             </li>
 
             <li style="float:right;padding:10px 4px 0 0px;">
@@ -136,7 +133,9 @@ if (!empty($_REQUEST)){
                 <button class="action" type="button" accesskey="c" value="lang:c" >C 语言 (C)</button>
                 <button class="action" type="button" accesskey="j" value="lang:java" >Java (J)</button>
                 <button class="action" type="button" accesskey="g" value="lang:go_run_go" >Go (G)</button>
-                <a target="_blank" href="http://tmp.com"><button type="button">浏览</button></a>
+                <button type="button"   onclick="el('run').innerHTML=editor.doc.getValue();">Html</button>
+                <button type="button"   onclick="el('run').appendChild('<script>'+ editor.doc.getValue() +'</script>');">Js</button>
+                <button class="action" type="button" value="getFile">查看</button>
 
             </li>
 
@@ -157,9 +156,7 @@ if (!empty($_REQUEST)){
                 <button class="button" value="notExist" type="button">对比存在</button>
                 <button class="button" value="sql_field" type="button">SQL字段</button>
 
-
             </li>
-
 
         </ul>
     </form>
@@ -203,7 +200,6 @@ var editor = CodeMirror.fromTextArea(el('data'), {
 
 var buttons = document.querySelectorAll(".button, .action");
 buttons.forEach(function(item){
-
 
     item.onclick = function(){
 
@@ -327,7 +323,7 @@ int main(){
             $this->lang = empty($this->template[$ext][1]) ? implode(' ', $cmd) . " $this->file" : str_replace('{file}', $this->file, $this->template[$ext][1]);
             $this->output = shell_exec($this->lang . ' 2>&1');
             $this->output = preg_replace('/\[sudo\].*:\s+/', '', $this->output);
-            $this->output = [$this->lang, htmlspecialchars($this->output, ENT_NOQUOTES)];
+            $this->output = htmlspecialchars($this->output, ENT_NOQUOTES);
         }
 
     }
@@ -344,7 +340,13 @@ int main(){
 
 
     public function save(){
+        $_SESSION['codingfile'] = $this->file;
         file_put_contents($this->file, $this->data, LOCK_EX);
+    }
+
+    public function getFile(){
+        $this->output = htmlspecialchars(shell_exec('cat ' . $_SESSION['codingfile']), ENT_NOQUOTES);
+    
     }
 
     public function resolve($value){
@@ -1160,6 +1162,8 @@ class Tool3333 {
 
     }
 
+
+    
 
 }
 

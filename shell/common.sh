@@ -38,15 +38,28 @@ alias rmi="docker rmi"
 
 unalias ll
 
-:<<EOF
 
-function open(){ sudo vim "$@"; }
+function init.sys(){
+
+echo 'function open(){ sudo vim "$@"; }
 function load(){ source ~/.bashrc; }
-SHELL_PATH=/d/develop/shell
-source $SHELL_PATH/common.sh
+SHELL_PATH=/e/develop/shell
+source $SHELL_PATH/common.sh '
 >> ~/.bashrc
 
-EOF
+}
+
+
+function init.wsl(){
+
+echo '[automount] 
+enabled = true 
+root = /
+options = "metadata,umask=22,fmask=11" 
+mountFsTab = false
+' | sudo tee /etc/wsl.conf
+
+}
 
 ####################################################################################
 # xargs 的改进修正了无法调用自定义函数
@@ -204,11 +217,12 @@ function srv(){
                 *)        srv zkServer start;;
             esac 
         ;;
-        'php')
+        php*)
+            set -- "php-fpm${1#php}" $2
             case "$2" in
-                'start')  sudo pkill -9 php-fpm 2>/dev/null; sudo php-fpm;;
-                'stop')   sudo pkill -9 php-fpm;;
-                *)        sudo php-fpm;;
+                'start')  sudo pkill -9 $1 2>/dev/null; sudo $1;;
+                'stop')   sudo pkill -9 $1;;
+                *)        srv $1 start;;
             esac 
         ;;
         'nginx')
@@ -218,8 +232,6 @@ function srv(){
                 *)          sudo nginx -s $2;;
             esac
         ;;
-        'web')  srv php start; srv nginx start;;
-
         'start'|'stop')
    
             [ "$2" == "all" ] && set -- $1 $(docker ps -qf status=exited)
@@ -236,8 +248,8 @@ function srv(){
             [ "$1" == 'mysql' ] && { shift 1; set -- mysqld $@; }
 
             [ $# == 1 ] && set -- $1 'start'
-            [ "$2" == 'start' ] && sudo service "$1" stop 2>/dev/null
-            sudo service "$@"
+            [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1
+            sudo service "$@" 1>/dev/null
         ;;        
     esac
 
@@ -520,11 +532,11 @@ function pull(){
 
 ####################################################################################
 # 文件重命令
-# rename <file> [newname]
+# name <file> [newname]
 # 如果只有一个参数，会自动截取最后一段后缀，作为新文件名
-# rename ~/nginx.conf.default # 等同于 rename ~/nginx.conf.default nginx.conf
+# name ~/nginx.conf.default # 等同于 name ~/nginx.conf.default nginx.conf
 ####################################################################################
-function rename(){
+function name(){
   local file=`basename $1`
   [ $# == 1 ] && set -- $1 ${file%.*}
   sudo mv $1 `dirname $1`/$2
@@ -1187,10 +1199,13 @@ function change.etc(){
 
 }
 
-function bashrc.to(){
+function init.cp(){
     docker cp ~/.bashrc $1:/root/.bashrc
 }
 
+function init.install(){
+    apt update && apt install sudo procps;
+}
 
 function repository(){
 
@@ -1215,3 +1230,16 @@ function repository(){
 #cvt 1920x1080
 #xrandr --newmode "1920x1080_60.00"  173.00  1920 2048 2248 2576  1080 1083 1088 1120 -hsync +vsync
 #xrandr --addmode HDMI-1 "1920x1080_60.00"
+
+
+
+function reset.idea(){
+
+    rm -rf /c/Users/admin/AppData/Roaming/JetBrains/PhpStorm{$1}/eval && \
+    rm /c/Users/admin/AppData/Roaming/JetBrains/PhpStorm{$1}/options/other.xml
+
+    #rm -rf /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/eval && \
+    #rm /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/options/other.xml
+    #似乎不用删除注册表项：HKEY_CURRENT_USER\Software\JavaSoft\Prefs\jetbrains\phpstorm
+
+}
