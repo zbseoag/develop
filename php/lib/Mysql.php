@@ -25,7 +25,6 @@ $field = [
 
 //echo $db->select($field)->select('c', 'c1,c2')->from('tableA')->join("inner", " bbbb b ", "b=b" )->limit(1, false);
 
-
 echo $db->where('name', '>', 39)->where([   [['age', '>', 20], ['sss', 'in', '223']],    ['xxx', '<=', '223'] ])->where();
 
 class Mysql extends PDO {
