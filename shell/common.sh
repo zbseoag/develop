@@ -245,7 +245,7 @@ function srv(){
         ;;
         *)  
             # mysql 转变名字
-            [ "$1" == 'mysql' ] && { shift 1; set -- mysqld $@; }
+            #[ "$1" == 'mysql' ] && { shift 1; set -- mysqld $@; }
 
             [ $# == 1 ] && set -- $1 'start'
             [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1

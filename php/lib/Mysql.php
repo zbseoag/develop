@@ -10,87 +10,161 @@
 ** 示例:
 $db = new Mysql();
 $db->connect($host, $username, $password, $database);
-$record = $db->select('*')->from('user')->where('id = :id', [ ':id'=>4 ])->limit();
+$record = $db->select('*')->from('user')->where('id = :id', [ ':id'=>4 ])->join('inner tabelB', 'uid = b.id')->limit();
 $record = $db->select('*')->from('user')->where('id = ? AND name=?', [ $id, $name ])->limit();
 
-** 
 **/
 
-class Mysql {
+$db = Mysql::new('127.0.0.1', 'admin', 'root', '123456');
+
+$field = [
+    'a' => 'a1,a2,a3',
+    'b' => 'b1,b2,b3'
+];
+
+
+//echo $db->select($field)->select('c', 'c1,c2')->from('tableA')->join("inner", " bbbb b ", "b=b" )->limit(1, false);
+
+
+echo $db->where(array( [['age', '>', 20], ['sss', 'eq', '223']],  ['xxx', 'eq', '223'], ['xxsfssx', 'eq', '223'] ))->where();
+
+class Mysql extends PDO {
 
     protected $sql = [];
     protected $error = '';
-    protected $connect = null;
-    protected $sth = null;
-    protected static $instance = null;
-    
-    
-    public static function instance($options = []){
+
+    protected static $init = null;
+    public $default = [
+        PDO::ATTR_CASE => PDO::CASE_NATURAL,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ];
+
+    public $options = [];
+
+    public function __construct($host, $database, $username = null, $password = null, $charset = 'utf8', $options = null){
+
+        if(is_array($host)) extract($host);
+        parent::__construct("mysql:dbname=$database;host=$host", $username, $password, $options ?? [] + $this->default);
+        $this->query("SET NAMES $charset;");
+
+    }
+
+    public static function new(...$argument){
         
-        if(is_null(self::$instance)) self::$instance = new static($options);
-        return self::$instance;
+        if(is_null(self::$init)) self::$init = new static(...$argument);
+        return self::$init;
     }
-    
-    public function __construct($options){
-    
 
-    }
-    
+    public function select($alias = '*', $field = null){
 
-    public function connect($hostname='', $username='', $password='', $database='', $charset='utf8'){
+        if(func_num_args() == 0){
 
-        if(is_array($hostname)) extract($hostname);
+            $fields = '';
+            foreach($this->options[__FUNCTION__] as $key => $value){
+                $value = explode(',', trim($value, ','));
+                if(is_numeric($key)){
+                    $fields .= implode("`, `", $value) .'`, ';
+                }else{
+                    $fields .= "`$key`.".implode("`, `$key`.`", $value) .'`, ';
+                }
 
-        try{
-            $this->connect = new PDO("mysql:dbname=$database;host=$hostname", $username, $password);
-        }catch(PDOException $e) {
-            echo 'Connection failed: ' . $e->getMessage();
+            }
+            return trim($fields, ', ');
+
+        }else{
+
+            $field = func_num_args() == 2? [ $alias => $field ] : $alias;
+            if(is_array($field)){
+                foreach($field as $key => $value){
+                    $this->options['select'][$key] = $value;
+                }
+            }else{
+                $this->options['select'][] = $field;
+            }
+            return $this;
+
         }
-        $this->connect->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
-        $this->connect->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        $this->connect->query("SET NAMES $charset;");
-        return $this;
-    }
 
-
-    public function beginTransaction(){
-        $this->connect->beginTransaction();
-    }
-
-    public function commit(){
-        $this->connect->commit();
-    }
-
-    public function rollBack(){
-        $this->connect->rollBack();
-    }
-
-    public function query($sql=''){
-
-        $this->sql($sql);
-        return $this->connect->query($sql)->fetchAll();
-    }
-
-    public function select($field='*'){
-
-        $this->options['select'] = 'SELECT ' . $field;
-        return $this;
     }
 
     public function from($table){
 
-        $this->options['from'] = 'FROM `'. str_replace('.', '`.`', $table) .'`';
+        $this->options['from'] = 'FROM `'. str_replace([' ', '.'], ['` `', '`.`'], trim($table)) .'`';
         return $this;
     }
 
-    public function where($where, $param=null){
+    public function join($type, $table, $on){
 
-        $this->options['where'] = 'WHERE '. $where;
-        if(!empty($param)){
-            $this->options['param'] = $param;
+        $this->options['join'][] = sprintf('%s JOIN %s ON %s', strtoupper($type), $table, $on);
+        return $this;
+    }
+
+    public function group(){
+
+    }
+
+    public function where($field = null, $type = null, $value = null, $link = 'AND'){
+
+        if(func_num_args() == 0){
+
+            p($this->options[__FUNCTION__]);
+            $where = 'WHERE';
+            foreach($this->options[__FUNCTION__] as $key => $value){
+
+                if(is_array($value)){
+
+                    if(is_array(current($value))){
+                        $group = '';
+                        foreach($value as $item){
+                            if(is_array($item)){
+                                if(is_string($item[2])) $item[2] = "'$item[2]'";
+                                $group .= sprintf(' %s %s %s ', $item[0], $item[1], $item[2]);
+                            }else{
+                                $group .= " $item ";
+                            }
+                        }
+                        $where .= " ($group) ";
+                    }else{
+                        $value[2] = "'$value[2]'";
+                        $where .= sprintf(' %s %s %s ', $value[0], $value[1], $value[2]);
+                    }
+
+                }else{
+                    $where .= $value;
+                }
+
+            }
+            return trim($where, 'AND ');
+
+        }else{
+
+            if(is_array($field)){
+                foreach($field as $key => $value){
+
+                    if(is_array(current($value))){
+                        foreach($value as $key2 => $item){
+
+                            $this->options['where'][$key][] = $item;
+                            if(isset($field[$key2 + 1]) && !is_string($field[$key2 + 1])) $this->options['where'][$key][] = 'AND';
+                        }
+
+                    }else{
+                        $this->options['where'][] = $value;
+                        if(isset($field[$key + 1]) && !is_string($field[$key + 1])) $this->options['where'][] = 'AND';
+                    }
+
+                }
+            }else{
+
+                if(func_num_args() == 2) list($type, $value) = ['=', $type];
+                $this->options['where'][] = [ $field, $type, $value ];
+                $this->options['where'][] = $link;
+            }
+
+            return $this;
         }
 
-        return $this;
+
     }
 
     public function order($order){
@@ -99,32 +173,48 @@ class Mysql {
         return $this;
     }
 
-    public function limit($start=0, $length=null){
+    public function limit($offset = 0, $length = 1, $exec = true){
 
-        if($length == null){
-            $length = $start; $start = 0;
-        }
-
-        $this->options['limit'] = ' LIMIT '. $start .','. $length;
-
-        $options = array('select', 'delete', 'from', 'join', 'where', 'order', 'limit');
-        $sql = '';
-        foreach($options as $keyword){
-            if(isset($this->options[$keyword])) $sql .= $this->options[$keyword];
-        }
-
-        if(isset($this->options['param'])){
-
-            $this->sth = $this->connect->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
-            $this->sth->execute($this->options['param']);
-            $query = $this->sth;
-
+        if($offset === false){
+            $exec = false;
+        }else if($length === false){
+            $exec = false;
+            $this->options['limit'] = sprintf('LIMIT %s', $offset);
         }else{
-            $query = $this->connect->query($sql);
+            $this->options['limit'] = sprintf('LIMIT %s, %s', $offset, $length);
         }
-        $this->sql($sql);
+
+        stop($this->options);
+        $sql = '';
+
+        $keyword = array('select', 'delete', 'from', 'join', 'where', 'order', 'limit');
+        foreach($keyword as $method){
+
+            if(isset($this->options[$method])){
+                if(is_array($this->options[$method])) $sql .= $this->$method();
+            }else{
+                $sql .= $this->options[$method];
+            }
+        }
+
         unset($this->options);
-        return ($length == 1)? $query->fetch(): $query->fetchAll();
+
+        if(!$exec) return $sql;
+
+        $statement = $this->query($sql);
+        return ($length == 1)? $statement->fetch(): $statement->fetchAll();
+        
+//        if(isset($this->options['param'])){
+//
+//            $this->sth = $this->connect->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
+//            $this->sth->execute($this->options['param']);
+//            $query = $this->sth;
+//
+//        }else{
+//            $query = $this->query($sql);
+//        }
+
+
 
     }
 
@@ -169,6 +259,7 @@ class Mysql {
         if(!empty($sql)) $this->sql[] = $sql;
         else return $this->sql;
     }
+
 
     public function __destruct(){
 

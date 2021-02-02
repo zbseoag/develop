@@ -1,10 +1,5 @@
 <?php
 
-//$redis = new Redis();
-//$redis->connect('localhost', 6379);
-//$redis->auth('app123456'); //密码验证
-
-
 function timeWindow($rule, $redis, $zkey) {
 
 
@@ -30,15 +25,12 @@ function timeWindow($rule, $redis, $zkey) {
 
     p(false);
     return false;
-
 }
-
 
 $rules = array(
     10 => 2,
     20 => 3,
 );
-
 
 //
 //while(1){
@@ -255,73 +247,4 @@ ReflectionType 类用于获取函数、类方法的参数或者返回值的类�
 •ReflectionType::isBuiltin — Checks if it is a built-in type
 •ReflectionType::__toString — To string
 
- *
  */
-
-//$foo = new ReflectionMethod('Testing', 'foo');
-//echo implode(' ', Reflection::getModifierNames($foo->getModifiers())) . "\n";
-
-class Testing{
-
-    private const aaa = 'aval';
-    public const bbb = 'bval';
-
-    private $fprivate = 'filed';
-    public $fpublic = 'filed';
-
-    private function aaa(string $aaa, int $bbb=111, int ...$other){}
-    public static function bbb(){}
-    protected function ccc(int $c=3){}
-}
-
-
-$rf = new ReflectionClass('ReflectionClass');
-
-$class['const'] = $rf->getReflectionConstants();
-foreach($class['const'] as $key => $item){
-
-    $consts[$key]['name'] = $item->getName();
-    $consts[$key]['value'] = $item->getValue();
-    $consts[$key]['txt'] = sprintf("const %s = %s;", $consts[$key]['value'], $consts[$key]['name']);
-}
-$class['const'] = $consts;
-
-
-$fields = $rf->getProperties();
-$class['field'] = $fields;
-
-
-
-$class['method'] = $rf->getMethods();
-foreach($class['method'] as $key => $item){
-
-    $methods[$key]['acc'] = implode(' ', Reflection::getModifierNames($item->getModifiers()));
-    $methods[$key]['name'] = $item->name;
-
-    $params = $item->getParameters();
-
-    $methods[$key]['param'] = '';
-    if($params){
-        foreach($params as $item1){
-
-            $name = $item1->getName();
-            $methods[$key]['param'] .= $item1->getType() . " $name";
-            if($item1->isDefaultValueAvailable()) $methods[$key]['param'] .= '='.$item1->getDefaultValue() . ', ';
-            else $methods[$key]['param'] .= ', ';
-        }
-        $methods[$key]['param'] = rtrim($methods[$key]['param'], ', ');
-    }
-    $methods[$key]['txt'] = $methods[$key]['acc'] . " $item->name(" .  $methods[$key]['param'] . '){}';
-
-}
-
-
-$class['method'] = $methods;
-
-p($class);
-
-
-
-
-
-

@@ -113,7 +113,7 @@ if (!empty($_REQUEST)){
 
             <li style="float:left; padding:10px 0 0 4px;">
                 <button type="reset">清空</button>
-                <button type="button" onclick="el('data').value = el('run').innerText">加载</button>
+                <button type="button" onclick="editor.doc.setValue(el('run').innerText)">加载</button>
                 <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
                 <button type="button" class="action" value="translates">翻译</button>
                 <button class="action" value="timestamp" type="button">时间戳</button>
@@ -127,14 +127,13 @@ if (!empty($_REQUEST)){
 
             <li style="float:right;padding:10px 4px 0 0px;">
                 <button class="action" type="button" accesskey="s" value="lang:bash_sh">Shell (S)</button>
-                <button class="action" type="button" accesskey="h" value="lang:php" >PHP (H)</button>
+                <button class="action" type="button" accesskey="h" value="lang:php7.2_php" >PHP (H)</button>
                 <button class="action" type="button" accesskey="p" value="lang:python3.8_py" >Python (P)</button>
                 <button class="action" type="button" accesskey="l" value="lang:lua" >Lua (L)</button>
                 <button class="action" type="button" accesskey="c" value="lang:c" >C 语言 (C)</button>
                 <button class="action" type="button" accesskey="j" value="lang:java" >Java (J)</button>
                 <button class="action" type="button" accesskey="g" value="lang:go_run_go" >Go (G)</button>
                 <button type="button"   onclick="el('run').innerHTML=editor.doc.getValue();">Html</button>
-                <button type="button"   onclick="el('run').appendChild('<script>'+ editor.doc.getValue() +'</script>');">Js</button>
                 <button class="action" type="button" value="getFile">查看</button>
 
             </li>
