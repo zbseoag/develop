@@ -1,8 +1,9 @@
 <?php
 /**
- * User: admin
- * Date: 2021/2/2
- * Email: <zbseoag@163.com>
+
+echo Obj::new('Redis');
+echo Obj::new('Redis')->method('set')?->isPublic();
+
  */
 
 class Obj extends ReflectionClass {
@@ -75,8 +76,5 @@ class Obj extends ReflectionClass {
     }
 
 
-
-
 }
 
-echo Obj::new('Redis');

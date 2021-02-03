@@ -194,7 +194,15 @@ function cd(){
 
 
 function ll(){
-    eval ls -alF `parse.path $@`
+
+    set -- "`parse.path $@`"
+    if [ -f "$@" -a -n "`readlink $@`" ]; then
+        echo -en "$@ \t-->\t"; readlink $@;
+        ll `readlink $@`
+    else
+        eval ls -alF $@
+    fi
+
 }
 
 function list(){
@@ -653,12 +661,11 @@ function copy(){
 
 function is(){
 
-    local cmd="$1"; shift 1
-    case "$cmd" in
+    case "$1" in
         'run')
 
-            local name=$1
-            local ip=$2
+            local name=$2
+            local ip=$3
 
             if [ -z "$ip" ];then
                 name="`ps -ef | grep -P \"$name\" | grep -v 'grep'`"
@@ -675,8 +682,11 @@ function is(){
             [ -n "$name" ] && echo $name
         ;;
         *)
-            test $@
-            [ $? == 1 ] && echo yes || echo no
+            if test $@; then
+                echo 'yes'
+            else
+                echo 'no'
+            fi
         ;;
 
     esac
@@ -697,7 +707,7 @@ function where(){
 #运行容器
 function run(){
 
-    local option="--restart=on-failure:1 `echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`" #默认选项 on-failure:1  always
+    local option="--restart=on-failure:1 -v /e:/e -v /d:/d `echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`" #默认选项 on-failure:1  always
     local name=`echo "$@" | grep -oP '((?<=--name=)|(?<=--name\s))(\w|,)+'`
     [ -z "$name" ] && { name='test'; option="#name# $option"; } #如果没有名字，则取名 test
 
@@ -705,7 +715,7 @@ function run(){
         name=(${name//,/' '})
         for i in ${name[*]}
         do
-            echo docker run -d $(echo $option | sed -r "s/#name#/ --name=$i /")
+            docker run -d $(echo $option | sed -r "s/#name#/ --name=$i /")
         done
     else
         [ "$name" == "test" -o "$name" == "demo" ] && docker rm -f $name > /dev/null 2>&1
@@ -1204,7 +1214,7 @@ function init.cp(){
 }
 
 function init.install(){
-    apt update && apt install sudo procps;
+    apt update && apt install -y sudo procps vim iputils-ping curl
 }
 
 function repository(){
@@ -1243,3 +1253,4 @@ function reset.idea(){
     #似乎不用删除注册表项：HKEY_CURRENT_USER\Software\JavaSoft\Prefs\jetbrains\phpstorm
 
 }
+

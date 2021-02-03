@@ -101,7 +101,7 @@ if (!empty($_REQUEST)){
             <input name="u" placeholder="用户名:"><br/>
             <input name="p" placeholder="密码:"><br/>
             <input name="d" placeholder="数据库:"><br/>
-            <button style="margin-left: 0;" type="submit" onclick="el('win').style.visibility='hidden';return true;">确定</button>
+            <button style="margin-left: 0; padding:5px 20px;" type="submit" onclick="el('win').style.visibility='hidden';return true;">确定</button>
         </form>
     </li>
 </ul>
@@ -112,13 +112,14 @@ if (!empty($_REQUEST)){
         <ul style="list-style:none;">
 
             <li style="float:left; padding:10px 0 0 4px;">
-                <button type="reset">清空</button>
+                <button type="reset" onclick="editor.doc.setValue('');el('run').innerHTML='';">清空</button>
                 <button type="button" onclick="editor.doc.setValue(el('run').innerText)">加载</button>
+                <button type='button' class='action' value='eval("return $0;")'>计算</button>
                 <button class="action" data-switch-value="strtolower|strtoupper" value="" type="button">大小写</button>
                 <button type="button" class="action" value="translates">翻译</button>
                 <button class="action" value="timestamp" type="button">时间戳</button>
                 <button class="action" value="md5" type="button">MD5</button>
-                <button class="action" data-switch-value="urlencode|urldecode" value="" type="button">URL</button>
+                <button class="action" data-switch-value="urlencode|urldecode" type="button">URL</button>
                 <button class="action" data-switch-value="deunicode|unicode" type="button">Unicode</button>
                 <button class="action" value="nameStyle" type="button">命名</button>
                 <button class="action" value="pregMatch" type="button">正则</button>
@@ -161,7 +162,7 @@ if (!empty($_REQUEST)){
     </form>
 
 
-    <div id="run" style="margin-top:1.6em;"></div>
+    <div id="run" style="margin-top:1.6em; height: calc(100% - 596px);;overflow: scroll;"></div>
 </body>
 
 </html>
@@ -216,14 +217,12 @@ buttons.forEach(function(item){
         }
 
         localStorage.setItem('action', item.getAttribute('value'));
-
-        el('run').innerHTML = ''
         new Form('form').post({'action': item.getAttribute('value'), 'data':editor.doc.getValue() }).then(data => {
 
             if(editor.doc.getValue() == '' && localStorage.getItem('action').substr(0,5) == 'lang:'){
                 editor.doc.setValue(data);
             }else{
-                el('run').innerHTML = data;
+                el('run').innerHTML += data;
             }
             
         }).catch(e => console.error( e.message));

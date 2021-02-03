@@ -76,7 +76,7 @@ class Debug {
                 $fields = get_object_vars($data);
 
             }else{
-                $name = $data;
+                $name = "ClassName: $data";
                 $fields = get_class_vars($data);
             }
 

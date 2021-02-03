@@ -73,14 +73,13 @@ class Autoload {
      */
     public function suffix($value) {
 
-        $this->suffix = '.'. ltrim($value, '.');
+        $this->suffix = '.' . ltrim($value, '.');
         return $this;
     }
 
     public function register() {
 
         spl_autoload_register(function($class) {
-
             $this->load($class);
         });
 
@@ -120,7 +119,6 @@ class Autoload {
         }
 
         return self::$file;
-
     }
 
     /**
