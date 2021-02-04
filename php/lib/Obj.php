@@ -8,6 +8,16 @@ echo Obj::new('Redis')->method('set')?->isPublic();
 
 class Obj extends ReflectionClass {
 
+    public static function std(?array $attrs = null){
+
+        $std = new \stdClass();
+        foreach($attrs as $key => $value){
+
+            is_numeric($key)? $std->$value = '' : $std->$key = $value;
+        }
+        return $std;
+    }
+
     public static function new($argument){
 
         return new static($argument);

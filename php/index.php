@@ -125,3 +125,22 @@ $sentinel = new RedisSentinel('127.0.0.1', 6379, 2.5);
 $redis = $sentinel->master('mymaster');
 print_r($redis);
 
+
+$clean = str_replace(chr(0), '', $input);
+
+$filepath = "$homedir/$userfile";
+if(!ctype_alnum($username) || !preg_match('/^(?:[a-z0-9_-]|\.(?!\.))+$/iD', $userfile)){
+    die('Bad username/filename');
+}
+
+
+$gen = (function () {
+    try {
+        yield 1;
+    } catch (Exception $e) {
+        echo $e->getMessage();
+    }
+})();
+
+$gen->throw(new Exception('gen throw exception'));
+
