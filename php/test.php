@@ -76,78 +76,44 @@ class RedisSent extends RedisSentinel {
 
 }
 
+
+
 class a{
-
-
-    public function demo(...$argv){
-
-        switch(func_num_args()){
-            case 1: $this->_demo($argv[0], 1,  3);
-                break;
-            case 2: $this->_demo(1, $argv[0], $argv[1]);
-                break;
-            default:
-                $this->_demo(...$argv);
-        }
-
-
-    }
-
-    protected function _demo($a, $b, $c){
-
-        p($a, $b, $c);
+    public function aaa(string|array $a){
 
     }
 
 }
 
 
-(new a())->demo(1);
 
-
-//$sentinel = new RedisSent([['127.0.0.1', 6379, 2.5], ['127.0.0.1', 6380, 2.5]]);
-//
-//$redis = $sentinel->getMasterRedis('mymaster');
-//
-//$redis->set('name', '444');
-//p($redis->get('name'));
+stop($str);
 
 
 
-/*
-*  Final类通常会阻止扩展子类
-*/
-final class Parents {
-    public $parentvar;
-    public $name;
-
-    function __construct() {
-        $this->parentvar = get_class().'_value';
-    }
-
-    function parentfunc() {
-        echo get_class().'类->parentfunc方法输出： '.$this->parentvar;
-    }
+$a = new SplDoublyLinkedList;
+$arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+for($i = 0; $i < count($arr); $i++){
+    $a->add($i, $arr[$i]);
 }
 
-//动态定义一个继承与ParentC的类 DynamicSon
-$DefClass = new \Componere\Definition( 'DynamicSon', 'Parents');
+$a->push(11); //push method
+$a->add(10, 12); //add method must with index
+$a->shift(); //remove array first value
+$a->unshift(1); //add first value
 
-$DefClass->addMethod( 'dynamicfunc', new \Componere\Method(function($parm = null){
-    echo "dynamicfunc( $parm ) \n";
-}));
+$a->rewind(); //initial from first
 
-// 注册
-$DefClass->register();
+echo 'SplDoublyLinkedList array last/top value ' . $a->top() . " \n";
+echo 'SplDoublyLinkedList array count value ' . $a->count() . " \n";
+echo 'SplDoublyLinkedList array first/top value ' . $a->bottom() . " \n\n";
 
-//  实例化动态子类,并访问它自己的和继承的成员.
-$dynamicSon = new DynamicSon;
-$dynamicSon->parentfunc();//调用父类方法
-$dynamicSon->dynamicfunc( 'haha');
+while($a->valid()){ //check with valid method
+    echo 'key ', $a->key(), ' value ', $a->current(), "\n"; //key and current method use here
+    $a->next(); //next method use here
+}
 
-//var_dump( $dynamicSon );
-
-
-
-$a = Obj::std(['name' => 'tom', 'age']);
+$a->pop(); //remove array last value
 print_r($a);
+$s = $a->serialize();
+echo $s;

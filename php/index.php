@@ -144,3 +144,46 @@ $gen = (function () {
 
 $gen->throw(new Exception('gen throw exception'));
 
+
+
+//$sentinel = new RedisSent([['127.0.0.1', 6379, 2.5], ['127.0.0.1', 6380, 2.5]]);
+//
+//$redis = $sentinel->getMasterRedis('mymaster');
+//
+//$redis->set('name', '444');
+//p($redis->get('name'));
+
+
+
+/*
+*  Final类通常会阻止扩展子类
+*/
+final class Parents {
+    public $parentvar;
+    public $name;
+
+    function __construct() {
+        $this->parentvar = get_class().'_value';
+    }
+
+    function parentfunc() {
+        echo get_class().'类->parentfunc方法输出： '.$this->parentvar;
+    }
+}
+
+//动态定义一个继承与ParentC的类 DynamicSon
+$DefClass = new \Componere\Definition( 'DynamicSon', 'Parents');
+
+$DefClass->addMethod( 'dynamicfunc', new \Componere\Method(function($parm = null){
+    echo "dynamicfunc( $parm ) \n";
+}));
+
+// 注册
+$DefClass->register();
+
+//  实例化动态子类,并访问它自己的和继承的成员.
+$dynamicSon = new DynamicSon;
+$dynamicSon->parentfunc();//调用父类方法
+$dynamicSon->dynamicfunc( 'haha');
+
+//var_dump( $dynamicSon );
