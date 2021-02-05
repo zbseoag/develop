@@ -58,7 +58,7 @@ class Curl{
         return self::$instance;
     }
 
-    private function __construct($name, $value=''){
+    public function __construct($name, $value=''){
 
         if(is_array($name)){
             $this->default = $name + $this->default;

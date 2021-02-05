@@ -329,13 +329,10 @@ int main(){
     public function __destruct(){
 
         if($this->lang && empty($this->data)) return false;
-
         if(!is_array($this->output)) $this->output = [$this->output];
-
         array_map(function($item){self::p($item); }, $this->output);
 
     }
-
 
     public function save(){
         $_SESSION['codingfile'] = $this->file;

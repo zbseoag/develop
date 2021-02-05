@@ -78,16 +78,6 @@ class RedisSent extends RedisSentinel {
 
 
 
-class a{
-    public function aaa(string|array $a){
-
-    }
-
-}
-
-
-
-stop($str);
 
 
 

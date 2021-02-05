@@ -187,3 +187,6 @@ $dynamicSon->parentfunc();//调用父类方法
 $dynamicSon->dynamicfunc( 'haha');
 
 //var_dump( $dynamicSon );
+
+$map = new \Ds\Map(['a' => 1, 'b' => 2, 'c' => 3]);
+var_dump($map);
