@@ -97,9 +97,9 @@ if (!empty($_REQUEST)){
     <li><h3 style="line-height: 20px;padding:10px 0;font-size: 16px;">连接服务器 <i class="close" onclick="el('win').style.visibility='hidden'">X</i></h3></li>
     <li>
         <form action="database.php" target="_blank">
-            <input name="h" placeholder="主机:"><br>
-            <input name="u" placeholder="用户名:"><br/>
-            <input name="p" placeholder="密码:"><br/>
+            <input name="h" placeholder="主机:" value="localhost"><br>
+            <input name="u" placeholder="用户名:" value="root"><br/>
+            <input name="p" placeholder="密码:" value="123456"><br/>
             <input name="d" placeholder="数据库:"><br/>
             <button style="margin-left: 0; padding:5px 20px;" type="submit" onclick="el('win').style.visibility='hidden';return true;">确定</button>
         </form>
@@ -223,6 +223,7 @@ buttons.forEach(function(item){
                 editor.doc.setValue(data);
             }else{
                 el('run').innerHTML += data;
+                if(localStorage.getItem('action') == 'translates') editor.doc.setValue('');
             }
             
         }).catch(e => console.error( e.message));
@@ -295,16 +296,10 @@ int main(){
 
                 case 'php':
 
-                    if(!preg_match('/\n+/', $this->data)){
-
-                        $this->data = sprintf("
-                            \$output = eval(\"return %s;\");
-                            if(is_scalar(\$output)) echo \$output;
-                            else if(is_array(\$output)) print_r(\$output);
-                            else var_dump(\$output);",
-                        $this->data);
-
+                    if(preg_match('/^[\+\-\*\/\(\)\[\]{}\d]+$/', $this->data)){
+                        $this->data = sprintf('$output = %s; echo $output;', $this->data);
                     }
+                    
                     if(substr($this->data, 0, 5) != '<?php') $this->data = "<?php $this->data";
 
                     break;

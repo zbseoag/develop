@@ -707,7 +707,7 @@ function where(){
 #运行容器
 function run(){
 
-    local option="--restart=on-failure:1 -v /e:/e -v /d:/d `echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`" #默认选项 on-failure:1  always
+    local option="--restart=on-failure:1 -v /d/bin:/usr/local/bin -v /e:/e -v /d:/d `echo "$@" | sed -r 's/--name(=|\s)(\w|,)+/#name#/'`" #默认选项 on-failure:1  always
     local name=`echo "$@" | grep -oP '((?<=--name=)|(?<=--name\s))(\w|,)+'`
     [ -z "$name" ] && { name='test'; option="#name# $option"; } #如果没有名字，则取名 test
 
@@ -751,7 +751,7 @@ function image(){
 }
 
 
-function inspect(){
+function look(){
 
     local format
     case "$1" in

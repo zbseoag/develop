@@ -237,6 +237,10 @@ public class Main {
 
     }
 
+    public boolean hasCycle(ListNode head){
+
+
+    }
 
     public static void main(String[] args) throws IOException {
 

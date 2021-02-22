@@ -3,6 +3,97 @@
 //Coroutine\Channel 可以简写为chan
 //Swoole\Coroutine::defer可以直接用defer
 
+/*
+ * 题目描述：在有序数组中找出两个数，使它们的和为 target。
+ * Input: numbers={2, 7, 11, 15}, target=9
+ * Output: index1=1, index2=2
+ * 使用双指针，一个指针指向值较小的元素，一个指针指向值较大的元素。指向较小元素的指针从头向尾遍历，指向较大元素的指针从尾向头遍历。
+如果两个指针指向元素的和 sum == target，那么得到要求的结果；
+如果 sum > target，移动较大的元素，使 sum 变小一些；
+如果 sum < target，移动较小的元素，使 sum 变大一些。
+数组中的元素最多遍历一次，时间复杂度为 O(N)。只使用了两个额外变量，空间复杂度为 O(1)。
+
+*/
+function twoSum($array, $target){
+
+    $i = 0; $j = count($array) - 1;
+    while($i < $j){
+        $sum = $array[$i] + $array[$j];
+        if($sum == $target){
+            return [++$i, ++$j];
+        }else if($sum < $target){
+            $i++;
+        }else{
+            $j--;
+        }
+    }
+    return null;
+}
+
+p(twoSum([2, 7, 11, 15], 9));
+
+//Input: 5
+//Output: True
+//Explanation: 1 * 1 + 2 * 2 = 5
+function judgeSquareSum(int $target){
+
+    $i = 0;
+    $j = (int) sqrt($target);
+    $all = [];
+    while($i <= $j){
+        $powSum = pow($i, 2) + pow($j, 2);
+        if($powSum == $target){
+            $all[] = [$i, $j];
+            $i++;
+        }else if($powSum < $target){
+            $i++;
+        }else{
+            $j--;
+        }
+    }
+    return empty($all)? false : $all;
+
+}
+
+
+p(judgeSquareSum(65));
+
+
+function hasCycle(SplDoublyLinkedList $linkedlist){
+    $l1 = $linkedlist;
+    $l2 = $linkedlist->next();
+    while($l1 != null && $l2 != null && $l2->next() != null){
+        if($l1 == $l2) return true;
+        $l1 = $l1->next();
+        $l2 = $l2->next()->next();//如果是闭环，则 $l2 追赶 $l1 总能赶上
+    }
+    return false;
+}
+
+
+stop();
+
+function binarySearch($nums, $key) {
+
+    $l = 0;
+    $h = count($nums) - 1;
+    while ($l <= $h) {
+        $m = $l + intdiv(($h - $l), 2);
+        if ($nums[$m] == $key) {
+            return $m;
+        } else if ($nums[$m] > $key) {
+            $h = $m - 1;
+        } else {
+            $l = $m + 1;
+        }
+    }
+    return -1;
+}
+p(PHP_FLOAT_MAX);
+p(binarySearch([4,5,6,7,8,9], 8));
+
+exit;
+
 $redis = new Redis();
 $redis->connect('127.0.0.1', 6379);
 $redis->auth(['user' => 'phpredis', 'pass' => 'phpredis']);

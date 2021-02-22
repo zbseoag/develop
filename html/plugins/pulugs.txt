@@ -1,0 +1,17 @@
+jquery: 
+cdn地址: https://code.jquery.com/jquery-git.js
+
+jScrollPane: 滚动条
+
+jquery-validation: 验证插件
+https://jqueryvalidation.org
+
+ionicons: 字体图标插件
+http://ionicons.com
+
+font-awesome: 字体图标插件
+
+
+react
+
+plupload: 文件上传
