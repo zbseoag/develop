@@ -226,7 +226,13 @@ function srv(){
             esac 
         ;;
         php*)
-            set -- "php-fpm${1#php}" $2
+        
+            if [ "$1" == "php" ];then
+                set -- php-fpm7.2 $2
+            else
+                set -- "php-fpm${1#php}" $2
+            fi
+
             case "$2" in
                 'start')  sudo pkill -9 $1 2>/dev/null; sudo $1;;
                 'stop')   sudo pkill -9 $1;;
