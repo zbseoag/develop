@@ -1,7 +1,10 @@
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
@@ -11,6 +14,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.zip.CRC32;
 
 public class TestStream extends Common {
 
@@ -257,4 +261,89 @@ class CollectionIntoMaps extends Common  {
 
 
 
+}
+
+
+class ObjectStream extends Common {
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+
+        var harry = new Employee("Harry Hacker", 5000, "1989-02-15");
+        var carl = new Manger("Carl Cracker", 8000, "1985-05-15");
+        carl.setSecretary(harry);
+        var staff = new Employee[]{carl};
+
+        try(var out = new ObjectOutputStream(new FileOutputStream("employee.txt"))){
+            out.writeObject(staff);
+        }
+        try(var in = new ObjectInputStream(new FileInputStream("employee.txt"))){
+            var newStaff = (Employee[]) in.readObject();
+
+            for(var item : newStaff){
+                p(item);
+            }
+        }
+
+    }
+
+}
+
+class SeialCloneable implements Cloneable, Serializable {
+
+    public Object clone() throws CloneNotSupportedException{
+        try {
+            var bout = new ByteArrayOutputStream();
+            try(var out = new ObjectOutputStream(bout)){
+                out.writeObject(this);
+            }
+            try(var bin = new ByteArrayInputStream(bout.toByteArray())){
+                var in = new ObjectInputStream(bin);
+                return in.readObject();
+            }
+        }catch(IOException | ClassNotFoundException e){
+            var e2 = new CloneNotSupportedException();
+            e2.initCause(e);
+            throw e2;
+        }
+
+    }
+}
+
+class MemoryMapTest{
+
+    public static long checksumInputStream(Path fileName) throws IOException{
+        try(InputStream in = Files.newInputStream(fileName)){
+            var crc = new CRC32();
+            int c;
+            while((c = in.read()) != -1){
+                crc.update(c);
+            }
+            return crc.getValue();
+        }
+    }
+
+    public static long checksumBufferedInputStream(Path filename) throws IOException {
+        try(var in = new BufferedInputStream(Files.newInputStream(filename))){
+            var crc = new CRC32();
+            int c;
+            while((c = in.read()) != -1){
+                crc.update(c);
+            }
+            return crc.getValue();
+        }
+    }
+
+    public static long checksumMappedFile(Path filename) throws IOException {
+        try(FileChannel channel = FileChannel.open(filename)){
+            var crc = new CRC32();
+            int length = (int) channel.size();
+            MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, length);
+            for(int p = 0; p < length; p++){
+                int c = buffer.get(p);
+                crc.update(c);
+            }
+            return crc.getValue();
+        }
+
+    }
 }

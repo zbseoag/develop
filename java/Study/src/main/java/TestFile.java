@@ -65,20 +65,7 @@ public class TestFile extends Common {
 }
 
 
-class Employee {
 
-    public String name;
-    public double salary;
-    public String birthday;
-
-    public Employee(String name, double salary, String birthday){
-        this.name = name;
-        this.salary = salary;
-        this.birthday = birthday;
-    }
-
-
-}
 
 class RandomAccess {
 
