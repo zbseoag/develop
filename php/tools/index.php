@@ -123,7 +123,7 @@ if (!empty($_REQUEST)){
                 <button class="action" data-switch-value="deunicode|unicode" type="button">Unicode</button>
                 <button class="action" value="nameStyle" type="button">命名</button>
                 <button class="action" value="pregMatch" type="button">正则</button>
-                <button onclick="el('win').style.visibility='visible';" type="button">数据字典</button>
+                <button onclick="el('win').style.visibility='visible';" type="button">数据库字典</button>
             </li>
 
             <li style="float:right;padding:10px 4px 0 0px;">
