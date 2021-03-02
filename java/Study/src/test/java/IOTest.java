@@ -312,7 +312,6 @@ public class IOTest{
         // 按行读取并返回每行内容:
         List<String> lines = Files.readAllLines(Paths.get("/path/to/file.txt"));
 
-
         // 写入二进制文件:
         byte[] data2 = {12, 33};
         Files.write(Paths.get("/path/to/file.txt"), data2);
@@ -323,12 +322,6 @@ public class IOTest{
         Files.write(Paths.get("/path/to/file.txt"), lines2);
 
     }
-
-    @Test
-    public void Paths(){
-
-    }
-
 
 }
 
