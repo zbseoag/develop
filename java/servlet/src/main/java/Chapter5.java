@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import java.sql.*;
 import java.util.Properties;
 
-public class Chapter5 extends Common{
+public class Chapter5 {
 
     public static void main(String[] args) throws ClassNotFoundException, IOException, SQLException, NamingException{
 

@@ -1,4 +1,4 @@
-package servlet;
+package servlets;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,7 +11,7 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 @WebServlet("/login")
-public class Login extends HttpServlet{
+public class LoginServlets extends HttpServlet{
 
     // 模拟一个数据库:
     public Map<String, String> users = Map.of("bob", "bob123", "alice", "alice123", "tom", "tomcat");

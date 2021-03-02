@@ -1,15 +1,16 @@
-package servlet;
+package servlets;
 
-import java.io.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.*;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
-
 @WebServlet("/hello-servlet")
-public class Hello extends HttpServlet{
+public class HelloServlets extends HttpServlet{
 
     private String message;
 

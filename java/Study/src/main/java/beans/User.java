@@ -1,10 +1,13 @@
-package bean;
+package beans;
+
 
 public class User{
 
     public long id;
     public String name;
-    public School school;
+    public beans.School school;
+
+    public String number;
 
     public String email;
     public String password;
@@ -12,7 +15,12 @@ public class User{
 
     public User() { }
 
-    public User(long id, String name, School school) {
+    public User(String name, String number) {
+        this.name = name;
+        this.number = number;
+    }
+
+    public User(long id, String name, beans.School school) {
         this.id = id;
         this.name = name;
         this.school = school;
@@ -24,6 +32,10 @@ public class User{
         this.password = password;
         this.name = name;
         this.description = description;
+    }
+
+    public String toString() {
+        return name + "/" + number;
     }
 
 }

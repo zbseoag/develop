@@ -1,9 +1,8 @@
-package servlet;
+package servlets;
 
-import bean.User;
 import jakarta.servlet.*;
-import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
+import jakarta.servlet.http.*;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -24,7 +22,7 @@ import java.util.stream.Stream;
 //import org.apache.commons.logging.LogFactory;
 
 @WebServlet(name = "Index", value = "/Index")
-public class Index extends HttpServlet{
+public class IndexServlets extends HttpServlet{
 
     private String message;
 
@@ -59,7 +57,7 @@ public class Index extends HttpServlet{
 
     public void foreachBean() throws IntrospectionException{
 
-        BeanInfo info = Introspector.getBeanInfo(User.class);
+        BeanInfo info = Introspector.getBeanInfo(UserServlets.class);
         for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
             System.out.println(pd.getName());
             System.out.println("  " + pd.getReadMethod());
@@ -120,5 +118,54 @@ public class Index extends HttpServlet{
         System.out.println(list);
 
     }
+
+    protected void doGet2(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+        // 从HttpSession获取当前用户名:
+        String user = (String) req.getSession().getAttribute("user");
+        resp.setContentType("text/html");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("X-Powered-By", "JavaEE Servlet");
+        PrintWriter pw = resp.getWriter();
+        pw.write("<h1>Welcome, " + (user != null ? user : "Guest") + "</h1>");
+        if (user == null) {
+            // 未登录，显示登录链接:
+            pw.write("<p><a href=\"/login\">login</a></p>");
+        } else {
+            // 已登录，显示登出链接:
+            pw.write("<p><a href=\"/loginout\">loginout</a></p>");
+        }
+        pw.flush();
+    }
+
+    public void logout(){
+
+        ////req.getSession().removeAttribute("user");
+        ////resp.sendRedirect("/");
+        //
+        //// 创建一个新的Cookie:
+        //Cookie cookie = new Cookie("lang", "cn");
+        //// 该Cookie生效的路径范围:
+        //cookie.setPath("/");
+        //// 该Cookie有效期:
+        //cookie.setMaxAge(8640000); // 8640000秒=100天
+        //// 将该Cookie添加到响应:
+        ////resp.addCookie(cookie);
+        //
+        //
+        //// 获取请求附带的所有Cookie:
+        //Cookie[] cookies = req.getCookies();
+        //// 如果获取到Cookie:
+        //if (cookies != null) {
+        //    // 循环每个Cookie:
+        //    for (Cookie cookie : cookies) {
+        //        // 如果Cookie名称为lang:
+        //        if (cookie.getName().equals("lang")) {
+        //            // 返回Cookie的值:
+        //            return cookie.getValue();
+        //        }
+        //    }
+        //}
+    }
+
 
 }
