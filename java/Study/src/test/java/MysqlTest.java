@@ -217,7 +217,7 @@ public class MysqlTest{
 
     }
 
-    static List<Student> queryStudents(DataSource ds) throws SQLException {
+    public static List<Student> queryStudents(DataSource ds) throws SQLException {
         List<Student> students = new ArrayList<>();
         try (Connection conn = ds.getConnection()) { // 在此获取连接
             try (PreparedStatement ps = conn
@@ -234,7 +234,7 @@ public class MysqlTest{
         return students;
     }
 
-    static Student extractRow(ResultSet rs) throws SQLException {
+    public static Student extractRow(ResultSet rs) throws SQLException {
         var std = new Student();
         std.setId(rs.getLong("id"));
         std.setName(rs.getString("name"));
@@ -243,7 +243,6 @@ public class MysqlTest{
         std.setScore(rs.getInt("score"));
         return std;
     }
-
 
 
 }
