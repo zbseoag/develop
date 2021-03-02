@@ -1260,3 +1260,20 @@ function reset.idea(){
 
 }
 
+
+function git.reset(){
+
+    [ -z $1 ] && set -- HEAD^
+
+    if [[ "$1" =~ ^[0-9]+$ ]]; then
+        set -- HEAD~$1
+    fi
+
+    echo git reset --mixed $1
+
+}
+
+function git.log(){
+
+    git reflog
+}
