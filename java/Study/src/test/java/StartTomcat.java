@@ -1,17 +1,16 @@
 import org.apache.catalina.Context;
 import org.apache.catalina.WebResourceRoot;
-import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
 
 import java.io.File;
 
-public class Main{
+public class StartTomcat{
 
     public static void main(String[] args) throws Exception {
 
         // 启动Tomcat:
-        Tomcat tomcat = new Tomcat();
+        org.apache.catalina.startup.Tomcat tomcat = new org.apache.catalina.startup.Tomcat();
         tomcat.setPort(Integer.getInteger("port", 8080));
         tomcat.getConnector();
         // 创建webapp:
@@ -23,5 +22,4 @@ public class Main{
         tomcat.getServer().await();
 
     }
-
 }
