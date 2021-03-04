@@ -27,7 +27,6 @@ public class Application{
 
         //数据库注册
         userService.register2("bob@example.com", "password1", "Bob");
-        userService.register2("alice@example.com", "password2", "Alice");
         User bob = userService.getUserByName("Bob");
         System.out.println(bob);
 
