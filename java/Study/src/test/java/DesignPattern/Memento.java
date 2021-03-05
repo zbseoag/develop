@@ -2,6 +2,8 @@ package DesignPattern;
 
 import org.junit.jupiter.api.Test;
 
+//备忘录模式
+
 public class Memento {
 
     class TextEditor {

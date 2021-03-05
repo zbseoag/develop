@@ -1,9 +1,12 @@
+import org.junit.jupiter.api.Test;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 //显示一个日历
 public class CalendarTest{
 
-    public static void main(String[] args){
+    @Test
+    void main(){
 
         LocalDate date = LocalDate.now();
         int month = date.getMonthValue();
