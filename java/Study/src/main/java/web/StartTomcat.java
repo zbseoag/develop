@@ -13,6 +13,7 @@ public class StartTomcat{
         org.apache.catalina.startup.Tomcat tomcat = new org.apache.catalina.startup.Tomcat();
         tomcat.setPort(Integer.getInteger("port", 8080));
         tomcat.getConnector();
+
         // 创建webapp:
         Context ctx = tomcat.addWebapp("", new File("src/main/webapp").getAbsolutePath());
         WebResourceRoot resources = new StandardRoot(ctx);
