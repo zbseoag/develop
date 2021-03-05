@@ -1,10 +1,12 @@
+package helper;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import static java.lang.System.out;
 
-public class Out{
+public class out {
 
     public static <E> void print(E... args){
 
