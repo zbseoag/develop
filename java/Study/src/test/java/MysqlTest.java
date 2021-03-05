@@ -1,4 +1,4 @@
-import beans.Student;
+import bean.Student;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import inc.Mysql;
@@ -44,7 +44,7 @@ public class MysqlTest{
 
                 state.getUpdateCount();
                 if(result.next()){
-                    Out.println(result.getString(1));
+                    System.out.println(result.getString(1));
                     assertNotNull(result.getString(1));
                 }
             }
@@ -52,7 +52,7 @@ public class MysqlTest{
             state.executeUpdate("drop table greetings");
             SQLWarning w = state.getWarnings();
             while(w != null){
-                Out.println(w);
+                System.out.println(w);
                 w = w.getNextWarning();
             }
 
@@ -78,7 +78,7 @@ public class MysqlTest{
 
                     while(result.next()){
                         long id = result.getLong("id");
-                        Out.println(id);
+                        System.out.println(id);
                     }
                 }
 
@@ -90,7 +90,7 @@ public class MysqlTest{
                 state.setString(1, "tom");
                 state.setInt(2, 3);
                 int count = state.executeUpdate();
-                Out.println("更新记录行数：" + count);
+                System.out.println("更新记录行数：" + count);
 
             }
 
@@ -237,10 +237,7 @@ public class MysqlTest{
 
     public static Student extractRow(ResultSet rs) throws SQLException {
         var std = new Student();
-        std.setId(rs.getLong("id"));
         std.setName(rs.getString("name"));
-        std.setGender(rs.getBoolean("gender"));
-        std.setGrade(rs.getInt("grade"));
         std.setScore(rs.getInt("score"));
         return std;
     }

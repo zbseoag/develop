@@ -1,6 +1,6 @@
-import beans.Counter;
-import beans.Counter2;
-import beans.TaskQueue;
+import bean.Counter;
+import bean.Counter2;
+import bean.TaskQueue;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

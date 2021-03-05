@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" href="css/element/index.css">
+		<script src="js/vue.js" type="text/javascript" charset="utf-8"></script> 
+		<script src="js/element/index.js"></script>
+	</head>
+	<body>
+	  <div id="block" class="block">
+		<el-carousel height="150px">
+		  <el-carousel-item v-for="(item, index) in imageLis" :key="index">
+			<img :src="item.imgUrl"></img>
+		  </el-carousel-item>
+		</el-carousel>
+	  </div>
+	</body>
+	<style>
+		  .el-carousel__item h3 {
+		    color: #475669;
+		    font-size: 14px;
+		    opacity: 0.75;
+		    line-height: 150px;
+		    margin: 0;
+		  }
+		
+		  .el-carousel__item:nth-child(2n) {
+		     background-color: #99a9bf;
+		  }
+		  
+		  .el-carousel__item:nth-child(2n+1) {
+		     background-color: #d3dce6;
+		  }
+	</style>
+	<script type="text/javascript">
+		var block = new Vue({
+			el:'#block',
+			data:{
+				imageLis:[
+					{imgUrl:"img/1.jpg"},
+					{imgUrl:"img/2.jpg"},
+					{imgUrl:"img/3.jpg"},
+					{imgUrl:"img/4.jpg"}
+				]
+			}
+		});
+	</script>
+</html>

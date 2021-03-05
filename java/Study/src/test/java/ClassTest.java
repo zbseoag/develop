@@ -1,14 +1,17 @@
-import beans.ReverseList;
-import beans.Student;
-import beans.User;
-import beans.UserComparator;
+import bean.ReverseList;
+import bean.Student;
+import bean.User;
+import bean.UserComparator;
 import interfaces.Aintface;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.Console;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,8 +20,9 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.*;
 import java.util.List;
+import java.util.Queue;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -26,27 +30,28 @@ import static java.lang.System.out;
 
 public class ClassTest{
 
-
     public static void string() throws IOException{
 
         String greet = "ABCDEF";
-        Out.println(greet.substring(2, 3));
-        Out.println(String.join(",", "a", "b", "c"));
-        Out.println("java|".repeat(3));
-        Out.println("hello".equalsIgnoreCase("HELLO"));
-        Out.println(greet.substring(2, 3) == "C"); //false
-        Out.println(greet.compareTo("ABC"));
-        Out.println(greet.codePointCount(0, greet.length()));
+        System.out.println(greet.substring(2, 3));
+        System.out.println(String.join(",", "a", "b", "c"));
+        System.out.println("java|".repeat(3));
+        System.out.println("hello".equalsIgnoreCase("HELLO"));
+        System.out.println(greet.substring(2, 3) == "C"); //false
+        System.out.println(greet.compareTo("ABC"));
+        System.out.println(greet.codePointCount(0, greet.length()));
 
-        Out.println(" ".isEmpty(), " ".isBlank()); //空格不为空
-        Out.println("a".startsWith("bcd")); //是否以某个字符串开头
-        Out.println("abc".replace("a", "c"));
+        System.out.println(" ".isEmpty()); //空格不为空
+        System.out.println(" ".isBlank()); //空格不为空
+        System.out.println("a".startsWith("bcd")); //是否以某个字符串开头
+        System.out.println("abc".replace("a", "c"));
 
         Scanner in = new Scanner(System.in);
         out.print("what is your name? :");
         String name = in.nextLine();
         String firstname = in.next();
-        Out.println(name, firstname);
+        System.out.println(name);
+        System.out.println(firstname);
 
         Console con = System.console();
         String name2 = con.readLine("your name :");
@@ -56,14 +61,15 @@ public class ClassTest{
         //文件读写
         Scanner in2 = new Scanner(Path.of("myfile.txt"), StandardCharsets.UTF_8);
         PrintWriter out2 = new PrintWriter("myfile.txt", StandardCharsets.UTF_8);
-        Out.println(System.getProperty("user.dir"));
+        System.out.println(System.getProperty("user.dir"));
 
         //javac -Xlint:fallthrough Test.java
 //        Lab:
 //        break Lab; //只能跳出语句块，还无法跳入。
         BigInteger aaa = new BigInteger("123456");
         aaa.add(new BigInteger("10"));
-        Out.println(BigInteger.ONE, BigInteger.valueOf(1 + 2 + 3));
+        System.out.println(BigInteger.ONE);
+        out.println(BigInteger.valueOf(1 + 2 + 3));
 
 
     }
@@ -75,11 +81,11 @@ public class ClassTest{
         int[] b = new int[10];
         var c = new int[10];
         int[] d = new int[]{45};
-        Out.println(Arrays.toString(b));
-        for(int item : a) Out.println(item);
+        System.out.println(Arrays.toString(b));
+        for(int item : a) System.out.println(item);
         Arrays.sort(a);
         a = Arrays.copyOf(a, 2 * a.length);//一般用于数组扩容
-        Out.println(a);
+        System.out.println(a);
         int r = (int) (Math.random() * 10);
         double[][] balan = {{1,2,3}, {4,5,6}};
 
@@ -100,7 +106,7 @@ public class ClassTest{
             for(int odd :row){
                 out.printf("%4d", odd);
             }
-            out.println();
+            System.out.println();
         }
 
 
@@ -111,12 +117,12 @@ public class ClassTest{
 
         //jdeprscan 工具
         LocalDate a = LocalDate.now();
-        Out.println(a.getYear());
+        System.out.println(a.getYear());
 
         LocalDate b = a.plusDays(400);
-        Out.println(b.getYear());
+        System.out.println(b.getYear());
 
-        Out.println(Objects.requireNonNullElse(null, "unknow"));
+        System.out.println(Objects.requireNonNullElse(null, "unknow"));
         //Objects.requireNonNull(null, "不允许为 null");
 
     }
@@ -172,11 +178,11 @@ public class ClassTest{
         list.offer(4); // 将指定元素添加到此列表的末尾
 
         list.removeFirstOccurrence(2);
-        out.println(list);
+        System.out.println(list);
         list.clear();
 
-        out.println(list.getFirst());
-        out.println();
+        System.out.println(list.getFirst());
+        System.out.println();
 
     }
 
@@ -236,7 +242,7 @@ public class ClassTest{
 //        Java 中有很多封装代码块的接口，如：ActionListener、Comparator，而 lambda 表达式与之兼容。
 //        对于只有一个抽象方法的接口，需要接口对象时，可以提供一个 lambda 表达式。这种只有一个抽象方法的接口被称为函数式接口。
         Comparator<String> comp = (first, second) -> first.length() - second.length();
-        ActionListener listen = event-> out.println(111);
+        ActionListener listen = event-> System.out.println(111);
         Arrays.sort(friends, (first, second) -> first.length() - second.length());
 
         //在 java.util.function 包中定义了很多非常通用的函数式接口。
@@ -547,7 +553,7 @@ public class ClassTest{
         deque.offerLast("a");
         deque.offerLast("b");
         deque.offerFirst("c");
-        Out.println(deque);
+        System.out.println(deque);
 
     }
 

@@ -46,7 +46,6 @@ public class Adapter {
             this.callable = callable;
         }
 
-        // 实现指定接口
         public void run() {
             // 将指定接口调用委托给转换接口调用
             try {

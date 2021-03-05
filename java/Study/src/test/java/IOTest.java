@@ -1,22 +1,18 @@
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import static java.lang.System.out;
 
 public class IOTest{
 
@@ -55,7 +51,58 @@ public class IOTest{
             for (File f : files) System.out.println(f);
         }
 
+        //Creating a stream from an array
+        Stream.of("gently", "down", "the", "stream");
+
+
+        //读取文件内容
+        new String(Files.readAllBytes(Paths.get("alice.txt")), StandardCharsets.UTF_8);
+
+        //读取文件内容
+        StringBuilder content = new StringBuilder();
+        try(BufferedReader reader = new BufferedReader(new FileReader(file))){
+
+            String line;
+            while((line = reader.readLine()) != null){
+                content.append(line + System.lineSeparator());
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        content.toString();
+
+        //写入文件
+        var append = true;
+        if(!file.exists()) file.createNewFile();
+        FileWriter fileWritter = new FileWriter(file, append);
+        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
+        bufferWritter.write("filecontent" + System.lineSeparator());
+        bufferWritter.close();
+
     }
+
+
+    @Test
+    void aa() throws IOException, ClassNotFoundException {
+
+        //对象序列化到文件
+        FileOutputStream fileOutputStream = new FileOutputStream(new File("C:\\Windows\\notepad.exe"));
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+        objectOutputStream.writeObject(new Object());
+        objectOutputStream.close();
+
+        //文件反序列化到对象
+        FileInputStream fileInputStream = new FileInputStream(new File("C:\\Windows\\notepad.exe"));
+        ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+        var object = new Object();
+        object = (String) objectInputStream.readObject();
+        objectInputStream.close();
+
+
+    }
+
+
+
 
     /**
      * 如果需要对目录进行复杂的拼接、遍历等操作，使用Path对象更方便
@@ -241,7 +288,7 @@ public class IOTest{
             while ((n = reader.read(buffer)) != -1) {
 
                 System.out.println("read " + n + " chars.");
-                out.println(buffer.toString());
+                System.out.println(buffer.toString());
             }
         }
 

@@ -1,14 +1,19 @@
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
-import com.sun.jdi.IntegerType;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /*
 assert	断言条件是否满足
@@ -41,20 +46,54 @@ public class MainTest {
     @Test
     public void test(){
 
+        var generator = new Random();
+        generator.nextInt(10000);
+
         final double PI2 = 10; //定义常量
         var a = 10;
         var b = 11;
         var c = 12;
-        Out.println(2 * a++, 2 * ++b);
-        Out.println(a += b += c); //+= 是右结合运算符，所以先算右边的，等同于 a += (b += c)
+        System.out.println(2 * a++);
+        System.out.println(2 * a++);
+        System.out.println(2 * ++b);
+        System.out.println(a += b += c); //+= 是右结合运算符，所以先算右边的，等同于 a += (b += c)
 
     }
 
     @Test
-    void Main(){
+    void main() throws Exception {
 
+        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+        scheduledThreadPool.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                System.out.println("delay 3 seconds");
+            }
+        }, 1, TimeUnit.SECONDS);
+
+
+
+        scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                System.out.println("delay 0 seconds, and excute every 1 seconds");
+            }
+        }, 0, 1, TimeUnit.SECONDS);
+
+        IntStream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).filter(n -> n % 2 != 0).forEach(System.out::println);
+
+        int sum = Stream.of(1, 2, 3, 4, 5, 6, 7, 8, 9).reduce(0, (acc, n) -> acc + n);
+        System.out.println(sum); // 45
+
+        Stream<String> stream = Stream.of("Apple", "", null, "Pear", "  ", "Orange");
+        List<String> list = stream.filter(s -> s != null && !s.isBlank()).collect(Collectors.toList());
+        System.out.println(list);
 
     }
+
+
 
     public static <K, V> Map<K, V> call(Integer id, Function<Integer, Map<K, V>> function){
 
@@ -80,7 +119,7 @@ public class MainTest {
             }
         };
 
-        Out.println(function.apply("91151561"));
+        System.out.println(function.apply("91151561"));
 
 
         Map<Integer, String> users = call(10, (id) -> {
@@ -90,7 +129,7 @@ public class MainTest {
             return map;
         });
 
-        Out.println(users);
+        System.out.println(users);
 
         //Consumer 消费型函数式接口,接受一个输入参数且无返回
         Consumer<Integer> consumer = new Consumer<>(){
@@ -110,7 +149,7 @@ public class MainTest {
                 return !integer.equals(0);
             }
         };
-        Out.println(predicate.test(0));
+        System.out.println(predicate.test(0));
 
         //Supplier供给型函数式接口, 无参数，返回一个结果,如 object.toString();
         String name = "tom";
@@ -205,13 +244,6 @@ public class MainTest {
 
     }
 
-    @Test
-    void arraycopy(){
-
-
-
-
-    }
 
     private void sort(List<String> names){
 
@@ -267,7 +299,7 @@ public class MainTest {
         Character ch3 = 'A';
 
 
-        Out.println(Character.hashCode('a'));
+        System.out.println(Character.hashCode('a'));
 
         char[] carr = {'h', 'e' , 'l'};
         String str = new String(carr);
@@ -280,16 +312,16 @@ public class MainTest {
         int[] iarr = new int[10];
         iarr[0] = 1;
         iarr[1] = 2;
-        Out.println(iarr);
+        System.out.println(iarr);
 
 
-        Out.println((new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz")).format(DATE));
-        Out.println(String.format("%tc", DATE));
-        Out.printf("%1$s %2$tB %2$td, %2$tY", "printf:", DATE);
+        System.out.println((new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz")).format(DATE));
+        System.out.println(String.format("%tc", DATE));
+        System.out.printf("%1$s %2$tB %2$td, %2$tY", "printf:", DATE);
 
 
         SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
-        Out.println(ft.parse("2020-07-06 12:02:14"));
+        System.out.println(ft.parse("2020-07-06 12:02:14"));
 
         long start = System.currentTimeMillis();
 
@@ -308,7 +340,7 @@ public class MainTest {
 
 
         GregorianCalendar gcalendar = new GregorianCalendar();
-        Out.println(year = gcalendar.get(Calendar.YEAR));
+        System.out.println(year = gcalendar.get(Calendar.YEAR));
         gcalendar.isLeapYear(year);//是否闰年
 
 
@@ -318,11 +350,11 @@ public class MainTest {
         Matcher matcher = pattern.matcher(string);
 
         if (matcher.find()) {
-            Out.println("Found: " + matcher.group(0) );
-            Out.println("Found: " + matcher.group(1) );
-            Out.println("Found: " + matcher.group(2) );
+            System.out.println("Found: " + matcher.group(0) );
+            System.out.println("Found: " + matcher.group(1) );
+            System.out.println("Found: " + matcher.group(2) );
         } else {
-            Out.println("NO MATCH");
+            System.out.println("NO MATCH");
         }
 
         //查找位置
@@ -332,14 +364,14 @@ public class MainTest {
         int count = 0;
         while(matcher2.find()) {
             count++;
-            Out.printf("匹配第  %d 次  start:%d end:%d", count, matcher2.start(), matcher2.end());
+            System.out.printf("匹配第  %d 次  start:%d end:%d", count, matcher2.start(), matcher2.end());
         }
 
 
         Pattern pattern3 = Pattern.compile("foo");
         Matcher matcher3 = pattern3.matcher("fooooo");
-        Out.println("fooooo 中 查找 foo = lookingAt(): "+ matcher3.lookingAt());
-        Out.println("fooooo 中 完全匹配 foo = matches(): " + matcher3.matches());
+        System.out.println("fooooo 中 查找 foo = lookingAt(): "+ matcher3.lookingAt());
+        System.out.println("fooooo 中 完全匹配 foo = matches(): " + matcher3.matches());
 
 
         Pattern p = Pattern.compile("a*b");
@@ -351,20 +383,20 @@ public class MainTest {
         }
         //print(sb.toString());
         //m.appendTail(sb);
-        Out.println(sb.toString());
+        System.out.println(sb.toString());
 
 
         char[] achear = {'a', 'b'};
-        Out.println(achear);
+        System.out.println(achear);
 
 
         //从控制台不断读取字符直到用户
 	       char c;
 	       BufferedReader br = new  BufferedReader(new InputStreamReader(System.in));
-	       Out.print("Enter characters, 'q' to quit.");
+	       System.out.print("Enter characters, 'q' to quit.");
 	       do {
 	          c = (char) br.read();
-	          Out.print(c);
+	          System.out.print(c);
 	       } while(c != 'q');
 
 
@@ -373,10 +405,10 @@ public class MainTest {
 
 	       BufferedReader bReader = new BufferedReader(new InputStreamReader(System.in));
 	       String string2;
-	       Out.print("Enter line of text and enter 'end' to quit.");
+	       System.out.print("Enter line of text and enter 'end' to quit.");
 	       do {
 	    	   str = bReader.readLine();
-	    	   Out.print(str);
+	    	   System.out.print(str);
 	       }while(!str.equals("end"));
 
 
@@ -391,7 +423,7 @@ public class MainTest {
 	       ByteArrayInputStream bArray1 = new ByteArrayInputStream(BYTES);
 	       ByteArrayInputStream bArray2 = new ByteArrayInputStream(BYTES, 1, 3);
 
-	       while((INT = bArray1.read())!= -1) {Out.print((char) INT); }
+	       while((INT = bArray1.read())!= -1) {System.out.print((char) INT); }
 	       reset();
 
 
@@ -400,11 +432,11 @@ public class MainTest {
 	       while(output.size()!= 10 ){output.write(System.in.read());}
 
 
-	       for(byte item : output.toByteArray()){ Out.print((char) item); }
+	       for(byte item : output.toByteArray()){ System.out.print((char) item); }
 
 	       ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 
-          while((INT = input.read())!= -1){ Out.print((char) INT);}
+          while((INT = input.read())!= -1){ System.out.print((char) INT);}
           input.reset();
 
           reset();
@@ -444,7 +476,7 @@ public class MainTest {
 	      input10.available();
 
 	      while((INT = input10.read()) != -1){
-	         Out.print((char) input10.read());
+	         System.out.print((char) input10.read());
 	      }
 
 	      input10.close();
@@ -494,7 +526,7 @@ public class MainTest {
 	      char[] chars = new char[data.length()];
 	      fr.read(chars);
 
-	      for(char c : chars) { Out.print(c); }
+	      for(char c : chars) { System.out.print(c); }
 
 	      fr.close();
 
@@ -509,22 +541,37 @@ public class MainTest {
 
     }
 
-
     public static void arrayToCollection() throws IOException{
 
 	      String[] data = {"aaa", "bbb", "ccc"};
 	      for(String item : data){
-	          Out.print(item);
+	          System.out.print(item);
 	      }
 
 	      List<String> list = Arrays.asList(data);
 
 	      for(String item : list){
-	          Out.print(item);
+	          System.out.print(item);
 	      }
 
     }
 
+    @Test
+    void arraycopy(){
+
+        int[] a = {1, 2, 3};
+        int newLength = 10;
+
+        Class cl = a.getClass();
+        if(!cl.isArray()) System.exit(1);
+
+        Class componentType = cl.getComponentType(); //返回数组类型
+        Object newArray = Array.newInstance(componentType, newLength);//创建新数组
+        System.arraycopy(a, 0, newArray, 0, Math.min(Array.getLength(a), newLength));//复制元素到新数组
+
+        System.out.println(newArray);
+
+    }
 
 
 

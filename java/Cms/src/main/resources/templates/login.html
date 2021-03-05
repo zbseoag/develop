@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Welcome to support us</title>
+		<link rel="stylesheet" href="/css/element/index.css">
+		<script src="/js/vue.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/js/element/index.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	</head>
+	<body>
+		<div id="loginContainer">
+			<el-container>
+			  <el-header>
+				  <el-row :gutter="20">
+				    <el-col :span="8">
+						<div class="grid-content bg-purple">
+							<a>我的咸菜网</a>
+							<span> | 客服热线：15872972806</span>
+						</div>
+					</el-col>
+				    <el-col :span="16">
+						<div class="grid-content bg-purple">
+							<ul>
+								<li>首页</li>
+								<li>日常生活用品</li>
+								<li>生鲜水果类</li>
+								<li>家具建材类</li>
+								<li>五金类</li>
+								<li>汽车|二手汽车</li>
+							</ul>
+							<div style="float: right;margin-right: 10%; width: 80px;height: 36px;">
+								<img style="margin-top: 9px;float: left;" src="img/icon3.png"/>
+								<div style="float: right;"><a>登入|注册</a> </div>
+							</div>
+						</div>
+					</el-col>
+				  </el-row>
+				  <el-row :gutter="20">
+				    <el-col :span="8"><div class="grid-content01"></div></el-col>
+				    <el-col :span="16"><div class="grid-content01"></div></el-col>
+				  </el-row>
+				  
+			  </el-header>
+			  <el-main>
+				  <el-aside class="userInfo">
+					  <div class="info_01">
+						<span style="float: left;height: 30px;">用户名:</span><el-input placeholder="请输入内容" v-model="userName" clearable></el-input>
+					  </div>
+					  <div class="info_01">
+						<span style="float: left;height: 30px;">密码：</span><el-input placeholder="请输入密码" v-model="password" show-password clearable></el-input>
+					  </div>
+					  <el-button type="primary" round @click="submitInfo()">提交</el-button>
+				  </el-aside>
+				  
+			  </el-main>
+			  <el-footer>Footer</el-footer>
+			</el-container>
+		</div>
+	</body>
+</html>
+<script type="text/javascript">
+	var block = new Vue({
+		el:'#loginContainer',
+		data:{
+			userName:"",
+			password:"",
+			imageLis:[
+				{imgUrl:"/img/1.jpg"},
+				{imgUrl:"/img/2.jpg"},
+				{imgUrl:"/img/3.jpg"},
+				{imgUrl:"/img/4.jpg"}
+			]
+		},
+		methods:{
+			submitInfo(){
+				var param = {"userName":this.userName,"password":this.password};
+				axios({
+					method:"get",
+					url:"/user/login",
+				}).then(function(res){
+					 console.log(res);
+				})
+				
+			}
+		}
+	});
+</script>
+<style>
+body {
+	min-width: 1200px;
+	background: #fff;
+	color: #ffffff;
+	font-size: 16px;
+}
+.el-header, .el-footer {
+	background-color: #ffffff;
+	color: #333;
+	min-height: 136px;
+	text-align: center;
+	
+  }
+  .el-main {
+	background-color: #E9EEF3;
+	color: #333;
+	text-align: center;
+	line-height: 160px;
+  }
+  
+  body > .el-container {
+	margin-bottom: 40px;
+  }
+  
+.el-row {
+  margin-bottom: 5px;
+  &:last-child {
+	margin-bottom: 0;
+  }
+}
+.el-col {
+  border-radius: 4px;
+}
+.bg-purple-dark {
+  background: #99a9bf;
+}
+.bg-purple {
+  background: #f5f5f6;
+}
+.bg-purple-light {
+  background: #e5e9f2;
+}
+.grid-content {
+  border-radius: 4px;
+  height: 36px;
+  line-height: 36px;
+  color: #8f9aa8;
+  font-size: 14px;
+}
+.row-bg {
+  padding: 10px 0;
+  background-color: #f9fafc;
+}
+ul{
+white-space: nowrap;
+display: inline;
+}
+ul li{
+padding: 0px 20px;
+display: inline-block;
+white-space:nowrap;
+}
+
+.grid-content01{
+	border-radius: 4px;
+	height: 90px;
+	line-height: 90px;
+	color: #8f9aa8;
+	font-size: 14px;
+	background: #f5f5f6;
+}
+.userInfo｛
+width:600px;
+height:400px;
+text-align: center;
+line-height: 400px;
+｝
+.info_01{
+	width:400px;
+	height: 60px;
+	text-align: center;
+	line-height: 60px;
+}
+</style>

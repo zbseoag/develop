@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chayu.cms.mapper.UserInfoMapper">
+    <resultMap id="baseResultMap" type="com.chayu.cms.entity.UserInfo">
+        <id column="USER_ID" property="userId" jdbcType="VARCHAR"/>
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+        <result column="REAL_NAME" property="realName" jdbcType="VARCHAR"/>
+        <result column="USER_AGE" property="userAge" jdbcType="INTEGER"/>
+        <result column="USER_GENDER" property="userGender" jdbcType="VARCHAR"/>
+        <result column="USER_BIRTHDAY" property="userBirthday" jdbcType="VARCHAR"/>
+    </resultMap>
+    <sql id="allParam">
+        USER_ID,USER_NAME,REAL_NAME,USER_AGE,USER_GENDER,USER_BIRTHDAY
+    </sql>
+    <select id="queryUser" resultMap="baseResultMap">
+        select <include refid="allParam"/> from user_info
+    </select>
+</mapper>
