@@ -1,0 +1,7 @@
+如果一定要给每个Filter指定顺序，就必须在web.xml文件中对这些Filter再配置一遍
+
+<filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/user/*</url-pattern>
+</filter-mapping>
+
