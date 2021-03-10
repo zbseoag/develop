@@ -7,7 +7,8 @@ export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令  ignoreboth
 export HISTIGNORE="pwd:history" #不记录的命令
 
-export JAVA_HOME="/d/usr/jdk"
+export MYCAT_HOME=/d/usr/mycat
+export JAVA_HOME=/d/usr/jdk
 export PATH=$PATH:/d/usr/jdk/bin:/d/usr/elasticsearch/bin:/d/usr/kibana/bin:/d/usr/zookeeper/bin
 
 alias ll="ls -alF"
@@ -27,15 +28,15 @@ alias apt.fix="sudo apt-get install -f "
 alias all.users="cat /etc/passwd |cut -f 1 -d:"
 alias port="netstat -ap | grep"
 alias real="realpath -s"
-alias ecarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
-alias rearg='ecarg;return'
-alias eclist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
+alias echoarg='echo "(数量 $#):"; for item in "$@";do echo "$item,";done '
+alias echolist='echo "============参数列表==============";local index=1;for arg in "$@";do echo "$index: $arg";let index+=1; done ;echo "=================================="'
 
 alias ing="docker ps"
 alias all="docker ps -a"
 alias rmc="docker rm -f"
 alias rmi="docker rmi"
-
+alias allow="sudo ufw allow"
+alias apt.fix="sudo apt --fix-broken install"
 unalias ll
 
 
@@ -218,6 +219,13 @@ function list(){
 function srv(){
 
     case "$1" in
+        'ufw')
+            case "$2" in
+                'start')  sudo ufw enable;;
+                'stop')   sudo ufw disable;;
+                'status')        sudo ufw status;;
+            esac 
+        ;;
         'zkServer')
             case "$2" in
                 'start')  zkServer.sh stop  2>/dev/null; zkServer.sh start;;
@@ -302,6 +310,21 @@ function stop(){
             srv stop $item
         else
             srv $item stop
+        fi
+    done
+}
+
+
+function status(){
+
+    local c=0
+    [ "$1" == '-c' ] && { c=1; shift 1; }
+    [ -z "$1" ] && set -- docker
+    for item in "$@";do
+        if [ "$c" == 1 ];then
+            srv status $item
+        else
+            srv $item status
         fi
     done
 }
@@ -1274,3 +1297,4 @@ function git.reset(){
 function git.log(){
     git reflog
 }
+
