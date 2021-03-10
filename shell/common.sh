@@ -1277,8 +1277,8 @@ function reset.idea(){
     rm -rf /c/Users/admin/AppData/Roaming/JetBrains/PhpStorm{$1}/eval && \
     rm /c/Users/admin/AppData/Roaming/JetBrains/PhpStorm{$1}/options/other.xml
 
-    #rm -rf /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/eval && \
-    #rm /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/options/other.xml
+    rm -rf /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/eval && \
+    rm /c/Users/admin/AppData/Roaming/JetBrains/Idea{$1}/options/other.xml
     #似乎不用删除注册表项：HKEY_CURRENT_USER\Software\JavaSoft\Prefs\jetbrains\phpstorm
 
 }
