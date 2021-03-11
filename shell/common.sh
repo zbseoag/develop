@@ -1040,40 +1040,6 @@ done
 
 #  done <&0;
 
-function dock(){
-
-    local manage="$1"
-    shift 1
-    case "$manage" in
-        'init')
-            echo sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
-            echo apt update 
-            echo apt install iputils-ping
-        ;;
-
-        'info')
-            [ -z "$@" ] && docker info || docker info | grep "$@"
-        ;;
-
-
-        'pid')
-            local container="$1"
-            [ -z "$container" ] && container='docker ps -q'
-            docker inspect --format '{{.Name}}: {{.State.Pid}}' $($container)
-        ;;
-
-        'all')
-            echo -e "镜像   \t\t网络   \t\t端口   \t\t\t\t状态   \t\t名称"
-            docker ps -a --format '{{.Image}}   \t{{.Networks}}   \t{{.Ports}}   \t\t{{.Status}}   \t{{.Names}}'
-        ;;
-    esac
-
-    
-
-}
-
-
-
 
 ###########################################################
 ##########################################################
@@ -1120,8 +1086,6 @@ esac
 
 
 }
-
-
 
 
 function cover(){
@@ -1243,7 +1207,7 @@ function init.cp(){
 }
 
 function init.install(){
-    apt update && apt install -y sudo procps vim iputils-ping curl
+    apt update && apt install -y sudo procps vim iputils-ping curl gcc g++
 }
 
 function repository(){
