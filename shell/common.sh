@@ -271,7 +271,7 @@ function srv(){
 
             [ $# == 1 ] && set -- $1 'start'
             [ "$2" == 'start' ] && sudo service "$1" stop 1>/dev/null 2>&1
-            sudo service "$@" 1>/dev/null
+            sudo service "$@"
         ;;        
     esac
 
@@ -552,8 +552,8 @@ function push(){
         'dev')  (cd dev; push .);;
         'lib')  (cd lib; push .);;
         'all')  push dev; push lib;;
-        '')     git pull; git push;;
-        *)      git pull; git add $1; git commit -m ${2:-'日常更新'}; git push;;
+        '')     git push;;
+        *)      git add $1; git commit -m ${2:-'日常更新'}; git push;;
     esac
 }
 
