@@ -5,7 +5,12 @@ package DesignPattern;
 //是一种在运行期动态给某个对象的实例增加功能的方法。
 
 import org.junit.jupiter.api.Test;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 public class Decorators {
 
@@ -71,12 +76,12 @@ public class Decorators {
     @Test
     void main() throws IOException{
 
-        ////创建原始的数据源
-        //InputStream input = new FileInputStream("test.gz");
-        ////增加缓冲功能
-        //InputStream input1 = new BufferedInputStream(input);
-        ////增加解压缩功能
-        //InputStream input2 = new GZIPInputStream(input1);
+        //创建原始的数据源
+        InputStream input = new FileInputStream("test.gz");
+        //增加缓冲功能
+        InputStream input1 = new BufferedInputStream(input);
+        //增加解压缩功能
+        InputStream input2 = new GZIPInputStream(input1);
 
         Node node = new ItalicDecorator(new BoldDecorator(new SpanNode("Hello World")));
 

@@ -1,0 +1,5 @@
+java -jar ./moco-runner-0.11.0-standalone.jar --help
+java -jar ./moco-runner-0.11.0-standalone.jar http -p 8888 -c startup1.json
+
+java -jar moco.jar [http | https | socket] -p port -c [configuration file]
+
