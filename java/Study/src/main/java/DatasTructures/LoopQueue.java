@@ -1,6 +1,7 @@
 package DatasTructures;
-
 import DatasTructures.interfaces.Queue;
+
+//循环队列
 
 public class LoopQueue <E> implements Queue<E> {
 

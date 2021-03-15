@@ -1,6 +1,9 @@
-package DatasTructures.tools;
+package DatasTructures;
 
-
+/**
+ *  (head) node -> node2 -> node3
+ * @param <E>
+ */
 public class LinkedList<E> {
 
     private class Node {
@@ -12,42 +15,43 @@ public class LinkedList<E> {
             this.e = e;
             this.next = next;
         }
-
-        public Node(E e){ this(e, null); }
-
-        public Node(){ this(null, null);}
+        public Node(E e){
+            this(e, null);
+        }
+        public Node(){
+            this(null, null);
+        }
 
         @Override
         public String toString(){
-
             return e.toString();
         }
 
     }
 
 
-
-    private Node dummyHead;
-
+    private Node head;
     private int size;
 
     public LinkedList(){
-
-        //初始化的时候，链表不为空,虚拟头
-        dummyHead = new Node(null, null);
+        head = null;
         size = 0;
 
     }
 
 
-    public int size(){
-
+    public int getSize(){
         return size;
     }
 
     public boolean isEmpty(){
-
         return size == 0;
+    }
+
+    public void addFirst(E e){
+
+        head = new Node(e, head);
+        size++;
     }
 
 

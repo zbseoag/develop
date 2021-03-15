@@ -4,6 +4,7 @@ import DatasTructures.bean.Student;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Stack;
 
 public class Main {
@@ -66,5 +67,28 @@ public class Main {
     }
 
 
+
+    @Test
+    void LoopQueue(){
+
+        int count = 10000;
+        LoopQueue<Integer> arrayQueue = new LoopQueue<>();
+
+        long starttime = System.nanoTime();
+
+        Random random = new Random();
+        for(int i = 0; i < count; i++){
+            arrayQueue.enqueue(random.nextInt(Integer.MAX_VALUE));
+        }
+        for(int i = 0; i < count; i++){
+            arrayQueue.dequeue();
+        }
+
+        long endtime = System.nanoTime();
+        double time = (endtime - starttime) / 1000000000.0;
+
+        System.out.println(time);
+
+    }
 
 }

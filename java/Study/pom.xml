@@ -131,6 +131,12 @@
             <artifactId>amqp-client</artifactId>
             <version>5.7.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.7.0</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

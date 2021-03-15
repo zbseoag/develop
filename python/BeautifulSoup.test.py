@@ -38,8 +38,6 @@ html = """
 """
 
 
-'''
-
 all = soup.find_all(True)
 for tag in all:
     print(tag.name)
@@ -105,9 +103,10 @@ soup.find_all("a", limit=2， recursive=False)
 soup.get_text()
 soup.prettify()
 
-# 
 
 
 
-'''
 
+
+# num = re.sub(r'<div class="pen-l">.*>\s+返回列表\s+</a>', '<div class="pen-l">', content.prettify(), flags=re.S)
+# print(num)
