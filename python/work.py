@@ -8,12 +8,13 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import random
 import re
+import time
 
 def stop(text):
     print(text)
     exit(0)
 
-def run(file):
+def run(file, typeid):
 
     print(file)
 
@@ -28,10 +29,13 @@ def run(file):
   
     title = soup.select_one('#container > div > div > div.pen-l h1').string
 
-    datetime = soup.select_one('#container > div > div > div.pen-l > p.time > span').string
-
+    datetime = soup.select_one('#container > div > div > div.pen-l > p.time > span').string + " 12:00:00"
+    # 先转换为时间数组
+    datetime = time.strptime(datetime, "%Y-%m-%d %H:%M:%S")
+    # 转换为时间戳
+    datetime = str(int(time.mktime(datetime)))
+  
     click = str(random.randint(1, 100))
-
     img = soup.select_one('#container > div > div > div.pen-l img')
     if img:
         img = img['src']
@@ -47,28 +51,22 @@ def run(file):
     article = "".join([str(x) for x in content.contents])
     article = article.replace("'", "\\'").replace('"', '\\"');
 
-    typeid = "8"
-    sql = "INSERT INTO `aa_archives` (`id`, `typeid`, `typeid2`, `sortrank`, `flag`, `ismake`, `channel`, `arcrank`, `click`, `money`, `title`, `shorttitle`, `color`, `writer`, `source`, `litpic`, `pubdate`, `senddate`, `mid`, `keywords`, `lastpost`, `scores`, `goodpost`, `badpost`, `voteid`, `notpost`, `description`, `filename`, `dutyadmin`, `tackid`, `mtype`, `weight`) VALUES ("+aid+", "+typeid+", '0', "+datetime+", 'p', 1, 1, 0, "+click+", 0, '"+title+"', '', '', 'admin', '未知', '"+img+"', "+datetime+", "+datetime+", "+mid+", '"+keywords+"', 0, 0, 0, 0, 0, 1, '"+description+"', '', 1, 0, 0, 0);"
-    
-    sql2 = "INSERT INTO `aa_addonarticle` ( `aid`, `typeid`, `body`, `redirecturl`, `templet`, `userip` ) VALUES( "+aid+", "+typeid+", '"+article+"', '', '', '127.0.0.1' );"
-
-    #print(sql)
-    #stop(sql2)
+    #sql = "INSERT INTO `aa_archives` (`id`, `typeid`, `typeid2`, `sortrank`, `flag`, `ismake`, `channel`, `arcrank`, `click`, `money`, `title`, `shorttitle`, `color`, `writer`, `source`, `litpic`, `pubdate`, `senddate`, `mid`, `keywords`, `lastpost`, `scores`, `goodpost`, `badpost`, `voteid`, `notpost`, `description`, `filename`, `dutyadmin`, `tackid`, `mtype`, `weight`) VALUES ("+aid+", "+typeid+", '0', "+datetime+", 'p', 1, 1, 0, "+click+", 0, '"+title+"', '', '', 'admin', '未知', '"+img+"', "+datetime+", "+datetime+", "+mid+", '"+keywords+"', 0, 0, 0, 0, 0, 1, '"+description+"', '', 1, 0, 0, 0);"
+    #sql2 = "INSERT INTO `aa_addonarticle` ( `aid`, `typeid`, `body`, `redirecturl`, `templet`, `userip` ) VALUES( "+aid+", "+typeid+", '"+article+"', '', '', '127.0.0.1' );"
 
     with open("aaa.sql", "a") as file:
-        file.write(sql +"\n" + sql2 + "\n")
-
+        file.write(sql + "\n" + sql2 + "\n")
+  
 
 # 遍历文件夹
 def list_files(file, look=False):
-
     for root, dirs, files in os.walk(file):
-
         for f in files:
             yield os.path.join(root, f)
 
 
-dir  = "/c/Users/admin/Documents/263EM/zhengbaoshan@hotniao.com/receive_file/news/pnews"
+dir = "/c/Users/admin/Documents/263EM/zhengbaoshan@hotniao.com/receive_file/news/pnews"
+typeid = "8"
 for file in list_files(dir):
-    run(file)
+    run(file, typeid)
 
