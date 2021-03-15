@@ -13,7 +13,6 @@ def stop(text):
     print(text)
     exit(0)
 
-
 def run(file):
 
     print(file)
@@ -61,18 +60,15 @@ def run(file):
 
 
 # 遍历文件夹
-def findAllFile(file, look=False):
+def list_files(file, look=False):
 
     for root, dirs, files in os.walk(file):
 
         for f in files:
             yield os.path.join(root, f)
 
-        # for d in dirs:
-        #    yield os.path.join(root, d)
 
-
-base  = "/c/Users/admin/Documents/263EM/zhengbaoshan@hotniao.com/receive_file/news/pnews"
-for i in findAllFile(base):
-    run(i)
+dir  = "/c/Users/admin/Documents/263EM/zhengbaoshan@hotniao.com/receive_file/news/pnews"
+for file in list_files(dir):
+    run(file)
 
