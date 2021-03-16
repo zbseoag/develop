@@ -552,7 +552,7 @@ function push(){
         'dev')  (cd dev; push .);;
         'lib')  (cd lib; push .);;
         'all')  push dev; push lib;;
-        '')     git push;;
+        '')     push .;;
         *)      git add $1; git commit -m ${2:-'日常更新'}; git push;;
     esac
 }
