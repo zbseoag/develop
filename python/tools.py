@@ -6,18 +6,12 @@ import tempfile
 import os
 import time
 
-p = print
-
-def stop(one, *args):
-    if(args):
-        print(one, args)
-    else:
-        print(one)
+def stop(*args):
+    print(*args)
     exit(0)
 
 def look(obj):
     stop(type(obj))
-
 
 def log(*args):
 
@@ -32,9 +26,7 @@ def log(*args):
         fp.write('==============================================================================' + date + '==============================================================================\n')
         fp.write('-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n')
 
-    p('写入日志：'+ file +'\n')
-
-
+    print('写入日志：'+ file +'\n')
 
 
 def connectMongo(collection='test', document='test'):
@@ -43,7 +35,6 @@ def connectMongo(collection='test', document='test'):
     collection = client[collection]
     document = collection[document]
     return document
-
 
 def get(url, selector=None, debug=False, params=None, **kwargs):
 
@@ -66,5 +57,4 @@ def get(url, selector=None, debug=False, params=None, **kwargs):
 
     return result
 
-def search(content, selector):
-    return BeautifulSoup(content.text, 'html.parser').select(selector)
+
