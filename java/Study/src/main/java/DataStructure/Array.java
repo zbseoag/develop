@@ -1,4 +1,4 @@
-package DatasTructures;
+package DataStructure;
 
 public class Array<E> {
 

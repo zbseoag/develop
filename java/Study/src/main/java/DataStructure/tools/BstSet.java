@@ -1,4 +1,4 @@
-package DatasTructures.tools;
+package DataStructure.tools;
 
 
 public class BstSet<E extends Comparable<E>> implements Set<E>{

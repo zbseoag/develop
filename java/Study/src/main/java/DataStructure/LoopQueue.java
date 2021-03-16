@@ -1,5 +1,5 @@
-package DatasTructures;
-import DatasTructures.interfaces.Queue;
+package DataStructure;
+import DataStructure.interfaces.Queue;
 
 //循环队列
 

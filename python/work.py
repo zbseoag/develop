@@ -69,4 +69,3 @@ dir = "/c/Users/admin/Documents/263EM/zhengbaoshan@hotniao.com/receive_file/news
 typeid = "8"
 for file in list_files(dir):
     run(file, typeid)
-

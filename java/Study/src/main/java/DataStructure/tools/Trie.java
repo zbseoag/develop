@@ -1,4 +1,4 @@
-package DatasTructures.tools;
+package DataStructure.tools;
 
 import java.util.TreeMap;
 

@@ -1,6 +1,6 @@
-package DatasTructures;
+package DataStructure;
 
-import DatasTructures.interfaces.Stack;
+import DataStructure.interfaces.Stack;
 
 public class ArrayStack<E> implements Stack<E> {
 

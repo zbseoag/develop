@@ -1,4 +1,4 @@
-package DatasTructures.interfaces;
+package DataStructure.interfaces;
 
 public interface Queue <E> extends Print{
 

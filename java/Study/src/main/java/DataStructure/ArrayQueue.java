@@ -1,6 +1,6 @@
-package DatasTructures;
+package DataStructure;
 
-import DatasTructures.interfaces.Queue;
+import DataStructure.interfaces.Queue;
 
 public class ArrayQueue<E> implements Queue<E> {
 

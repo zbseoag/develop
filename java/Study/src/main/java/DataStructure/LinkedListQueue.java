@@ -1,26 +1,9 @@
-package DatasTructures.tools;
+package DataStructure;
 
 /**
 带有尾指针的的链表实现
-
-
- LinkedListQueue<Integer> queue = new LinkedListQueue<Integer>();
-
- for(int i = 0; i < 10; i++){
-
- queue.add(i);
- System.out.println(queue);
-
- if(i % 3 == 2){
- queue.remove();
- System.out.println(queue);
- }
- }
-
-
  */
 public class LinkedListQueue<E> {
-
 
     private class Node {
 
@@ -110,7 +93,6 @@ public class LinkedListQueue<E> {
         }
 
         sb.append("NULL");
-
         return sb.toString();
     }
 

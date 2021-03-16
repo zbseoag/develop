@@ -1262,3 +1262,13 @@ function git.log(){
     git reflog
 }
 
+function readfile(){
+
+    while read line
+    do
+        echo "$line"
+    done < $1
+
+}
+
+

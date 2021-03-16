@@ -1,4 +1,4 @@
-package DatasTructures.bean;
+package DataStructure.bean;
 
 public class Student {
 

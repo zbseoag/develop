@@ -1,6 +1,4 @@
-package DatasTructures.interfaces;
-
-import DatasTructures.ArrayStack;
+package DataStructure.interfaces;
 
 public interface Stack<E> extends Print {
 

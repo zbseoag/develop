@@ -1,4 +1,4 @@
-package DatasTructures.tools;
+package DataStructure.tools;
 
 public class SegmentTree<E>{
 

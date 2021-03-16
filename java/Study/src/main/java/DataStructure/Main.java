@@ -1,6 +1,6 @@
-package DatasTructures;
+package DataStructure;
 
-import DatasTructures.bean.Student;
+import DataStructure.bean.Student;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -59,13 +59,12 @@ public class Main {
     }
 
     @Test
-    void arrayQueue(){
+    void ArrayQueue(){
         var queue = new ArrayQueue<Integer>();
         queue.enqueue(1).enqueue(2).enqueue(4);
         queue.dequeue();
         queue.print();
     }
-
 
 
     @Test
@@ -89,6 +88,42 @@ public class Main {
 
         System.out.println(time);
 
+    }
+
+    @Test
+    void LinkedList(){
+        LinkedList<Integer> linkedList = new LinkedList<>();
+        linkedList.addLast(1);
+        linkedList.addLast(2);
+        linkedList.addLast(3);
+        linkedList.addLast(4);
+
+        System.out.println(linkedList.toString());
+
+    }
+
+    @Test
+    void LinkedListStack(){
+        LinkedListStack<Integer> stack = new LinkedListStack<>();
+        stack.push(1).push(2).push(3);
+        stack.pop();
+        System.out.println(stack);
+    }
+
+    @Test
+    void LinkedListQueue(){
+
+        LinkedListQueue<Integer> queue = new LinkedListQueue<Integer>();
+        for(int i = 0; i < 10; i++){
+
+            queue.add(i);
+            System.out.println(queue);
+
+            if(i % 3 == 2){
+                queue.remove();
+                System.out.println(queue);
+            }
+        }
     }
 
 }
