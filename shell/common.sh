@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 #history 配置
-export HISTTIMEFORMAT='%F ' #时间格式化
-export HISTSIZE=100 #命令历史列表总条数
+#export HISTTIMEFORMAT='%F ' #时间格式化
+export HISTSIZE=200 #命令历史列表总条数
 export HISTFILESIZE=10000 #命令历史文件总条数
 export HISTCONTROL="ignoredups" #ignoredups：忽略重复命令； ignorespace：忽略空白开头的命令  ignoreboth
-export HISTIGNORE="pwd:history" #不记录的命令
+export HISTIGNORE="pwd:history:ls:ll" #不记录的命令
 
 export MYCAT_HOME=/d/usr/mycat
 export JAVA_HOME=/d/usr/jdk
